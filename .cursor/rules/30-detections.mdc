@@ -1,0 +1,93 @@
+---
+description: SentinelForge detection-as-code rules (Wazuh XML, Sigma, tests, hunts)
+globs: detections/**, tests/**, hunting/**, .github/workflows/**
+alwaysApply: false
+---
+
+# Detection rules
+
+## Layout
+```
+detections/
+  wazuh/rules/        sentinelforge_rules.xml (or one file per category)
+  wazuh/decoders/     custom decoders if needed
+  sigma/              one .yml per detection
+  metadata/           one .yml per detection (the source of truth for the library page)
+tests/logs/           sample log lines per detection, used with wazuh-logtest
+tests/detections/     python tests for metadata, IDs, MITRE format
+hunting/              one .yml per saved hunt
+```
+
+## Metadata (`detections/metadata/SF-XXX.yml`)
+Required fields:
+- `id: SF-001`
+- `name`
+- `description`
+- `severity: low|medium|high|critical`
+- `mitre: [T1110.003]` (validate format `T\d{4}(\.\d{3})?`)
+- `telemetry: [windows_security, sysmon, powershell, linux_auth, auditd, suricata]`
+- `wazuh_rule_ids: [100100]`
+- `sigma_file`
+- `version`
+- `status` (one of the 5 validation statuses)
+- `windows_validation_required: true|false`
+- `false_positives`
+- `tuning_notes`
+- `test_procedure`
+- `expected_event`
+- `expected_alert`
+- `observed_result: "NOT YET VALIDATED"` until a lab test is done
+
+## Wazuh rules
+- Custom rule IDs use 100000–109999 only. They must be unique; CI checks for duplicates.
+- Group by category:
+  - 100100 auth
+  - 100200 powershell
+  - 100300 accounts/groups
+  - 100400 persistence
+  - 100500 lateral movement
+  - 100600 credential access
+  - 100700 linux
+  - 100800 defense evasion
+  - 100900 network
+  - 101000 correlation
+- Every rule needs `<description>` with an `SF-XXX` prefix, `<mitre><id>`, and `<group>`.
+- Build on Wazuh's built-in parent rules via `if_sid`/`if_group` where possible.
+  - Mark parent IDs you are unsure of with `<!-- VERIFY: -->`.
+- Correlation uses `frequency`, `timeframe`, `if_matched_sid`, and `same_field` where the Wazuh
+  version supports them; otherwise do it in the backend.
+- Windows event field names (e.g. `win.eventdata.*`) must be marked `REQUIRES WINDOWS VALIDATION`.
+
+## Sample logs
+- Sample log lines in `tests/logs/` must be labeled as synthetic test input.
+- A detection reaches `LOGTEST VALID` only after `wazuh-logtest` output is actually captured.
+
+## Sigma
+- Use the standard Sigma format with logsource, detection, condition, and level.
+- Use ATT&CK tags in the form `attack.t1059.001`.
+- Each rule must convert with `sigma convert` (any free backend) in CI.
+
+## Hunts (`hunting/*.yml`)
+Required fields:
+- name
+- hypothesis
+- data_source
+- query (OpenSearch DSL or query string against `wazuh-archives-*`/`wazuh-alerts-*`)
+- expected_behavior
+- suspicious_behavior
+- mitre
+- investigation_guidance
+- status
+
+## CI (GitHub Actions)
+CI must check:
+- YAML lint
+- XML well-formedness
+- Required metadata fields
+- MITRE ID format
+- `SF-XXX` naming
+- Duplicate Wazuh rule IDs
+- Sigma conversion
+- pytest
+
+Never claim CI passes until I report a green run.

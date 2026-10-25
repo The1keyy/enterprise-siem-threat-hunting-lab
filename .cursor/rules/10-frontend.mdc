@@ -1,0 +1,67 @@
+---
+description: SentinelForge frontend rules (React/Vite/TS/Tailwind)
+globs: frontend/**
+alwaysApply: false
+---
+
+# Frontend rules
+
+## Look and feel
+- Dark enterprise SOC console. Inspired by modern security platforms, but never copy a product,
+  logo, or branding.
+- Do NOT use:
+  - Matrix effects or neon green
+  - Hacker imagery or giant lock icons
+  - Gamer UI or heavy glow
+
+## Design tokens
+Define tokens once in `tailwind.config.ts` and `src/styles/tokens.css`. Never hardcode hex
+values in components.
+
+| Token | Value |
+|---|---|
+| bg | `#0B0F17` |
+| surface | `#111827` |
+| surface-2 | `#151C28` |
+| border | `#1F2A3A` |
+| text | `#E5E7EB` |
+| text-muted | `#9CA3AF` |
+| accent | `#22D3EE` (cyan) |
+| critical | `#EF4444` |
+| high | `#F97316` |
+| medium | `#F59E0B` |
+| low | `#3B82F6` |
+| ok | `#22C55E` |
+
+- Use one font family (Inter or system UI) and a fixed type scale.
+- Use 4px spacing steps.
+
+## Accessibility
+- Severity is never shown by color alone. Always pair it with a text label
+  (`<SeverityBadge>`).
+- Keyboard focus rings must be visible.
+- Charts need readable contrast.
+
+## Architecture
+```
+frontend/src/
+  components/   reusable UI (Card, KpiCard, SeverityBadge, StatusPill, DataTable, PageHeader, DemoBanner)
+  pages/        one file per sidebar page
+  charts/       Recharts wrappers, themed with tokens
+  hooks/        data hooks (useIncidents, useAlerts...)
+  services/     api client + data source switch
+  fixtures/     DEMO data only, every file starts with a "DEMO DATA" comment
+  types/        shared TS types that mirror backend schemas
+```
+
+## Data access
+- Components never call `fetch` directly. They go through `services/api.ts`.
+- `VITE_DATA_MODE=demo|live` controls the data source.
+  - In `demo` mode, `<DemoBanner>` is always visible.
+- Show loading, empty, and error states on every data panel.
+  - An empty state says "No data yet". It never invents numbers.
+
+## Code
+- TypeScript strict mode. No `any` without a comment explaining why.
+- Keep pages thin. Logic goes in hooks and services.
+- Run `npm run lint` and `npm run build`; both must pass before saying a task is done.

@@ -1,0 +1,89 @@
+---
+description: SentinelForge core project rules (always loaded)
+alwaysApply: true
+---
+
+# SentinelForge — core rules
+
+## Project
+SentinelForge: a free enterprise SIEM and threat-hunting lab built on Wazuh, plus a custom analyst
+console (FastAPI + React) that sits ON TOP of Wazuh. It does not replace Wazuh.
+This is a portfolio project. It must impress because it works and is validated, not because of
+buzzwords.
+
+## Environment
+- All code and config is written on macOS (Cursor, Git, Docker Desktop).
+- It will be deployed and tested later on a Windows PC running VMware with:
+  - DC01: Windows Server (AD DC + DNS)
+  - WS01: Windows 10/11 (domain-joined)
+  - UBU01: Ubuntu server
+  - WAZUH01: Wazuh all-in-one
+  - SURI01: Suricata (optional)
+- The lab network is isolated (host-only/internal). No bridged networking for victim VMs.
+
+## Non-negotiables
+1. Never fabricate alerts, logs, screenshots, test results, metrics, or validation.
+2. Fixture/demo data is allowed only in `frontend/src/fixtures/`, `backend/app/fixtures/`, or `tests/`.
+   - It must be clearly labeled.
+   - The UI shows a "DEMO DATA" banner whenever fixtures are used.
+3. Every detection, script, and config has exactly one validation status:
+   - `NOT TESTED`
+   - `SYNTAX VALID` (passes CI linting)
+   - `LOGTEST VALID` (fires in `wazuh-logtest` against sample logs)
+   - `LAB VALIDATED` (fired from a real simulation in my lab, with evidence)
+   - `NEEDS TUNING`
+4. Anything that only runs or only can be proven on Windows gets this header comment:
+   `REQUIRES WINDOWS VALIDATION`
+   Never claim it works; I will test it later.
+5. Free/open-source only. No paid Splunk, Sentinel, CrowdStrike, Elastic paid features, SOAR,
+   or threat-intel APIs.
+6. Attack simulations target only my isolated lab.
+   - Always include cleanup steps.
+   - Always tell me to snapshot VMs first.
+7. No destructive automation.
+   - Response actions are labeled `LAB ONLY`.
+   - They require explicit approval.
+8. No fake AI/ML. Risk scoring is rule-based and explainable.
+9. Version honesty.
+   - Pin versions.
+   - If unsure that a config key, API endpoint, event field, or index name exists in the pinned
+     version, say so in a comment (`VERIFY:`) instead of guessing.
+10. Secrets.
+    - Never commit secrets.
+    - Use `.env` (gitignored) and `.env.example`.
+    - Use placeholders like `<WAZUH_MANAGER_IP>` in configs.
+
+## Working style
+- Do only the task in the current prompt. Do not build ahead into later steps.
+- Prefer small, complete, working pieces over large untested ones.
+- If a task is too big for one response, say so and split it into parts.
+- Push back if something is overbuilt or unrealistic.
+- After each task:
+  1. Update `docs/PROJECT_STATUS.md` (done, statuses, open questions, next step).
+  2. List the files you created/changed.
+  3. Give exact commands to verify on macOS.
+  4. Give a short checklist of what still needs Windows validation.
+
+## Lab defaults
+- Domain: `sentinelforge.lab`
+- Subnet: `10.10.10.0/24`
+- Gateway/host adapter: `10.10.10.1`
+
+| Host | IP |
+|---|---|
+| DC01 | 10.10.10.10 |
+| WS01 | 10.10.10.20 |
+| UBU01 | 10.10.10.30 |
+| WAZUH01 | 10.10.10.40 |
+| SURI01 | 10.10.10.50 |
+
+## Pinned stack (change only through an ADR in docs/adr/)
+`docs/VERSIONS.md` is the source of truth for versions. Read it before installing anything.
+
+- Wazuh 4.14.9 (manager, indexer, dashboard, and agents must all match). Do NOT use Wazuh 5.x
+  pre-releases.
+- Python 3.12, FastAPI, SQLAlchemy 2, SQLite (dev).
+- Node 24 LTS, React 19 + Vite + TypeScript, Tailwind, Recharts, lucide-react.
+  - Exact npm/pip versions are locked by lockfiles when each part is created.
+- Sigma rules validated with sigma-cli / pySigma.
+- GitHub Actions for CI.

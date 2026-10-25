@@ -1,0 +1,66 @@
+---
+description: SentinelForge backend rules (FastAPI)
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend rules
+
+## Role
+The backend is the only thing that talks to Wazuh. The frontend never sees Wazuh credentials.
+
+```
+backend/app/
+  main.py
+  api/            routers: alerts, incidents, hunts, entities, detections, mitre, health, sources
+  models/         SQLAlchemy models (incidents, notes, risk_events, saved_hunts, audit_log)
+  schemas/        Pydantic request/response models
+  services/       correlation, risk scoring, hunting, enrichment
+  integrations/   wazuh_api.py (manager API), wazuh_indexer.py (OpenSearch queries)
+  fixtures/       DEMO data only
+  core/           config (pydantic-settings), auth, logging
+backend/tests/
+```
+
+## Wazuh integration
+- Use a dedicated read-only Wazuh API user and a read-only indexer user.
+- Manager API (port 55000, JWT auth) covers agents, manager status, rules, and decoders.
+- Indexer (port 9200) covers:
+  - `wazuh-alerts-*` for alerts
+  - `wazuh-archives-*` for raw-event hunting. This requires archives indexing to be enabled;
+    document the storage cost.
+- TLS: lab certificates are self-signed.
+  - Allow a configurable CA bundle path.
+  - Never disable verification silently. A config flag must exist, be logged, and be marked
+    lab-only.
+- Mark exact endpoints and fields you are unsure of with `# VERIFY:` for the pinned Wazuh version.
+
+## Data the backend owns
+These live in SQLite:
+- Incidents, status, owner, notes, disposition
+- Risk events
+- Saved hunts
+- Audit log of analyst actions
+
+Wazuh stays the source of truth for alerts and events.
+
+## Modes
+- `DATA_MODE=demo|live`.
+  - Demo mode serves `fixtures/` and every response includes `"demo": true`.
+  - Live mode errors clearly if Wazuh is unreachable. It never falls back to demo data silently.
+
+## Security
+- Config comes only from env vars via pydantic-settings. Ship `.env.example`.
+- Use simple auth for the console (single admin user from env, hashed password, session/JWT).
+- CORS allows only the frontend origin.
+- Response actions (isolate, disable account, block IP):
+  - Labeled `LAB ONLY`
+  - Require an explicit approve call
+  - Written to the audit log
+  - Dry-run by default
+
+## Quality
+- Type hints everywhere.
+- Use ruff for lint and pytest for tests.
+- Unit-test the risk scoring and correlation logic with plain sample events.
+- `ruff check` and `pytest` must pass before saying a task is done.

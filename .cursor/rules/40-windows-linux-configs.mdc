@@ -1,0 +1,55 @@
+---
+description: SentinelForge lab scripts and configs (PowerShell, Bash, Sysmon, Wazuh agent, Linux)
+globs: scripts/**, configs/**
+alwaysApply: false
+---
+
+# Lab scripts & configs rules
+
+## PowerShell (`scripts/powershell/`)
+- Written on Mac. Lint with PSScriptAnalyzer: `pwsh` runs on macOS via Homebrew.
+- Every file starts with this header:
+  ```
+  # REQUIRES WINDOWS VALIDATION
+  # Purpose:
+  # Run on: DC01 | WS01 | both
+  # Requires: Administrator, PowerShell 5.1+
+  # Status: NOT TESTED
+  ```
+- Make scripts idempotent: check before changing.
+- Support `-WhatIf` where they change state.
+- Use `Set-StrictMode -Version Latest` and `$ErrorActionPreference = 'Stop'`.
+- Never hardcode passwords.
+  - Use `Read-Host -AsSecureString` or parameters.
+  - Lab test accounts use names like `sf-test-*`.
+- Attack simulation scripts live in `scripts/powershell/simulations/` and must:
+  - Refuse to run unless the machine is joined to `sentinelforge.lab`.
+  - Print a "LAB ONLY — snapshot first" warning and require `-IUnderstandLabOnly`.
+  - Have a matching `*-Cleanup.ps1`.
+  - Reference the Atomic Red Team test ID when one applies.
+
+## Bash (`scripts/bash/`)
+- Use `#!/usr/bin/env bash` and `set -euo pipefail`.
+- Must pass `shellcheck`.
+- Target Ubuntu 22.04/24.04. Header includes `Run on:` and `Status:`.
+
+## Configs (`configs/`)
+- `configs/sysmon/`: base on a credited community config (sysmon-modular or SwiftOnSecurity).
+  Document changes in a README.
+- `configs/windows/`: audit policy (auditpol commands + GPO notes) and PowerShell logging
+  (Script Block + Module).
+- `configs/wazuh/`: `ossec.conf` agent snippets (Windows and Linux) and manager snippets
+  (archives, custom rules include).
+  - Use `<WAZUH_MANAGER_IP>` placeholders.
+- `configs/linux/`: auditd rules and rsyslog notes.
+- `configs/suricata/`: optional and stretch only.
+- Each config folder has a README with:
+  - what it does
+  - where it goes on the target machine
+  - how to apply it
+  - how to verify it
+  - status
+
+## Validation
+- Nothing in these folders is marked above `SYNTAX VALID` until I test it in the lab and report
+  results.
