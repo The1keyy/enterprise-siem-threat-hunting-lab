@@ -3,7 +3,7 @@
 This file is the single source of truth for versions. Change a version only with a short ADR in
 `docs/adr/`.
 
-**Last checked:** 2026-10-25
+**Last checked:** 2026-10-25 (application stack locked in Step 3)
 
 Anything marked **VERIFY** must be confirmed against the official download page on the day you
 install it.
@@ -41,9 +41,18 @@ support; the lab stays on a host-only network.
 
 | Component | Version | Notes |
 |---|---|---|
-| Node.js | **24 LTS** | Node 20 is end-of-life. Node 24 has security support into 2028. |
-| React | **19** | Exact versions locked in `frontend/package-lock.json` (Step 3). |
-| Vite / TypeScript / Tailwind / Recharts / lucide-react | Current stable at Step 3 | Locked by `package-lock.json`. |
+| Node.js | **24.22.1** | Installed for Step 3 (`node -v`). Node 24 LTS. |
+| npm | **11.19.1** | Installed with that Node. |
+| React / React DOM | **19.3.1** | Locked in `frontend/package-lock.json`. |
+| Vite | **8.3.5** | `@vitejs/plugin-react` **6.1.2**. |
+| TypeScript | **6.0.3** | `strict` is on. |
+| Tailwind CSS | **4.3.3** | `@tailwindcss/vite` **4.3.3**. Tokens live in `frontend/src/styles/tokens.css` via `@theme`. |
+| react-router | **8.5.0** | Current major at Step 3. |
+| Recharts | **3.10.1** | Installed. Chart wrappers start in Step 4. |
+| lucide-react | **1.61.0** | |
+| clsx | **2.1.1** | |
+| ESLint | **10.13.0** | Flat config in `frontend/eslint.config.js`, plus Prettier **3.9.10**. |
+| @fontsource/inter | **5.3.0** | Inter is bundled. No font CDN. |
 | Python | **3.12** | |
 | FastAPI / SQLAlchemy 2 / pydantic-settings | Current stable at Step 7 | Locked in `backend/requirements.txt` with exact pins. |
 | Database | SQLite (dev) | Postgres only if an ADR justifies it. |

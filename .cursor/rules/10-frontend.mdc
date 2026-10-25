@@ -15,8 +15,8 @@ alwaysApply: false
   - Gamer UI or heavy glow
 
 ## Design tokens
-Define tokens once in `tailwind.config.ts` and `src/styles/tokens.css`. Never hardcode hex
-values in components.
+Define tokens once in `src/styles/tokens.css` with Tailwind v4 `@theme`. There is no
+`tailwind.config.ts`. Never hardcode hex values in components.
 
 | Token | Value |
 |---|---|
@@ -52,6 +52,8 @@ frontend/src/
   services/     api client + data source switch
   fixtures/     DEMO data only, every file starts with a "DEMO DATA" comment
   types/        shared TS types that mirror backend schemas
+  styles/       tokens.css (@theme) and global.css
+  layouts/      AppShell
 ```
 
 ## Data access

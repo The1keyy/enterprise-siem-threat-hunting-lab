@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 2: Architecture and planning docs. Done.**
-**Next:** Step 3: Frontend setup and design system. Not started.
+**Step 3: Frontend setup and design system. Done.**
+**Next:** Step 4: SOC Overview (demo). Not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -17,7 +17,7 @@
 |---|---|---|
 | 1 | Repo scaffold | Done |
 | 2 | Architecture & ADRs | Done |
-| 3 | Frontend setup + design system | Not started |
+| 3 | Frontend setup + design system | Done |
 | 4 | SOC Overview (demo) | Not started |
 | 5 | Incidents + Investigation (demo) | Not started |
 | 6 | Remaining pages (demo) | Not started |
@@ -57,7 +57,21 @@ Real counts only. Update these as work actually happens.
 - `docs/adr/0001-wazuh-as-siem.md`, `0002-fastapi-backend.md`, `0003-console-on-top-of-wazuh.md`
 - `scripts/validation/check_scaffold.sh` (verifies the structure)
 - `.cursor/rules/` (Cursor project rules)
-- No application code and no lab scripts yet
+- `frontend/` analyst console shell (Step 3): design tokens, AppShell, base components, demo/live client. No dashboard data yet.
+- No backend and no lab scripts yet
+
+## Frontend versions (Step 3)
+Locked in `frontend/package-lock.json`. See `docs/VERSIONS.md`.
+
+| Tool | Version |
+|---|---|
+| Node.js | 24.22.1 |
+| npm | 11.19.1 |
+| React | 19.3.1 |
+| Vite | 8.3.5 |
+| TypeScript | 6.0.3 |
+| Tailwind CSS | 4.3.3 |
+| react-router | 8.5.0 |
 
 ## Lab host
 Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
@@ -79,7 +93,9 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Documented, not built:
+Step 3 is Mac-only UI. Nothing in the frontend needs the Windows lab.
+
+Still documented, not built:
 
 - Host-only or LAN segment for `10.10.10.0/24`, no bridged victim NIC
 - Temporary NAT adapter for updates, then removed
