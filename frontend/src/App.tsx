@@ -5,6 +5,8 @@ import { AppShell } from './layouts/AppShell.tsx'
 import { AutomationPage } from './pages/AutomationPage.tsx'
 import { DetectionsPage } from './pages/DetectionsPage.tsx'
 import { EntitiesPage } from './pages/EntitiesPage.tsx'
+import { HostProfilePage } from './pages/HostProfilePage.tsx'
+import { UserProfilePage } from './pages/UserProfilePage.tsx'
 import { HealthPage } from './pages/HealthPage.tsx'
 import { HuntingPage } from './pages/HuntingPage.tsx'
 import { DetectionDetail } from './pages/DetectionDetail.tsx'
@@ -29,6 +31,8 @@ export default function App() {
           <Route path="incidents/:id" element={<IncidentDetail />} />
           <Route path="hunting" element={<HuntingPage />} />
           <Route path="entities" element={<EntitiesPage />} />
+          <Route path="entities/users/:name" element={<UserProfilePage />} />
+          <Route path="entities/hosts/:name" element={<HostProfilePage />} />
           <Route path="detections" element={<DetectionsPage />} />
           <Route path="detections/:id" element={<DetectionDetail />} />
           <Route path="mitre" element={<MitrePage />} />

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { DataTable, type DataTableColumn } from '../components/DataTable.tsx'
+import { HostLink, UserLink } from '../components/EntityLink.tsx'
 import { EmptyState } from '../components/EmptyState.tsx'
 import { ErrorState } from '../components/ErrorState.tsx'
 import { IncidentFilterBar } from '../components/incidents/IncidentFilterBar.tsx'
@@ -80,11 +81,25 @@ const COLUMNS: readonly DataTableColumn<Incident>[] = [
     id: 'user',
     header: 'User',
     accessor: (row) => row.users[0] ?? '',
+    cell: (row) => (
+      <span className="flex flex-wrap gap-1">
+        {row.users.map((name) => (
+          <UserLink key={name} name={name} />
+        ))}
+      </span>
+    ),
   },
   {
     id: 'host',
     header: 'Host',
     accessor: (row) => row.hosts[0] ?? '',
+    cell: (row) => (
+      <span className="flex flex-wrap gap-1">
+        {row.hosts.map((name) => (
+          <HostLink key={name} name={name} />
+        ))}
+      </span>
+    ),
   },
   {
     id: 'mitre',

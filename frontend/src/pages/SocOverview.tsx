@@ -9,6 +9,7 @@ import { EmptyState } from '../components/EmptyState.tsx'
 import { ErrorState } from '../components/ErrorState.tsx'
 import { KpiCard } from '../components/KpiCard.tsx'
 import { LoadingState } from '../components/LoadingState.tsx'
+import { HostLink, UserLink } from '../components/EntityLink.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
 import { SeverityBadge } from '../components/SeverityBadge.tsx'
 import { StatusPill } from '../components/StatusPill.tsx'
@@ -259,7 +260,8 @@ export function SocOverview() {
                       <StatusPill kind="incident" status={incident.status} />
                     </span>
                     <span className="mt-1 block text-xs text-text-muted">
-                      {incident.host} · {incident.user} ·{' '}
+                      <HostLink name={incident.host} /> ·{' '}
+                      <UserLink name={incident.user} /> ·{' '}
                       {formatLabTime(incident.lastSeen)}
                     </span>
                   </Link>
@@ -288,7 +290,8 @@ export function SocOverview() {
                     <span className="flex flex-wrap items-center gap-2">
                       <SeverityBadge severity={detection.severity} />
                       <span className="text-xs text-text-muted">
-                        {detection.host} · {formatLabTime(detection.time)}
+                        <HostLink name={detection.host} /> ·{' '}
+                        {formatLabTime(detection.time)}
                       </span>
                     </span>
                   </li>

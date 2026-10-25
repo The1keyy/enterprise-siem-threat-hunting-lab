@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { Card } from '../components/Card.tsx'
+import { HostLink, UserLink } from '../components/EntityLink.tsx'
 import { EmptyState } from '../components/EmptyState.tsx'
 import { ErrorState } from '../components/ErrorState.tsx'
 import { EvidencePanel } from '../components/incidents/EvidencePanel.tsx'
@@ -38,9 +39,11 @@ function assetLabel(asset: RiskAssetType): string {
 function EntityGroup({
   label,
   values,
+  kind = 'plain',
 }: {
   label: string
   values: readonly string[]
+  kind?: 'user' | 'host' | 'plain'
 }) {
   return (
     <div>
@@ -54,7 +57,9 @@ function EntityGroup({
               key={value}
               className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 text-xs text-text"
             >
-              {value}
+              {kind === 'user' ? <UserLink name={value} /> : null}
+              {kind === 'host' ? <HostLink name={value} /> : null}
+              {kind === 'plain' ? value : null}
             </li>
           ))}
         </ul>
@@ -243,7 +248,8 @@ function IncidentBody({
                         {item.title}
                       </span>
                       <span className="mt-1 block text-xs text-text-muted">
-                        {item.host} · {item.user} · {item.ruleId}
+                        <HostLink name={item.host} /> ·{' '}
+                        <UserLink name={item.user} /> · {item.ruleId}
                       </span>
                     </button>
                   </li>
@@ -258,8 +264,16 @@ function IncidentBody({
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-5">
           <Card title="Entities">
             <div className="space-y-3">
-              <EntityGroup label="Users" values={data.entities.users} />
-              <EntityGroup label="Hosts" values={data.entities.hosts} />
+              <EntityGroup
+                label="Users"
+                values={data.entities.users}
+                kind="user"
+              />
+              <EntityGroup
+                label="Hosts"
+                values={data.entities.hosts}
+                kind="host"
+              />
               <EntityGroup label="Source IPs" values={data.entities.srcIps} />
               <EntityGroup
                 label="Destination IPs"

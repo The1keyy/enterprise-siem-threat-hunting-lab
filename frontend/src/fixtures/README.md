@@ -12,3 +12,5 @@ breakdown. They are not lab measurements.
 `detections.ts` is detection metadata only. Every status is `NOT TESTED`.
 Rule XML and Sigma text are not written. `hunts.ts` is ten saved-hunt drafts.
 Queries are OpenSearch query-string drafts and are not lab results.
+Entity, source, and health pages are derived from these incidents. They are
+not a second telemetry set.

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { TimeSeriesChart } from '../charts/TimeSeriesChart.tsx'
+import { HostLink, UserLink } from '../components/EntityLink.tsx'
 import { EmptyState } from '../components/EmptyState.tsx'
 import { ErrorState } from '../components/ErrorState.tsx'
 import { LoadingState } from '../components/LoadingState.tsx'
@@ -419,10 +420,10 @@ export function HuntingPage() {
                                   </div>
                                 </td>
                                 <td className="px-3 py-2 align-top">
-                                  {hit.host}
+                                  <HostLink name={hit.host} />
                                 </td>
                                 <td className="px-3 py-2 align-top">
-                                  {hit.user}
+                                  <UserLink name={hit.user} />
                                 </td>
                                 <td className="px-3 py-2 align-top">
                                   {hit.source}

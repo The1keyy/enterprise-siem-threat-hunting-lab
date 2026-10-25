@@ -1,5 +1,5 @@
 // DEMO DATA — synthetic fixtures for UI development. Not real telemetry.
-import { finalRiskScore, severityBandFor } from '../lib/risk.ts'
+import { eventWeight, finalRiskScore, severityBandFor } from '../lib/risk.ts'
 import type { IncidentStatus, Severity } from '../types/domain.ts'
 import type {
   Disposition,
@@ -20,14 +20,14 @@ import type {
  * (and Linux data.srcip / auditd keys). Those ids are the literal "VERIFY"
  * inside the raw JSON. Event data keys are candidates, not confirmed fields.
  */
-const FAILED_AUTH = 15
-const SUCCESS_AFTER_FAILURES = 25
-const ENCODED_POWERSHELL = 30
-const PRIVILEGED_GROUP = 35
-const REMOTE_CONNECTION = 20
-const NEW_ACCOUNT = 10
-const SUSPICIOUS_COMMAND = 20
-const SCHEDULED_TASK = 15
+const FAILED_AUTH = eventWeight('failed_auth')
+const SUCCESS_AFTER_FAILURES = eventWeight('success_after_failures')
+const ENCODED_POWERSHELL = eventWeight('encoded_powershell')
+const PRIVILEGED_GROUP = eventWeight('privileged_group')
+const REMOTE_CONNECTION = eventWeight('remote_connection')
+const NEW_ACCOUNT = eventWeight('new_account')
+const SUSPICIOUS_COMMAND = eventWeight('suspicious_command')
+const SCHEDULED_TASK = eventWeight('scheduled_task')
 
 type HostName = 'DC01' | 'WS01' | 'UBU01' | 'WAZUH01'
 

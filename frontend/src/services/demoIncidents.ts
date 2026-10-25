@@ -72,6 +72,10 @@ function save(index: number, next: IncidentDetail): IncidentDetail {
   return next
 }
 
+export function listDemoIncidentDetails(): IncidentDetail[] {
+  return seed()
+}
+
 export function listDemoIncidents(filters: IncidentFilters): Incident[] {
   return seed()
     .map(toIncident)

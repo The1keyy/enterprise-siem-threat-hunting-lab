@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 6A: Threat hunting, detections, and MITRE ATT&CK (demo). Done.**
-**Next:** Step 6B: Entities, data sources, health, automation, settings. Not started.
+**Step 6 Done. All 10 pages built in demo mode.**
+**Next:** Step 7: Backend setup. Not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -21,7 +21,7 @@
 | 4 | SOC Overview (demo) | Done |
 | 5 | Incidents + Investigation (demo) | Done |
 | 6A | Hunting, detections, MITRE (demo) | Done |
-| 6B | Entities, sources, health, automation, settings (demo) | Not started |
+| 6B | Entities, sources, health, automation, settings (demo) | Done |
 | 7 | Backend setup | Not started |
 | 8 | Wazuh integration code | Not started |
 | 9 | Local wazuh-logtest in Docker | Not started |
@@ -62,6 +62,7 @@ Real counts only. Update these as work actually happens.
 - Detection rows are metadata fixtures for SF-001–SF-020. Every validation status is `NOT TESTED`. `lastTriggered` and `alertCount` are null. Wazuh XML and Sigma text are the placeholder "Not written yet (Step 10)". No rule has been written or tested.
 - Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events. It does not query `wazuh-archives-*`. Promoting a result writes an in-memory incident until reload.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
+- All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
 - Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
 - Live `GET /overview` and the incident API are not built. They arrive with the backend in Step 7. Live mode shows an error until then.
@@ -101,7 +102,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 6A is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab. Detections that will need Windows validation are tagged in the library. That tag is a plan, not a test result.
+Step 6 is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
 
 Still documented, not built:
 

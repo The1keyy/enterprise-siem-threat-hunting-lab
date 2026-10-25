@@ -13,11 +13,31 @@ import {
   addDemoNote,
   createDemoIncident,
   getDemoIncident,
+  listDemoIncidentDetails,
   listDemoIncidents,
   logDemoDryRun,
   saveDemoAnalyst,
   updateDemoIncident,
 } from './demoIncidents.ts'
+import {
+  buildHost,
+  buildUser,
+  listHosts,
+  listUsers,
+} from '../lib/entityModel.ts'
+import {
+  buildHealth,
+  buildSettings,
+  buildSources,
+  buildWorkflows,
+} from '../lib/operationsModel.ts'
+import type { EntityRow, HostProfile, UserProfile } from '../types/entity.ts'
+import type {
+  DataSourceCard,
+  HealthReport,
+  SettingsView,
+  Workflow,
+} from '../types/operations.ts'
 import {
   getDemoDetection,
   listDemoDetections,
@@ -207,6 +227,65 @@ export async function promoteHunt(input: {
 }): Promise<IncidentDetail> {
   if (getDataMode() === 'demo') return createDemoIncident(input)
   return liveSend<IncidentDetail>('/incidents', 'POST', input)
+}
+
+export async function listEntityUsers(): Promise<EntityRow[]> {
+  if (getDataMode() === 'demo') return listUsers(listDemoIncidentDetails())
+  return liveSend<EntityRow[]>('/entities/users', 'GET')
+}
+
+export async function listEntityHosts(): Promise<EntityRow[]> {
+  if (getDataMode() === 'demo') return listHosts(listDemoIncidentDetails())
+  return liveSend<EntityRow[]>('/entities/hosts', 'GET')
+}
+
+export async function getUserProfile(name: string): Promise<UserProfile> {
+  if (getDataMode() === 'demo') {
+    const profile = buildUser(listDemoIncidentDetails(), name)
+    if (!profile) throw new ApiError(`User ${name} was not found.`, 404)
+    return profile
+  }
+  return liveSend<UserProfile>(
+    `/entities/users/${encodeURIComponent(name)}`,
+    'GET',
+  )
+}
+
+export async function getHostProfile(name: string): Promise<HostProfile> {
+  if (getDataMode() === 'demo') {
+    const profile = buildHost(listDemoIncidentDetails(), name)
+    if (!profile) throw new ApiError(`Host ${name} was not found.`, 404)
+    return profile
+  }
+  return liveSend<HostProfile>(
+    `/entities/hosts/${encodeURIComponent(name)}`,
+    'GET',
+  )
+}
+
+export async function listSources(): Promise<DataSourceCard[]> {
+  if (getDataMode() === 'demo') return buildSources(listDemoIncidentDetails())
+  return liveSend<DataSourceCard[]>('/sources', 'GET')
+}
+
+export async function getHealth(): Promise<HealthReport> {
+  if (getDataMode() === 'demo') {
+    const enabled = listDemoDetections().filter((item) => item.enabled).length
+    return buildHealth(enabled)
+  }
+  return liveSend<HealthReport>('/health', 'GET')
+}
+
+export async function listWorkflows(): Promise<Workflow[]> {
+  if (getDataMode() === 'demo') return buildWorkflows()
+  return liveSend<Workflow[]>('/automation', 'GET')
+}
+
+export async function getSettings(): Promise<SettingsView> {
+  if (getDataMode() === 'demo') {
+    return buildSettings({ dataMode: getDataMode(), apiUrl: getApiUrl() })
+  }
+  return liveSend<SettingsView>('/settings', 'GET')
 }
 
 /** Lab actions are not executed from the browser. The UI must not call this. */
