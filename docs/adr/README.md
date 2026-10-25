@@ -11,4 +11,10 @@ Each ADR has these sections:
 - **What I must understand**
 - **Likely interview questions + short answers**
 
-**Status:** Empty (first ADRs in Step 2).
+| ADR | Title |
+|---|---|
+| [0001](0001-wazuh-as-siem.md) | Wazuh as the SIEM |
+| [0002](0002-fastapi-backend.md) | FastAPI backend |
+| [0003](0003-console-on-top-of-wazuh.md) | Analyst console on top of Wazuh |
+
+**Status:** Step 2. 0001–0003 accepted.

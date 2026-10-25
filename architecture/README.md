@@ -6,4 +6,6 @@ Lab and application architecture:
 - data flow
 - Wazuh vs. SentinelForge responsibilities
 
-**Status:** Empty (Step 2).
+See [ARCHITECTURE.md](ARCHITECTURE.md).
+
+**Status:** Step 2 written. Lab network and VM sizes are a plan, not a build.

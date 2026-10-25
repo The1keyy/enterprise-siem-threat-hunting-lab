@@ -25,8 +25,9 @@ install it.
 | WAZUH01 | Ubuntu Server 24.04 LTS | **VERIFY** it is on the Wazuh 4.14 supported OS list before installing. |
 | SURI01 | Ubuntu Server 24.04 LTS + Suricata (stable) | Optional/stretch. **VERIFY** Suricata version at install. |
 
-**Hypervisor:** VMware Workstation Pro (free for personal use). **VERIFY** license terms when you
-download.
+**Hypervisor:** VMware Workstation Pro 26.0.1 on the Windows lab PC (reported 2026-10-25).
+**VERIFY** license terms for that build. The host OS is Windows 10 Home 64-bit and is out of
+support; the lab stays on a host-only network.
 
 ## Endpoint telemetry
 
