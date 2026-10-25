@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 6 Done. All 10 pages built in demo mode.**
-**Next:** Step 7: Backend setup. Not started.
+**Step 7A Done.** FastAPI backend core in demo mode. Wazuh is not connected.
+**Next:** Step 7B not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -22,7 +22,8 @@
 | 5 | Incidents + Investigation (demo) | Done |
 | 6A | Hunting, detections, MITRE (demo) | Done |
 | 6B | Entities, sources, health, automation, settings (demo) | Done |
-| 7 | Backend setup | Not started |
+| 7A | FastAPI backend core (demo) | Done |
+| 7B | Connect the frontend, plus Docker | Not started |
 | 8 | Wazuh integration code | Not started |
 | 9 | Local wazuh-logtest in Docker | Not started |
 | 10 | MVP detections | Not started |
@@ -65,9 +66,11 @@ Real counts only. Update these as work actually happens.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
 - Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
-- Live `GET /overview` and the incident API are not built. They arrive with the backend in Step 7. Live mode shows an error until then.
-- Response actions are dry-run only. Confirming one writes a local audit line and does not execute anything.
-- No backend and no lab scripts yet
+- Shared demo JSON lives in `/fixtures` (`overview`, `incidents`, `detections`, `hunts`, `entities`, `sources`, `health`). Each file has `_notice`: `DEMO DATA — synthetic, not real telemetry`. The frontend fixture modules import those files. `scripts/validation/export_fixtures.mjs` generated them.
+- `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode returns 503 (`Wazuh integration not implemented yet (Step 8)`) and does not serve fixtures.
+- Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
+- The React app still reads fixtures in demo mode. Wiring it to this API is Step 7B, which is not started.
+- No Wazuh client calls and no lab scripts yet.
 
 ## Frontend versions (Step 3)
 Locked in `frontend/package-lock.json`. See `docs/VERSIONS.md`.
@@ -102,7 +105,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 6 is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
+Step 7A is Mac-only. The API serves fixture JSON and a local SQLite file. It does not talk to Wazuh, and the dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
 
 Still documented, not built:
 

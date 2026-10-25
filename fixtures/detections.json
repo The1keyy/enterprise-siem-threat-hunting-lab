@@ -1,0 +1,666 @@
+{
+  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "detections": [
+    {
+      "id": "SF-001",
+      "name": "Repeated failed logons",
+      "description": "Security 4625 repeated against one account. VERIFY Wazuh field names.",
+      "severity": "medium",
+      "mitre": [
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4625",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-001. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-002",
+      "name": "Password spray",
+      "description": "Security 4625 across many accounts from one source. VERIFY frequency and timeframe.",
+      "severity": "critical",
+      "mitre": [
+        {
+          "id": "T1110.003",
+          "name": "Password Spraying",
+          "tactic": "Credential Access"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4625",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-002. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-003",
+      "name": "Successful logon after failures",
+      "description": "Security 4624 after 4625. VERIFY frequency handling.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "tactic": "Initial Access"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4624 after 4625",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-003. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-004",
+      "name": "Suspicious PowerShell script block",
+      "description": "PowerShell Operational 4104. Script block logging must be enabled first.",
+      "severity": "critical",
+      "mitre": [
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "tactic": "Execution"
+        }
+      ],
+      "telemetry": [
+        "powershell"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "PowerShell Operational 4104",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-004. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-005",
+      "name": "Encoded PowerShell process",
+      "description": "Sysmon 1 CommandLine. Security 4688 only if command-line auditing is on. VERIFY 4688 setup.",
+      "severity": "critical",
+      "mitre": [
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "tactic": "Execution"
+        }
+      ],
+      "telemetry": [
+        "sysmon"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Sysmon 1",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-005. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-006",
+      "name": "PowerShell download cradle",
+      "description": "4104 plus Sysmon 3 when a connection is logged. Sysmon 3 fields require Windows validation.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1105",
+          "name": "Ingress Tool Transfer",
+          "tactic": "Command and Control"
+        }
+      ],
+      "telemetry": [
+        "powershell",
+        "sysmon"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "PowerShell Operational 4104 and Sysmon 3",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-006. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-007",
+      "name": "User added to local Administrators",
+      "description": "Security 4732. VERIFY against a lab event on WS01.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1098",
+          "name": "Account Manipulation",
+          "tactic": "Persistence"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4732",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-007. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-008",
+      "name": "User added to a privileged domain group",
+      "description": "Security 4728 for a global group such as Domain Admins. 4756 is universal. VERIFY which event DC01 emits.",
+      "severity": "critical",
+      "mitre": [
+        {
+          "id": "T1098",
+          "name": "Account Manipulation",
+          "tactic": "Persistence"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4728",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-008. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-009",
+      "name": "New local or domain user",
+      "description": "Security 4720.",
+      "severity": "low",
+      "mitre": [
+        {
+          "id": "T1136.001",
+          "name": "Local Account",
+          "tactic": "Persistence"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4720",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-009. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-010",
+      "name": "Inbound RDP logon",
+      "description": "Security 4624, logon type 10. VERIFY the decoded field name. win.eventdata.logonType is a candidate.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1021.001",
+          "name": "Remote Desktop Protocol",
+          "tactic": "Lateral Movement"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4624 logon type 10",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-010. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-011",
+      "name": "SMB / admin-share remote logon",
+      "description": "Security 4624, logon type 3. Share detail 5140 or 5145. VERIFY which share event the audit policy produces.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1021.002",
+          "name": "SMB / Windows Admin Shares",
+          "tactic": "Lateral Movement"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4624 logon type 3",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-011. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-012",
+      "name": "WinRM / PowerShell remoting",
+      "description": "Security 4624 type 3. WinRM Operational event IDs are VERIFY and are not assumed.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1021.006",
+          "name": "Windows Remote Management",
+          "tactic": "Lateral Movement"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4624 logon type 3",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-012. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-013",
+      "name": "Linux SSH failure burst",
+      "description": "sshd failed-password lines. VERIFY the Ubuntu 24.04 auth log path.",
+      "severity": "medium",
+      "mitre": [
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        }
+      ],
+      "telemetry": [
+        "linux_auth"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": false,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "sshd failed password",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-013. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-014",
+      "name": "Linux SSH success after failures",
+      "description": "sshd accepted-password line.",
+      "severity": "medium",
+      "mitre": [
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "tactic": "Initial Access"
+        }
+      ],
+      "telemetry": [
+        "linux_auth"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": false,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "sshd accepted password",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-014. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-015",
+      "name": "Suspicious Linux command execution",
+      "description": "auditd EXECVE or SYSCALL. VERIFY key names.",
+      "severity": "low",
+      "mitre": [
+        {
+          "id": "T1059.004",
+          "name": "Unix Shell",
+          "tactic": "Execution"
+        }
+      ],
+      "telemetry": [
+        "auditd"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": false,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "auditd EXECVE",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-015. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-016",
+      "name": "LSASS memory access",
+      "description": "Sysmon 10. Requires Windows validation.",
+      "severity": "critical",
+      "mitre": [
+        {
+          "id": "T1003.001",
+          "name": "LSASS Memory",
+          "tactic": "Credential Access"
+        }
+      ],
+      "telemetry": [
+        "sysmon"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Sysmon 10",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-016. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-017",
+      "name": "Scheduled task created",
+      "description": "Security 4698. Requires Windows validation.",
+      "severity": "medium",
+      "mitre": [
+        {
+          "id": "T1053.005",
+          "name": "Scheduled Task",
+          "tactic": "Persistence"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 4698",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-017. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-018",
+      "name": "Security log cleared",
+      "description": "Security 1102. Requires Windows validation.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1070.001",
+          "name": "Clear Windows Event Logs",
+          "tactic": "Defense Evasion"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Security 1102",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-018. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-019",
+      "name": "New service installed",
+      "description": "System 7045. VERIFY the channel and Wazuh decoder. Requires Windows validation.",
+      "severity": "high",
+      "mitre": [
+        {
+          "id": "T1543.003",
+          "name": "Windows Service",
+          "tactic": "Persistence"
+        }
+      ],
+      "telemetry": [
+        "windows_security"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": true,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "System 7045",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-019. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    },
+    {
+      "id": "SF-020",
+      "name": "Suricata alert on lab traffic",
+      "description": "eve.json alert record. VERIFY the schema for the Suricata version that gets installed. SURI01 stays off until then.",
+      "severity": "medium",
+      "mitre": [
+        {
+          "id": "T1071",
+          "name": "Application Layer Protocol",
+          "tactic": "Command and Control"
+        }
+      ],
+      "telemetry": [
+        "suricata"
+      ],
+      "wazuhRuleIds": [],
+      "version": "0.1.0",
+      "enabled": true,
+      "status": "NOT TESTED",
+      "windowsValidationRequired": false,
+      "falsePositives": "No lab review yet.",
+      "tuningNotes": "No tuning yet. The rule text is not written.",
+      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
+      "expectedEvent": "Suricata eve.json alert",
+      "expectedAlert": "A Wazuh alert whose description starts with SF-020. Not written yet.",
+      "observedResult": "NOT YET VALIDATED",
+      "lastTriggered": null,
+      "alertCount": null,
+      "wazuhRuleXml": "Not written yet (Step 10)",
+      "sigmaYaml": "Not written yet (Step 10)",
+      "tuningHistory": [],
+      "demo": true
+    }
+  ]
+}

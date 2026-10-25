@@ -1,0 +1,79 @@
+{
+  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "components": [
+    {
+      "id": "manager",
+      "name": "Wazuh manager",
+      "status": "Offline",
+      "version": "4.14.9",
+      "lastCheck": null
+    },
+    {
+      "id": "indexer",
+      "name": "Wazuh indexer",
+      "status": "Offline",
+      "version": "4.14.9",
+      "lastCheck": null
+    },
+    {
+      "id": "dashboard",
+      "name": "Wazuh dashboard",
+      "status": "Offline",
+      "version": "4.14.9",
+      "lastCheck": null
+    },
+    {
+      "id": "pipeline",
+      "name": "Event pipeline",
+      "status": "Offline",
+      "version": "4.14.9",
+      "lastCheck": null
+    }
+  ],
+  "pipeline": [
+    "Agent",
+    "Manager",
+    "Indexer"
+  ],
+  "agents": [
+    {
+      "name": "DC01",
+      "ip": "10.10.10.10",
+      "os": "Windows Server evaluation (VERIFY: 2022 or 2025)",
+      "status": "never connected",
+      "version": null,
+      "lastKeepAlive": null,
+      "lastTelemetry": null
+    },
+    {
+      "name": "WS01",
+      "ip": "10.10.10.20",
+      "os": "Windows 11",
+      "status": "never connected",
+      "version": null,
+      "lastKeepAlive": null,
+      "lastTelemetry": null
+    },
+    {
+      "name": "UBU01",
+      "ip": "10.10.10.30",
+      "os": "Ubuntu Server 24.04",
+      "status": "never connected",
+      "version": null,
+      "lastKeepAlive": null,
+      "lastTelemetry": null
+    },
+    {
+      "name": "SURI01",
+      "ip": "10.10.10.50",
+      "os": "Ubuntu Server 24.04",
+      "status": "never connected",
+      "version": null,
+      "lastKeepAlive": null,
+      "lastTelemetry": null
+    }
+  ],
+  "diskPercent": null,
+  "failedIngestion": null,
+  "activeRules": 20
+}

@@ -1,0 +1,1250 @@
+{
+  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "users": [
+    {
+      "name": "sf-test-alice",
+      "riskScore": 274,
+      "incidentIds": [
+        "INC-0001",
+        "INC-0002",
+        "INC-0005",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T15:40:00Z"
+    },
+    {
+      "name": "sf-test-bob",
+      "riskScore": 184,
+      "incidentIds": [
+        "INC-0002",
+        "INC-0007"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z"
+    },
+    {
+      "name": "sf-test-dave",
+      "riskScore": 78,
+      "incidentIds": [
+        "INC-0004",
+        "INC-0006"
+      ],
+      "lastActivity": "2026-10-25T13:16:00Z"
+    },
+    {
+      "name": "sf-test-carol",
+      "riskScore": 30,
+      "incidentIds": [
+        "INC-0003",
+        "INC-0008"
+      ],
+      "lastActivity": "2026-10-25T14:05:00Z"
+    },
+    {
+      "name": "sf-test-extra",
+      "riskScore": 10,
+      "incidentIds": [
+        "INC-0005"
+      ],
+      "lastActivity": "2026-10-25T12:40:00Z"
+    }
+  ],
+  "hosts": [
+    {
+      "name": "WS01",
+      "riskScore": 369,
+      "incidentIds": [
+        "INC-0001",
+        "INC-0002",
+        "INC-0003",
+        "INC-0005",
+        "INC-0007",
+        "INC-0008",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z"
+    },
+    {
+      "name": "DC01",
+      "riskScore": 139,
+      "incidentIds": [
+        "INC-0002",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T15:12:00Z"
+    },
+    {
+      "name": "UBU01",
+      "riskScore": 78,
+      "incidentIds": [
+        "INC-0004",
+        "INC-0006"
+      ],
+      "lastActivity": "2026-10-25T13:16:00Z"
+    },
+    {
+      "name": "WAZUH01",
+      "riskScore": 65,
+      "incidentIds": [
+        "INC-0007"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z"
+    }
+  ],
+  "userProfiles": [
+    {
+      "name": "sf-test-alice",
+      "riskScore": 274,
+      "incidentIds": [
+        "INC-0001",
+        "INC-0002",
+        "INC-0005",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T15:40:00Z",
+      "sourceIps": [
+        "10.10.10.20"
+      ],
+      "endpoints": [
+        "WS01",
+        "DC01"
+      ],
+      "detections": [
+        {
+          "id": "SF-002",
+          "name": "Password spray"
+        },
+        {
+          "id": "SF-003",
+          "name": "Successful logon after failures"
+        },
+        {
+          "id": "SF-005",
+          "name": "Encoded PowerShell process"
+        },
+        {
+          "id": "SF-007",
+          "name": "User added to local Administrators"
+        },
+        {
+          "id": "SF-011",
+          "name": "SMB / admin-share remote logon"
+        },
+        {
+          "id": "SF-009",
+          "name": "New local or domain user"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0001",
+          "name": "Password spray then PowerShell on WS01"
+        },
+        {
+          "id": "INC-0002",
+          "name": "Privileged group change on DC01"
+        },
+        {
+          "id": "INC-0005",
+          "name": "New local account on WS01"
+        },
+        {
+          "id": "INC-0009",
+          "name": "SMB admin-share logon from WS01"
+        }
+      ],
+      "mitre": [
+        {
+          "id": "T1110.003",
+          "name": "Password Spraying",
+          "tactic": "Credential Access"
+        },
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "tactic": "Initial Access"
+        },
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "tactic": "Execution"
+        },
+        {
+          "id": "T1098",
+          "name": "Account Manipulation",
+          "tactic": "Persistence"
+        },
+        {
+          "id": "T1021.002",
+          "name": "SMB / Windows Admin Shares",
+          "tactic": "Lateral Movement"
+        },
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        },
+        {
+          "id": "T1021.001",
+          "name": "Remote Desktop Protocol",
+          "tactic": "Lateral Movement"
+        },
+        {
+          "id": "T1136.001",
+          "name": "Local Account",
+          "tactic": "Persistence"
+        }
+      ],
+      "logins": [
+        {
+          "time": "2026-10-25T15:40:00Z",
+          "host": "WS01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "success"
+        },
+        {
+          "time": "2026-10-25T15:25:00Z",
+          "host": "WS01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "success"
+        },
+        {
+          "time": "2026-10-25T15:20:00Z",
+          "host": "WS01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "fail"
+        },
+        {
+          "time": "2026-10-25T09:48:00Z",
+          "host": "WS01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "success"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 274
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0001",
+          "title": "Password spray then PowerShell on WS01",
+          "subtotal": 125,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 125
+        },
+        {
+          "incidentId": "INC-0002",
+          "title": "Privileged group change on DC01",
+          "subtotal": 70,
+          "multiplier": 1.7,
+          "assetType": "domain_controller",
+          "final": 119
+        },
+        {
+          "incidentId": "INC-0005",
+          "title": "New local account on WS01",
+          "subtotal": 10,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 10
+        },
+        {
+          "incidentId": "INC-0009",
+          "title": "SMB admin-share logon from WS01",
+          "subtotal": 20,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 20
+        }
+      ]
+    },
+    {
+      "name": "sf-test-bob",
+      "riskScore": 184,
+      "incidentIds": [
+        "INC-0002",
+        "INC-0007"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z",
+      "sourceIps": [
+        "10.10.10.20"
+      ],
+      "endpoints": [
+        "DC01",
+        "WAZUH01",
+        "WS01"
+      ],
+      "detections": [
+        {
+          "id": "SF-001",
+          "name": "Repeated failed logons"
+        },
+        {
+          "id": "SF-008",
+          "name": "User added to a privileged domain group"
+        },
+        {
+          "id": "SF-010",
+          "name": "Inbound RDP logon"
+        },
+        {
+          "id": "SF-005",
+          "name": "Encoded PowerShell process"
+        },
+        {
+          "id": "SF-012",
+          "name": "WinRM / PowerShell remoting"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0002",
+          "name": "Privileged group change on DC01"
+        },
+        {
+          "id": "INC-0007",
+          "name": "WinRM session from WS01 to WAZUH01"
+        }
+      ],
+      "mitre": [
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        },
+        {
+          "id": "T1098",
+          "name": "Account Manipulation",
+          "tactic": "Persistence"
+        },
+        {
+          "id": "T1021.001",
+          "name": "Remote Desktop Protocol",
+          "tactic": "Lateral Movement"
+        },
+        {
+          "id": "T1059.001",
+          "name": "PowerShell",
+          "tactic": "Execution"
+        },
+        {
+          "id": "T1021.006",
+          "name": "Windows Remote Management",
+          "tactic": "Lateral Movement"
+        }
+      ],
+      "logins": [
+        {
+          "time": "2026-10-25T16:09:00Z",
+          "host": "WAZUH01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "success"
+        },
+        {
+          "time": "2026-10-25T15:12:00Z",
+          "host": "DC01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "10",
+          "result": "success"
+        },
+        {
+          "time": "2026-10-25T15:02:00Z",
+          "host": "DC01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "3",
+          "result": "fail"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 184
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0002",
+          "title": "Privileged group change on DC01",
+          "subtotal": 70,
+          "multiplier": 1.7,
+          "assetType": "domain_controller",
+          "final": 119
+        },
+        {
+          "incidentId": "INC-0007",
+          "title": "WinRM session from WS01 to WAZUH01",
+          "subtotal": 50,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 65
+        }
+      ]
+    },
+    {
+      "name": "sf-test-dave",
+      "riskScore": 78,
+      "incidentIds": [
+        "INC-0004",
+        "INC-0006"
+      ],
+      "lastActivity": "2026-10-25T13:16:00Z",
+      "sourceIps": [
+        "10.10.10.20",
+        "10.10.10.30"
+      ],
+      "endpoints": [
+        "UBU01"
+      ],
+      "detections": [
+        {
+          "id": "SF-013",
+          "name": "Linux SSH failure burst"
+        },
+        {
+          "id": "SF-014",
+          "name": "Linux SSH success after failures"
+        },
+        {
+          "id": "SF-015",
+          "name": "Suspicious Linux command execution"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0004",
+          "name": "SSH success after failures on UBU01"
+        },
+        {
+          "id": "INC-0006",
+          "name": "Suspicious command on UBU01"
+        }
+      ],
+      "mitre": [
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        },
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "tactic": "Initial Access"
+        },
+        {
+          "id": "T1059.004",
+          "name": "Unix Shell",
+          "tactic": "Execution"
+        }
+      ],
+      "logins": [
+        {
+          "time": "2026-10-25T13:16:00Z",
+          "host": "UBU01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "ssh",
+          "result": "success"
+        },
+        {
+          "time": "2026-10-25T13:10:00Z",
+          "host": "UBU01",
+          "sourceIp": "10.10.10.20",
+          "logonType": "ssh",
+          "result": "fail"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 78
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0004",
+          "title": "SSH success after failures on UBU01",
+          "subtotal": 40,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 52
+        },
+        {
+          "incidentId": "INC-0006",
+          "title": "Suspicious command on UBU01",
+          "subtotal": 20,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 26
+        }
+      ]
+    },
+    {
+      "name": "sf-test-carol",
+      "riskScore": 30,
+      "incidentIds": [
+        "INC-0003",
+        "INC-0008"
+      ],
+      "lastActivity": "2026-10-25T14:05:00Z",
+      "sourceIps": [
+        "10.10.10.30"
+      ],
+      "endpoints": [
+        "WS01"
+      ],
+      "detections": [
+        {
+          "id": "SF-001",
+          "name": "Repeated failed logons"
+        },
+        {
+          "id": "SF-017",
+          "name": "Scheduled task created"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0003",
+          "name": "Repeated failed logons against sf-test-carol"
+        },
+        {
+          "id": "INC-0008",
+          "name": "Scheduled task created on WS01"
+        }
+      ],
+      "mitre": [
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        },
+        {
+          "id": "T1053.005",
+          "name": "Scheduled Task",
+          "tactic": "Persistence"
+        }
+      ],
+      "logins": [
+        {
+          "time": "2026-10-25T14:05:00Z",
+          "host": "WS01",
+          "sourceIp": "10.10.10.30",
+          "logonType": "3",
+          "result": "fail"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 30
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0003",
+          "title": "Repeated failed logons against sf-test-carol",
+          "subtotal": 15,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 15
+        },
+        {
+          "incidentId": "INC-0008",
+          "title": "Scheduled task created on WS01",
+          "subtotal": 15,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 15
+        }
+      ]
+    },
+    {
+      "name": "sf-test-extra",
+      "riskScore": 10,
+      "incidentIds": [
+        "INC-0005"
+      ],
+      "lastActivity": "2026-10-25T12:40:00Z",
+      "sourceIps": [
+        "10.10.10.20"
+      ],
+      "endpoints": [
+        "WS01"
+      ],
+      "detections": [],
+      "incidents": [
+        {
+          "id": "INC-0005",
+          "name": "New local account on WS01"
+        }
+      ],
+      "mitre": [
+        {
+          "id": "T1136.001",
+          "name": "Local Account",
+          "tactic": "Persistence"
+        }
+      ],
+      "logins": [],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 10
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0005",
+          "title": "New local account on WS01",
+          "subtotal": 10,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 10
+        }
+      ]
+    }
+  ],
+  "hostProfiles": [
+    {
+      "name": "WS01",
+      "riskScore": 369,
+      "incidentIds": [
+        "INC-0001",
+        "INC-0002",
+        "INC-0003",
+        "INC-0005",
+        "INC-0007",
+        "INC-0008",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z",
+      "ip": "10.10.10.20",
+      "os": "Windows 11",
+      "assetType": "workstation",
+      "multiplier": 1,
+      "agentStatus": "never connected",
+      "users": [
+        "sf-test-alice",
+        "sf-test-bob",
+        "sf-test-carol"
+      ],
+      "processes": [
+        {
+          "name": "powershell.exe",
+          "count": 4
+        }
+      ],
+      "detections": [
+        {
+          "id": "SF-002",
+          "name": "Password spray"
+        },
+        {
+          "id": "SF-003",
+          "name": "Successful logon after failures"
+        },
+        {
+          "id": "SF-005",
+          "name": "Encoded PowerShell process"
+        },
+        {
+          "id": "SF-007",
+          "name": "User added to local Administrators"
+        },
+        {
+          "id": "SF-011",
+          "name": "SMB / admin-share remote logon"
+        },
+        {
+          "id": "SF-001",
+          "name": "Repeated failed logons"
+        },
+        {
+          "id": "SF-009",
+          "name": "New local or domain user"
+        },
+        {
+          "id": "SF-017",
+          "name": "Scheduled task created"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0001",
+          "name": "Password spray then PowerShell on WS01"
+        },
+        {
+          "id": "INC-0002",
+          "name": "Privileged group change on DC01"
+        },
+        {
+          "id": "INC-0003",
+          "name": "Repeated failed logons against sf-test-carol"
+        },
+        {
+          "id": "INC-0005",
+          "name": "New local account on WS01"
+        },
+        {
+          "id": "INC-0007",
+          "name": "WinRM session from WS01 to WAZUH01"
+        },
+        {
+          "id": "INC-0008",
+          "name": "Scheduled task created on WS01"
+        },
+        {
+          "id": "INC-0009",
+          "name": "SMB admin-share logon from WS01"
+        }
+      ],
+      "connections": [
+        {
+          "time": "2026-10-25T15:40:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.20",
+          "detail": "Remote connection RDP/SMB (\\\\DC01\\ADMIN$)"
+        },
+        {
+          "time": "2026-10-25T15:25:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.20",
+          "detail": "Successful login after failures"
+        },
+        {
+          "time": "2026-10-25T15:20:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.20",
+          "detail": "Failed-auth burst"
+        },
+        {
+          "time": "2026-10-25T14:05:00Z",
+          "src": "10.10.10.30",
+          "dst": "10.10.10.20",
+          "detail": "Failed-auth burst"
+        },
+        {
+          "time": "2026-10-25T09:48:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.20",
+          "detail": "Remote connection RDP/SMB (\\\\DC01\\C$)"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 369
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0001",
+          "title": "Password spray then PowerShell on WS01",
+          "subtotal": 125,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 125
+        },
+        {
+          "incidentId": "INC-0002",
+          "title": "Privileged group change on DC01",
+          "subtotal": 70,
+          "multiplier": 1.7,
+          "assetType": "domain_controller",
+          "final": 119
+        },
+        {
+          "incidentId": "INC-0003",
+          "title": "Repeated failed logons against sf-test-carol",
+          "subtotal": 15,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 15
+        },
+        {
+          "incidentId": "INC-0005",
+          "title": "New local account on WS01",
+          "subtotal": 10,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 10
+        },
+        {
+          "incidentId": "INC-0007",
+          "title": "WinRM session from WS01 to WAZUH01",
+          "subtotal": 50,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 65
+        },
+        {
+          "incidentId": "INC-0008",
+          "title": "Scheduled task created on WS01",
+          "subtotal": 15,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 15
+        },
+        {
+          "incidentId": "INC-0009",
+          "title": "SMB admin-share logon from WS01",
+          "subtotal": 20,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 20
+        }
+      ]
+    },
+    {
+      "name": "DC01",
+      "riskScore": 139,
+      "incidentIds": [
+        "INC-0002",
+        "INC-0009"
+      ],
+      "lastActivity": "2026-10-25T15:12:00Z",
+      "ip": "10.10.10.10",
+      "os": "Windows Server evaluation (VERIFY: 2022 or 2025)",
+      "assetType": "domain_controller",
+      "multiplier": 1.7,
+      "agentStatus": "never connected",
+      "users": [
+        "sf-test-bob",
+        "sf-test-alice"
+      ],
+      "processes": [],
+      "detections": [
+        {
+          "id": "SF-001",
+          "name": "Repeated failed logons"
+        },
+        {
+          "id": "SF-008",
+          "name": "User added to a privileged domain group"
+        },
+        {
+          "id": "SF-010",
+          "name": "Inbound RDP logon"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0002",
+          "name": "Privileged group change on DC01"
+        },
+        {
+          "id": "INC-0009",
+          "name": "SMB admin-share logon from WS01"
+        }
+      ],
+      "connections": [
+        {
+          "time": "2026-10-25T15:12:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.10",
+          "detail": "Inbound RDP logon"
+        },
+        {
+          "time": "2026-10-25T15:02:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.10",
+          "detail": "Failed-auth burst"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 139
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0002",
+          "title": "Privileged group change on DC01",
+          "subtotal": 70,
+          "multiplier": 1.7,
+          "assetType": "domain_controller",
+          "final": 119
+        },
+        {
+          "incidentId": "INC-0009",
+          "title": "SMB admin-share logon from WS01",
+          "subtotal": 20,
+          "multiplier": 1,
+          "assetType": "workstation",
+          "final": 20
+        }
+      ]
+    },
+    {
+      "name": "UBU01",
+      "riskScore": 78,
+      "incidentIds": [
+        "INC-0004",
+        "INC-0006"
+      ],
+      "lastActivity": "2026-10-25T13:16:00Z",
+      "ip": "10.10.10.30",
+      "os": "Ubuntu Server 24.04",
+      "assetType": "server",
+      "multiplier": 1.3,
+      "agentStatus": "never connected",
+      "users": [
+        "sf-test-dave"
+      ],
+      "processes": [
+        {
+          "name": "curl",
+          "count": 2
+        },
+        {
+          "name": "sshd",
+          "count": 1
+        }
+      ],
+      "detections": [
+        {
+          "id": "SF-013",
+          "name": "Linux SSH failure burst"
+        },
+        {
+          "id": "SF-014",
+          "name": "Linux SSH success after failures"
+        },
+        {
+          "id": "SF-015",
+          "name": "Suspicious Linux command execution"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0004",
+          "name": "SSH success after failures on UBU01"
+        },
+        {
+          "id": "INC-0006",
+          "name": "Suspicious command on UBU01"
+        }
+      ],
+      "connections": [
+        {
+          "time": "2026-10-25T13:16:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.30",
+          "detail": "Successful login after failures"
+        },
+        {
+          "time": "2026-10-25T13:10:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.30",
+          "detail": "Failed-auth burst"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 78
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0004",
+          "title": "SSH success after failures on UBU01",
+          "subtotal": 40,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 52
+        },
+        {
+          "incidentId": "INC-0006",
+          "title": "Suspicious command on UBU01",
+          "subtotal": 20,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 26
+        }
+      ]
+    },
+    {
+      "name": "WAZUH01",
+      "riskScore": 65,
+      "incidentIds": [
+        "INC-0007"
+      ],
+      "lastActivity": "2026-10-25T16:09:00Z",
+      "ip": "10.10.10.40",
+      "os": "Ubuntu Server 24.04",
+      "assetType": "server",
+      "multiplier": 1.3,
+      "agentStatus": "never connected",
+      "users": [
+        "sf-test-bob"
+      ],
+      "processes": [
+        {
+          "name": "powershell.exe",
+          "count": 1
+        }
+      ],
+      "detections": [
+        {
+          "id": "SF-012",
+          "name": "WinRM / PowerShell remoting"
+        }
+      ],
+      "incidents": [
+        {
+          "id": "INC-0007",
+          "name": "WinRM session from WS01 to WAZUH01"
+        }
+      ],
+      "connections": [
+        {
+          "time": "2026-10-25T16:09:00Z",
+          "src": "10.10.10.20",
+          "dst": "10.10.10.40",
+          "detail": "WinRM remote connection"
+        }
+      ],
+      "history": [
+        {
+          "label": "10-19",
+          "score": 0
+        },
+        {
+          "label": "10-20",
+          "score": 0
+        },
+        {
+          "label": "10-21",
+          "score": 0
+        },
+        {
+          "label": "10-22",
+          "score": 0
+        },
+        {
+          "label": "10-23",
+          "score": 0
+        },
+        {
+          "label": "10-24",
+          "score": 0
+        },
+        {
+          "label": "10-25",
+          "score": 65
+        }
+      ],
+      "lines": [
+        {
+          "incidentId": "INC-0007",
+          "title": "WinRM session from WS01 to WAZUH01",
+          "subtotal": 50,
+          "multiplier": 1.3,
+          "assetType": "server",
+          "final": 65
+        }
+      ]
+    }
+  ]
+}
