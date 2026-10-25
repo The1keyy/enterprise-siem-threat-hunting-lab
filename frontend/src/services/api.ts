@@ -1,8 +1,9 @@
+import { overviewFixture } from '../fixtures/overview.ts'
 import { getApiUrl, getDataMode } from './config.ts'
 
 /**
  * Typed data client. Components import this module and do not call fetch.
- * Demo fixtures are registered in src/fixtures. None are registered in Step 3.
+ * Demo mode reads src/fixtures. Live mode calls the backend.
  */
 
 export class ApiError extends Error {
@@ -15,13 +16,11 @@ export class ApiError extends Error {
   }
 }
 
-const demoFixtures = new Map<string, unknown>()
+const demoFixtures = new Map<string, unknown>([['/overview', overviewFixture]])
 
 function loadDemoFixture<T>(path: string): T {
   if (!demoFixtures.has(path)) {
-    throw new ApiError(
-      `No demo fixture for ${path}. Dashboard fixtures arrive in Step 4.`,
-    )
+    throw new ApiError(`No demo fixture for ${path}.`)
   }
   return demoFixtures.get(path) as T
 }

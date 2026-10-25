@@ -53,6 +53,7 @@ support; the lab stays on a host-only network.
 | clsx | **2.1.1** | |
 | ESLint | **10.13.0** | Flat config in `frontend/eslint.config.js`, plus Prettier **3.9.10**. |
 | @fontsource/inter | **5.3.0** | Inter is bundled. No font CDN. |
+| Vitest | **5.0.5** | Added in Step 4. jsdom **30.1.3**, Testing Library React **16.3.3**, jest-dom **7.0.1**. |
 | Python | **3.12** | |
 | FastAPI / SQLAlchemy 2 / pydantic-settings | Current stable at Step 7 | Locked in `backend/requirements.txt` with exact pins. |
 | Database | SQLite (dev) | Postgres only if an ADR justifies it. |

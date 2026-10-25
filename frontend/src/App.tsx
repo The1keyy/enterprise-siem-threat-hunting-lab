@@ -9,7 +9,8 @@ import { HealthPage } from './pages/HealthPage.tsx'
 import { HuntingPage } from './pages/HuntingPage.tsx'
 import { IncidentsPage } from './pages/IncidentsPage.tsx'
 import { MitrePage } from './pages/MitrePage.tsx'
-import { OverviewPage } from './pages/OverviewPage.tsx'
+import { IncidentDetailPage } from './pages/IncidentDetailPage.tsx'
+import { SocOverview } from './pages/SocOverview.tsx'
 import { SettingsPage } from './pages/SettingsPage.tsx'
 import { SourcesPage } from './pages/SourcesPage.tsx'
 
@@ -22,8 +23,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppShell />}>
-          <Route index element={<OverviewPage />} />
+          <Route index element={<SocOverview />} />
           <Route path="incidents" element={<IncidentsPage />} />
+          <Route path="incidents/:id" element={<IncidentDetailPage />} />
           <Route path="hunting" element={<HuntingPage />} />
           <Route path="entities" element={<EntitiesPage />} />
           <Route path="detections" element={<DetectionsPage />} />

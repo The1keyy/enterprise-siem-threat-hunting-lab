@@ -5,10 +5,17 @@ type KpiCardProps = {
   label: string
   value: string | number | null
   delta?: string | null
+  hint?: string
   icon?: LucideIcon
 }
 
-export function KpiCard({ label, value, delta, icon: Icon }: KpiCardProps) {
+export function KpiCard({
+  label,
+  value,
+  delta,
+  hint,
+  icon: Icon,
+}: KpiCardProps) {
   return (
     <Card>
       <div className="flex items-start justify-between gap-3">
@@ -21,6 +28,7 @@ export function KpiCard({ label, value, delta, icon: Icon }: KpiCardProps) {
         {value === null ? '—' : value}
       </p>
       {delta ? <p className="mt-1 text-xs text-text-muted">{delta}</p> : null}
+      {hint ? <p className="mt-1 text-xs text-text-muted">{hint}</p> : null}
     </Card>
   )
 }

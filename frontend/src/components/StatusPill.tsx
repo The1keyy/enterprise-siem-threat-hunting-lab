@@ -1,5 +1,9 @@
 import { clsx } from 'clsx'
-import type { IncidentStatus, ValidationStatus } from '../types/domain.ts'
+import type {
+  HealthStatus,
+  IncidentStatus,
+  ValidationStatus,
+} from '../types/domain.ts'
 
 const INCIDENT_STYLE: Record<IncidentStatus, string> = {
   New: 'border-border bg-surface-2 text-text-muted',
@@ -17,15 +21,25 @@ const VALIDATION_STYLE: Record<ValidationStatus, string> = {
   'NEEDS TUNING': 'border-medium/40 bg-medium/15 text-medium',
 }
 
+const HEALTH_STYLE: Record<HealthStatus, string> = {
+  Healthy: 'border-ok/40 bg-ok/15 text-ok',
+  Degraded: 'border-medium/40 bg-medium/15 text-medium',
+  Offline: 'border-critical/40 bg-critical/15 text-critical',
+}
+
 type StatusPillProps =
   | { kind: 'incident'; status: IncidentStatus }
   | { kind: 'validation'; status: ValidationStatus }
+  | { kind: 'health'; status: HealthStatus }
+
+function pillStyle(props: StatusPillProps): string {
+  if (props.kind === 'incident') return INCIDENT_STYLE[props.status]
+  if (props.kind === 'validation') return VALIDATION_STYLE[props.status]
+  return HEALTH_STYLE[props.status]
+}
 
 export function StatusPill(props: StatusPillProps) {
-  const className =
-    props.kind === 'incident'
-      ? INCIDENT_STYLE[props.status]
-      : VALIDATION_STYLE[props.status]
+  const className = pillStyle(props)
 
   return (
     <span

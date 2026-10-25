@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 3: Frontend setup and design system. Done.**
-**Next:** Step 4: SOC Overview (demo). Not started.
+**Step 4: SOC Overview (demo). Done.**
+**Next:** Step 5: Incidents and investigation (demo). Not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -18,7 +18,7 @@
 | 1 | Repo scaffold | Done |
 | 2 | Architecture & ADRs | Done |
 | 3 | Frontend setup + design system | Done |
-| 4 | SOC Overview (demo) | Not started |
+| 4 | SOC Overview (demo) | Done |
 | 5 | Incidents + Investigation (demo) | Not started |
 | 6 | Remaining pages (demo) | Not started |
 | 7 | Backend setup | Not started |
@@ -57,7 +57,9 @@ Real counts only. Update these as work actually happens.
 - `docs/adr/0001-wazuh-as-siem.md`, `0002-fastapi-backend.md`, `0003-console-on-top-of-wazuh.md`
 - `scripts/validation/check_scaffold.sh` (verifies the structure)
 - `.cursor/rules/` (Cursor project rules)
-- `frontend/` analyst console shell (Step 3): design tokens, AppShell, base components, demo/live client. No dashboard data yet.
+- `frontend/` analyst console shell (Step 3) and SOC Overview (Step 4).
+- Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
+- Live `GET /overview` is not built. It arrives with the backend in Step 7. Live mode shows an error until then.
 - No backend and no lab scripts yet
 
 ## Frontend versions (Step 3)

@@ -19,4 +19,7 @@ export const VALIDATION_STATUSES = [
 ] as const
 export type ValidationStatus = (typeof VALIDATION_STATUSES)[number]
 
+export const HEALTH_STATUSES = ['Healthy', 'Degraded', 'Offline'] as const
+export type HealthStatus = (typeof HEALTH_STATUSES)[number]
+
 export type DataMode = 'demo' | 'live'

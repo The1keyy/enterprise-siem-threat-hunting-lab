@@ -1,5 +1,7 @@
 # charts/
 
-Recharts wrappers, themed with the tokens in `src/styles/tokens.css`.
+Recharts wrappers themed with the tokens in `src/styles/tokens.css`.
 
-No charts in Step 3. SOC Overview charts arrive in Step 4.
+- `TimeSeriesChart` — stacked area or a single line
+- `BarList` — horizontal ranked bars
+- `SeverityDonut` — severity totals with a text legend
