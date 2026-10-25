@@ -15,7 +15,11 @@ export const DETECTION_NAMES: Record<string, string> = {
   'SF-013': 'Linux SSH failure burst',
   'SF-014': 'Linux SSH success after failures',
   'SF-015': 'Suspicious Linux command execution',
+  'SF-016': 'LSASS memory access',
   'SF-017': 'Scheduled task created',
+  'SF-018': 'Security log cleared',
+  'SF-019': 'New service installed',
+  'SF-020': 'Suricata alert on lab traffic',
 }
 
 export function detectionName(ruleId: string): string {

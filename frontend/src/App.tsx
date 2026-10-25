@@ -7,7 +7,7 @@ import { DetectionsPage } from './pages/DetectionsPage.tsx'
 import { EntitiesPage } from './pages/EntitiesPage.tsx'
 import { HealthPage } from './pages/HealthPage.tsx'
 import { HuntingPage } from './pages/HuntingPage.tsx'
-import { DetectionPlaceholder } from './pages/DetectionPlaceholder.tsx'
+import { DetectionDetail } from './pages/DetectionDetail.tsx'
 import { IncidentDetail } from './pages/IncidentDetail.tsx'
 import { Incidents } from './pages/Incidents.tsx'
 import { MitrePage } from './pages/MitrePage.tsx'
@@ -30,7 +30,7 @@ export default function App() {
           <Route path="hunting" element={<HuntingPage />} />
           <Route path="entities" element={<EntitiesPage />} />
           <Route path="detections" element={<DetectionsPage />} />
-          <Route path="detections/:id" element={<DetectionPlaceholder />} />
+          <Route path="detections/:id" element={<DetectionDetail />} />
           <Route path="mitre" element={<MitrePage />} />
           <Route path="automation" element={<AutomationPage />} />
           <Route path="sources" element={<SourcesPage />} />

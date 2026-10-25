@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 5: Incidents and investigation (demo). Done.**
-**Next:** Step 6: Remaining pages (demo). Not started.
+**Step 6A: Threat hunting, detections, and MITRE ATT&CK (demo). Done.**
+**Next:** Step 6B: Entities, data sources, health, automation, settings. Not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -20,7 +20,8 @@
 | 3 | Frontend setup + design system | Done |
 | 4 | SOC Overview (demo) | Done |
 | 5 | Incidents + Investigation (demo) | Done |
-| 6 | Remaining pages (demo) | Not started |
+| 6A | Hunting, detections, MITRE (demo) | Done |
+| 6B | Entities, sources, health, automation, settings (demo) | Not started |
 | 7 | Backend setup | Not started |
 | 8 | Wazuh integration code | Not started |
 | 9 | Local wazuh-logtest in Docker | Not started |
@@ -57,7 +58,10 @@ Real counts only. Update these as work actually happens.
 - `docs/adr/0001-wazuh-as-siem.md`, `0002-fastapi-backend.md`, `0003-console-on-top-of-wazuh.md`
 - `scripts/validation/check_scaffold.sh` (verifies the structure)
 - `.cursor/rules/` (Cursor project rules)
-- `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), and incidents (Step 5).
+- `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), incidents (Step 5), and hunting, detections, and MITRE pages (Step 6A).
+- Detection rows are metadata fixtures for SF-001–SF-020. Every validation status is `NOT TESTED`. `lastTriggered` and `alertCount` are null. Wazuh XML and Sigma text are the placeholder "Not written yet (Step 10)". No rule has been written or tested.
+- Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events. It does not query `wazuh-archives-*`. Promoting a result writes an in-memory incident until reload.
+- The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
 - Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
 - Live `GET /overview` and the incident API are not built. They arrive with the backend in Step 7. Live mode shows an error until then.
@@ -97,7 +101,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 5 is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab.
+Step 6A is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab. Detections that will need Windows validation are tagged in the library. That tag is a plan, not a test result.
 
 Still documented, not built:
 

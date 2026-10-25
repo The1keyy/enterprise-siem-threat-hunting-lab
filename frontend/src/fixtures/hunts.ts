@@ -1,0 +1,155 @@
+// DEMO DATA — synthetic fixtures for UI development. Not real telemetry.
+import { technique } from '../lib/techniques.ts'
+import type { Hunt } from '../types/hunt.ts'
+
+/**
+ * Queries are OpenSearch query-string drafts.
+ * VERIFY: index wazuh-archives-* and the field names on Wazuh 4.14.9.
+ * Demo mode does not send these to an indexer. It matches fixture timeline events.
+ */
+function hunt(
+  draft: Omit<Hunt, 'status' | 'demo' | 'mitre'> & { mitre: string[] },
+): Hunt {
+  return {
+    ...draft,
+    mitre: draft.mitre.map((id) => technique(id)),
+    status: 'NOT TESTED',
+    demo: true,
+  }
+}
+
+export const huntFixtures: readonly Hunt[] = [
+  hunt({
+    id: 'HUNT-001',
+    name: 'Suspicious PowerShell',
+    hypothesis: 'A lab account ran encoded or script-block PowerShell.',
+    dataSource: 'powershell, sysmon',
+    query: 'SF-004 OR SF-005 OR SF-006 OR EncodedCommand',
+    expectedBehavior:
+      'No encoded PowerShell on WS01 during a quiet lab window.',
+    suspiciousBehavior:
+      'powershell.exe with -EncodedCommand, or a 4104 script block.',
+    mitre: ['T1059.001', 'T1105'],
+    investigationGuidance:
+      'Read the command line and parent process. Do not treat this fixture hit as a lab finding.',
+  }),
+  hunt({
+    id: 'HUNT-002',
+    name: 'Failed Authentication Burst',
+    hypothesis: 'One source produced a burst of failed logons.',
+    dataSource: 'windows_security, linux_auth',
+    query: 'eventID:4625 OR SF-001 OR SF-002 OR SF-013',
+    expectedBehavior: 'A handful of typos, not a burst across accounts.',
+    suspiciousBehavior: 'Many 4625 or sshd failures from one lab IP.',
+    mitre: ['T1110.001', 'T1110.003'],
+    investigationGuidance:
+      'Group by source IP and target account. Confirm the accounts are sf-test-*.',
+  }),
+  hunt({
+    id: 'HUNT-003',
+    name: 'Successful Login After Failures',
+    hypothesis: 'A success follows a failure burst for the same account.',
+    dataSource: 'windows_security, linux_auth',
+    query: 'SF-003 OR SF-014',
+    expectedBehavior: 'Successes without a preceding failure burst.',
+    suspiciousBehavior: '4624 or an accepted ssh password soon after failures.',
+    mitre: ['T1078'],
+    investigationGuidance:
+      'Compare the success source IP with the failure source IP.',
+  }),
+  hunt({
+    id: 'HUNT-004',
+    name: 'Rare Administrator Login',
+    hypothesis: 'A privileged account logged on from an unusual lab host.',
+    dataSource: 'windows_security',
+    query: 'SF-010 OR Domain Admins',
+    expectedBehavior: 'Admin logons only from the known admin workstation.',
+    suspiciousBehavior:
+      'RDP type 10 or a Domain Admins member logon from WS01.',
+    mitre: ['T1021.001', 'T1078'],
+    investigationGuidance: 'Check logon type and the source workstation name.',
+  }),
+  hunt({
+    id: 'HUNT-005',
+    name: 'New Privileged Account',
+    hypothesis: 'A user was created or added to a privileged group.',
+    dataSource: 'windows_security',
+    query: 'SF-007 OR SF-008 OR SF-009 OR Domain Admins',
+    expectedBehavior: 'No group membership changes during a hunt window.',
+    suspiciousBehavior: '4732, 4728, or 4720 for an sf-test account.',
+    mitre: ['T1098', 'T1136.001'],
+    investigationGuidance:
+      'Name the group and the member. Snapshot DC01 before any lab change.',
+  }),
+  hunt({
+    id: 'HUNT-006',
+    name: 'Scheduled Task Persistence',
+    hypothesis: 'A new scheduled task was created on a lab host.',
+    dataSource: 'windows_security',
+    query: 'SF-017 OR DemoTask',
+    expectedBehavior: 'No new tasks outside the known lab image.',
+    suspiciousBehavior:
+      'Security 4698 for a task that is not part of the image.',
+    mitre: ['T1053.005'],
+    investigationGuidance:
+      'Record the task name. Do not delete it until the lab test plan says so.',
+  }),
+  hunt({
+    id: 'HUNT-007',
+    name: 'RDP Activity',
+    hypothesis: 'Someone opened an RDP session inside the lab subnet.',
+    dataSource: 'windows_security',
+    query: 'SF-010',
+    expectedBehavior: 'No type 10 logons unless a test plan calls for RDP.',
+    suspiciousBehavior: '4624 logon type 10 onto DC01 or WS01.',
+    mitre: ['T1021.001'],
+    investigationGuidance: 'Note source IP, workstation, and account.',
+  }),
+  hunt({
+    id: 'HUNT-008',
+    name: 'SMB/Lateral Movement Indicators',
+    hypothesis: 'An admin share session moved between lab hosts.',
+    dataSource: 'windows_security',
+    query: 'SF-011 OR ADMIN$',
+    expectedBehavior: 'No ADMIN$ or C$ sessions from WS01.',
+    suspiciousBehavior: '4624 type 3 plus an admin share name.',
+    mitre: ['T1021.002'],
+    investigationGuidance:
+      'VERIFY whether the share is on 4624 or on 5140/5145.',
+  }),
+  hunt({
+    id: 'HUNT-009',
+    name: 'Linux SSH Brute Force',
+    hypothesis:
+      'sshd on UBU01 saw a failure burst or a success after failures.',
+    dataSource: 'linux_auth',
+    query: 'SF-013 OR SF-014 OR Failed password',
+    expectedBehavior: 'No sshd failures from the Windows lab hosts.',
+    suspiciousBehavior:
+      'Repeated failed password lines, then an accepted password.',
+    mitre: ['T1110.001', 'T1078'],
+    investigationGuidance:
+      'VERIFY the Ubuntu 24.04 log path before treating a live line as this hunt.',
+  }),
+  hunt({
+    id: 'HUNT-010',
+    name: 'Unusual Process Execution',
+    hypothesis:
+      'A lab host ran a process that is not part of the quiet baseline.',
+    dataSource: 'auditd, sysmon',
+    query: 'SF-015 OR EXECVE OR EncodedCommand',
+    expectedBehavior: 'Only image and package processes.',
+    suspiciousBehavior:
+      'auditd EXECVE for curl, or an encoded PowerShell process.',
+    mitre: ['T1059.004', 'T1059.001'],
+    investigationGuidance:
+      'Compare the binary path with the lab image. This hit is fixture data.',
+  }),
+]
+
+if (huntFixtures.length !== 10) {
+  throw new Error('Expected 10 saved hunts')
+}
+if (huntFixtures.some((item) => item.status !== 'NOT TESTED')) {
+  throw new Error('Every hunt must be NOT TESTED')
+}

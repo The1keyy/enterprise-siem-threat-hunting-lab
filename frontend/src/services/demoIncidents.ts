@@ -1,14 +1,21 @@
+import { detectionFixtures } from '../fixtures/detections.ts'
 import { incidentFixtures } from '../fixtures/incidents.ts'
 import { matchesFilters, type IncidentFilters } from '../lib/incidentFilters.ts'
+import { finalRiskScore, severityBandFor } from '../lib/risk.ts'
 import type {
   AnalystPatch,
   Incident,
   IncidentDetail,
   IncidentPatch,
+  MitreTechnique,
   Note,
   ResponseActionName,
   ResponseAuditEntry,
+  RiskAssetType,
+  RiskMultiplier,
+  TimelineEvent,
 } from '../types/incident.ts'
+import type { Severity } from '../types/domain.ts'
 import { DRY_RUN_MESSAGE } from '../types/incident.ts'
 import { ApiError } from './apiError.ts'
 import { DEMO_SAVE_TOAST, pushToast } from './toasts.ts'
@@ -156,4 +163,97 @@ export function logDemoDryRun(
     message: DRY_RUN_MESSAGE,
   }
   return save(index, { ...current, audit: [...current.audit, entry] })
+}
+
+function assetFor(hosts: readonly string[]): {
+  assetType: RiskAssetType
+  multiplier: RiskMultiplier
+} {
+  if (hosts.includes('DC01')) {
+    return { assetType: 'domain_controller', multiplier: 1.7 }
+  }
+  if (hosts.some((host) => host === 'UBU01' || host === 'WAZUH01')) {
+    return { assetType: 'server', multiplier: 1.3 }
+  }
+  return { assetType: 'workstation', multiplier: 1 }
+}
+
+/** 10 points per promoted event until Step 14 defines promotion weights. */
+const PROMOTE_POINTS = 10
+
+export function createDemoIncident(input: {
+  title: string
+  severity: Severity
+  owner: string
+  events: TimelineEvent[]
+}): IncidentDetail {
+  if (input.events.length === 0) {
+    throw new ApiError('Select at least one hunt result.')
+  }
+  const events = [...input.events].sort((left, right) =>
+    left.time.localeCompare(right.time),
+  )
+  const numbers = seed().map((item) => Number(item.id.replace('INC-', '')))
+  const id = `INC-${String(Math.max(0, ...numbers) + 1).padStart(4, '0')}`
+  const hosts = [...new Set(events.map((event) => event.host))]
+  const users = [...new Set(events.map((event) => event.user))]
+  const { assetType, multiplier } = assetFor(hosts)
+  const subtotal = events.length * PROMOTE_POINTS
+  const final = finalRiskScore(subtotal, multiplier)
+  const mitre = new Map<string, MitreTechnique>()
+  for (const event of events) {
+    const detection = detectionFixtures.find((item) => item.id === event.ruleId)
+    for (const technique of detection?.mitre ?? []) {
+      mitre.set(technique.id, technique)
+    }
+  }
+  const first = events[0]
+  const last = events[events.length - 1]
+  if (!first || !last) {
+    throw new ApiError('Select at least one hunt result.')
+  }
+  const detail: IncidentDetail = {
+    id,
+    title: input.title.trim() || 'Promoted hunt',
+    severity: input.severity,
+    riskScore: final,
+    status: 'New',
+    owner: input.owner,
+    users,
+    hosts,
+    mitre: [...mitre.values()],
+    firstSeen: first.time,
+    lastSeen: last.time,
+    demo: true,
+    timeline: events,
+    entities: {
+      users,
+      hosts,
+      srcIps: [],
+      dstIps: [],
+      processes: [],
+      domains: [],
+      hashes: [],
+    },
+    risk: {
+      items: events.map((event) => ({
+        event: event.title,
+        ruleId: event.ruleId,
+        points: PROMOTE_POINTS,
+      })),
+      subtotal,
+      assetType,
+      multiplier,
+      final,
+      severityBand: severityBandFor(final),
+    },
+    notes: [],
+    disposition: 'Undetermined',
+    summary: 'Promoted from a demo hunt. Not a lab finding.',
+    recommendedContainment: ['Snapshot the lab VM before any change.'],
+    audit: [],
+  }
+  seed().push(detail)
+  pushToast(DEMO_SAVE_TOAST)
+  return detail
 }

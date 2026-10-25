@@ -11,12 +11,24 @@ import { ApiError } from './apiError.ts'
 import { getApiUrl, getDataMode } from './config.ts'
 import {
   addDemoNote,
+  createDemoIncident,
   getDemoIncident,
   listDemoIncidents,
   logDemoDryRun,
   saveDemoAnalyst,
   updateDemoIncident,
 } from './demoIncidents.ts'
+import {
+  getDemoDetection,
+  listDemoDetections,
+  listDemoHunts,
+  runDemoHunt,
+  setDemoDetectionEnabled,
+} from './demoCatalog.ts'
+import type { Detection } from '../types/detection.ts'
+import type { Hunt, HuntFilters, HuntRunResult } from '../types/hunt.ts'
+import type { Severity } from '../types/domain.ts'
+import type { TimelineEvent } from '../types/incident.ts'
 
 export { ApiError } from './apiError.ts'
 
@@ -147,6 +159,54 @@ export async function logResponseDryRun(
     'POST',
     { action, target, dryRun: true },
   )
+}
+
+export async function listDetections(): Promise<Detection[]> {
+  if (getDataMode() === 'demo') return listDemoDetections()
+  return liveSend<Detection[]>('/detections', 'GET')
+}
+
+export async function getDetection(id: string): Promise<Detection> {
+  if (getDataMode() === 'demo') return getDemoDetection(id)
+  return liveSend<Detection>(`/detections/${encodeURIComponent(id)}`, 'GET')
+}
+
+export async function setDetectionEnabled(
+  id: string,
+  enabled: boolean,
+): Promise<Detection> {
+  if (getDataMode() === 'demo') return setDemoDetectionEnabled(id, enabled)
+  return liveSend<Detection>(`/detections/${encodeURIComponent(id)}`, 'PATCH', {
+    enabled,
+  })
+}
+
+export async function listHunts(): Promise<Hunt[]> {
+  if (getDataMode() === 'demo') return listDemoHunts()
+  return liveSend<Hunt[]>('/hunts', 'GET')
+}
+
+export async function runHunt(
+  id: string,
+  filters: HuntFilters,
+  query: string,
+): Promise<HuntRunResult> {
+  if (getDataMode() === 'demo') return runDemoHunt(id, filters, query)
+  return liveSend<HuntRunResult>('/hunts/run', 'POST', {
+    id,
+    query,
+    ...filters,
+  })
+}
+
+export async function promoteHunt(input: {
+  title: string
+  severity: Severity
+  owner: string
+  events: TimelineEvent[]
+}): Promise<IncidentDetail> {
+  if (getDataMode() === 'demo') return createDemoIncident(input)
+  return liveSend<IncidentDetail>('/incidents', 'POST', input)
 }
 
 /** Lab actions are not executed from the browser. The UI must not call this. */
