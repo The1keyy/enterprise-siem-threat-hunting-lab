@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 4: SOC Overview (demo). Done.**
-**Next:** Step 5: Incidents and investigation (demo). Not started.
+**Step 5: Incidents and investigation (demo). Done.**
+**Next:** Step 6: Remaining pages (demo). Not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -19,7 +19,7 @@
 | 2 | Architecture & ADRs | Done |
 | 3 | Frontend setup + design system | Done |
 | 4 | SOC Overview (demo) | Done |
-| 5 | Incidents + Investigation (demo) | Not started |
+| 5 | Incidents + Investigation (demo) | Done |
 | 6 | Remaining pages (demo) | Not started |
 | 7 | Backend setup | Not started |
 | 8 | Wazuh integration code | Not started |
@@ -57,9 +57,11 @@ Real counts only. Update these as work actually happens.
 - `docs/adr/0001-wazuh-as-siem.md`, `0002-fastapi-backend.md`, `0003-console-on-top-of-wazuh.md`
 - `scripts/validation/check_scaffold.sh` (verifies the structure)
 - `.cursor/rules/` (Cursor project rules)
-- `frontend/` analyst console shell (Step 3) and SOC Overview (Step 4).
+- `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), and incidents (Step 5).
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
-- Live `GET /overview` is not built. It arrives with the backend in Step 7. Live mode shows an error until then.
+- Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
+- Live `GET /overview` and the incident API are not built. They arrive with the backend in Step 7. Live mode shows an error until then.
+- Response actions are dry-run only. Confirming one writes a local audit line and does not execute anything.
 - No backend and no lab scripts yet
 
 ## Frontend versions (Step 3)
@@ -95,7 +97,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 3 is Mac-only UI. Nothing in the frontend needs the Windows lab.
+Step 5 is Mac-only UI on demo fixtures. Nothing in the frontend needs the Windows lab.
 
 Still documented, not built:
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useMemo, useState } from 'react'
 import { clsx } from 'clsx'
 import { EmptyState } from './EmptyState.tsx'
@@ -6,6 +7,7 @@ export type DataTableColumn<T> = {
   id: string
   header: string
   accessor: (row: T) => string | number
+  cell?: (row: T) => ReactNode
 }
 
 type DataTableProps<T> = {
@@ -14,6 +16,7 @@ type DataTableProps<T> = {
   getRowId: (row: T) => string
   onRowActivate?: (row: T) => void
   emptyTitle?: string
+  initialSort?: SortState | null
 }
 
 type SortState = {
@@ -34,8 +37,9 @@ export function DataTable<T>({
   getRowId,
   onRowActivate,
   emptyTitle = 'No data yet',
+  initialSort = null,
 }: DataTableProps<T>) {
-  const [sort, setSort] = useState<SortState | null>(null)
+  const [sort, setSort] = useState<SortState | null>(initialSort)
 
   const sortedRows = useMemo(() => {
     if (!sort) {
@@ -131,7 +135,7 @@ export function DataTable<T>({
               >
                 {columns.map((column) => (
                   <td key={column.id} className="px-3 py-2">
-                    {column.accessor(row)}
+                    {column.cell ? column.cell(row) : column.accessor(row)}
                   </td>
                 ))}
               </tr>

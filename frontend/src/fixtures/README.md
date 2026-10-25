@@ -7,3 +7,5 @@ Files added here must start with a `DEMO DATA` comment. The UI shows the demo
 banner whenever `VITE_DATA_MODE=demo`.
 
 `overview.ts` is the SOC Overview fixture. Every number in it is synthetic.
+`incidents.ts` is the incident queue fixture. Risk totals are computed from the
+breakdown. They are not lab measurements.

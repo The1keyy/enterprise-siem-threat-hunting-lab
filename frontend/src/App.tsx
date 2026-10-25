@@ -7,9 +7,10 @@ import { DetectionsPage } from './pages/DetectionsPage.tsx'
 import { EntitiesPage } from './pages/EntitiesPage.tsx'
 import { HealthPage } from './pages/HealthPage.tsx'
 import { HuntingPage } from './pages/HuntingPage.tsx'
-import { IncidentsPage } from './pages/IncidentsPage.tsx'
+import { DetectionPlaceholder } from './pages/DetectionPlaceholder.tsx'
+import { IncidentDetail } from './pages/IncidentDetail.tsx'
+import { Incidents } from './pages/Incidents.tsx'
 import { MitrePage } from './pages/MitrePage.tsx'
-import { IncidentDetailPage } from './pages/IncidentDetailPage.tsx'
 import { SocOverview } from './pages/SocOverview.tsx'
 import { SettingsPage } from './pages/SettingsPage.tsx'
 import { SourcesPage } from './pages/SourcesPage.tsx'
@@ -24,11 +25,12 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<SocOverview />} />
-          <Route path="incidents" element={<IncidentsPage />} />
-          <Route path="incidents/:id" element={<IncidentDetailPage />} />
+          <Route path="incidents" element={<Incidents />} />
+          <Route path="incidents/:id" element={<IncidentDetail />} />
           <Route path="hunting" element={<HuntingPage />} />
           <Route path="entities" element={<EntitiesPage />} />
           <Route path="detections" element={<DetectionsPage />} />
+          <Route path="detections/:id" element={<DetectionPlaceholder />} />
           <Route path="mitre" element={<MitrePage />} />
           <Route path="automation" element={<AutomationPage />} />
           <Route path="sources" element={<SourcesPage />} />

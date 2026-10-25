@@ -3,6 +3,7 @@ import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { DemoBanner } from '../components/DemoBanner.tsx'
+import { ToastViewport } from '../components/ToastViewport.tsx'
 import { useDataMode } from '../hooks/useDataMode.ts'
 import { NAV_ITEMS } from '../navigation.ts'
 
@@ -131,6 +132,7 @@ export function AppShell() {
           <main className="flex-1 p-4">
             <Outlet />
           </main>
+          <ToastViewport />
         </div>
       </div>
     </div>
