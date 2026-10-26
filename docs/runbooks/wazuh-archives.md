@@ -2,7 +2,7 @@
 
 **REQUIRES LAB VALIDATION.** Archives are raw events, not just alerts. They are off until WAZUH01 is configured. Snapshot the VM first.
 
-The hunt runner queries `wazuh-archives-4.x-*`. **VERIFY (4.14.9)** that index pattern. If the index does not exist, the API returns:
+The hunt runner queries `ARCHIVES_INDEX` from `backend/app/core/config.py`. **VERIFY (4.14.9)** that default. If the index does not exist, the API returns:
 
 `Archives not enabled on WAZUH01, see docs/runbooks/wazuh-archives.md`
 

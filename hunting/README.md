@@ -17,8 +17,9 @@ each query with luqum. That check is syntax and field names. It does not prove
 the hunt returns the right events. That waits for a lab run. Every hunt here is
 `NOT TESTED`.
 
-`wazuh-archives-*` in the YAML is the logical pattern. The client queries
-`wazuh-archives-4.x-*`. VERIFY that pattern on WAZUH01. Leading `*` wildcards
-in a query string are allowed by OpenSearch by default. VERIFY that too.
+`data_source.index` is `alerts` or `archives`. The patterns those keys use are
+`ALERTS_INDEX` and `ARCHIVES_INDEX` in `backend/app/core/config.py`. VERIFY
+those defaults on WAZUH01. Leading `*` wildcards in a query string are allowed
+by OpenSearch by default. VERIFY that too.
 
 **Status:** 10 hunts, all `NOT TESTED`.

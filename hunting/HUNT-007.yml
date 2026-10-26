@@ -6,7 +6,7 @@ hypothesis: >
   type 10 that the rule treats as routine is still worth reading when the
   source is new for this lab.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: data.win.system.eventID:4624 AND data.win.eventdata.logonType:10
 time_window_default: 7d

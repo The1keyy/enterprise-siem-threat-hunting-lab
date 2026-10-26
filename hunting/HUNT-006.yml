@@ -6,7 +6,7 @@ hypothesis: >
   schtasks.exe or sc.exe created a recurring task or service. No current
   SentinelForge rule alerts on those images.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Microsoft-Windows-Sysmon/Operational
 query: >-
   (data.win.system.eventID:1 AND data.win.eventdata.image:*schtasks.exe*) OR

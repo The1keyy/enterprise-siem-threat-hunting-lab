@@ -7,7 +7,7 @@ hypothesis: >
   A lab account that almost never logs on succeeded. SF-010 will not see it
   unless the logon is RDP type 10.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: data.win.system.eventID:4624
 time_window_default: 7d

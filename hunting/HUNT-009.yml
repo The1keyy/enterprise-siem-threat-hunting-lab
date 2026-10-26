@@ -7,7 +7,7 @@ hypothesis: >
   sshd failures on UBU01 stayed below the sixth-failure threshold of SF-013,
   so the burst rule never fired.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   log: /var/log/auth.log
 query: full_log:"Failed password" OR full_log:"Invalid user"
 time_window_default: 24h

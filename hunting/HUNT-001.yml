@@ -7,7 +7,7 @@ hypothesis: >
   and SF-006 require. The interesting cases are script blocks and PowerShell
   process starts that never became those alerts.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Microsoft-Windows-PowerShell/Operational; Microsoft-Windows-Sysmon/Operational
 query: >-
   data.win.system.eventID:4104 OR

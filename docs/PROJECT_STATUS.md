@@ -4,9 +4,9 @@
 > every step.
 
 ## Current step
-**Step 13A complete locally.** HUNT-001 through HUNT-010 are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`, and nothing is `LAB VALIDATED`.
-Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 13A is done locally. Ten hunts in `hunting/` are `NOT TESTED`. The validator checks syntax and field names, not that a hunt returns the right events. Step 13B is not started. Nothing is installed on WAZUH01, UBU01, or a Windows host.
+**Step 13B written locally.** HUNT-001 through HUNT-010 are `NOT TESTED`. SF-001 through SF-014 simulations and `Invoke-AttackStory.ps1` are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`, and nothing is `LAB VALIDATED`.
+Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`. Attack simulations run in the lab: 0.
+**Next:** Step 14 is not started. Ten hunts and every simulation still need a lab run. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -30,7 +30,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
 | 12 | Lab configs + scripts | 12A, 12B, and 12C written. 12.1 is `make lint-scripts` and `scripts/validation/lint_powershell.ps1`. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
-| 13 | Hunts + simulations | 13A written. HUNT-001 through HUNT-010 are `NOT TESTED`. 13B is not started |
+| 13 | Hunts + simulations | 13A and 13B written on the Mac. Hunts and simulations are `NOT TESTED`. None have run in the lab |
 | 14 | Correlation + risk scoring | Not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |
 
@@ -44,6 +44,7 @@ Real counts only. Update these as work actually happens.
 | `LOGTEST VALID` | 2 (Linux SSH, SF-013 and SF-014) |
 | `LAB VALIDATED` | 0 |
 | Saved hunts | 10 (HUNT-001 through HUNT-010), all `NOT TESTED` |
+| Attack simulations written | 14 plus `Invoke-AttackStory.ps1`, all `NOT TESTED` |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
 | CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. Step 12B: `detections` 40391492945 succeeded. `secrets` 40391493005 succeeded. `logtest` and `app` did not run. Step 12C: `scripts` 40393444997 succeeded (shellcheck, powershell, snippets). `secrets` 40393445016 succeeded. `detections`, `logtest`, and `app` did not run; their path filters do not include `scripts/` or `docs/`. Step 12.1: `scripts` 40394873108 succeeded. `detections` 40394873059 succeeded. `secrets` 40394872867 succeeded. |
@@ -116,7 +117,8 @@ Not Windows:
 - SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-007, SF-008, and SF-009 are real rules in `detections/wazuh/rules/sentinelforge_100300_accounts.xml` (100300, 100310, 100311, 100320). On 2026-10-26 analysisd started with `Total rules enabled: 8471` and no analysisd error. `GET /rules?filename=sentinelforge_100300_accounts.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T175154Z.json`) printed `LIMITED` for every account case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-020 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`.
-- HUNT-001 through HUNT-010 are YAML in `hunting/`. All are `NOT TESTED`. `/api/hunts` loads those files in demo mode and in live mode. Demo "Run hunt" matches fixture timeline events and is labeled demo. Live "Run hunt" queries `wazuh-archives-4.x-*` (the YAML says `wazuh-archives-*`), keeps the 7-day cap and `indexed_fields.txt`, and returns 503 if Wazuh is down. HUNT-004 and HUNT-010 are terms aggregations; low-count buckets are not a lab result. Promoting a result writes a SQLite incident. `fixtures/hunts.json` is generated by `scripts/validation/build_hunt_fixtures.py`.
+- HUNT-001 through HUNT-010 are YAML in `hunting/`. All are `NOT TESTED`. `/api/hunts` loads those files in demo mode and in live mode. Demo "Run hunt" matches fixture timeline events and is labeled demo. Live "Run hunt" maps YAML `alerts` or `archives` to `ALERTS_INDEX` and `ARCHIVES_INDEX` in `backend/app/core/config.py`, keeps the 7-day cap and `indexed_fields.txt`, and returns 503 if Wazuh is down. HUNT-004 and HUNT-010 are terms aggregations; low-count buckets are not a lab result. Promoting a result writes a SQLite incident. `fixtures/hunts.json` is generated by `scripts/validation/build_hunt_fixtures.py`.
+- Step 13B adds `scripts/powershell/simulations/` and `docs/runbooks/04-simulations.md`. On 2026-10-26, PSScriptAnalyzer reported 0 findings, the parser accepted the new scripts, and Pester 5.6.1 reported 8 passed. That is a Mac check of the guard. Every simulation header stays `NOT TESTED`. No script has run on DC01, WS01, or UBU01. `make test` was 29 pytest and 25 vitest. `make validate` reported 0 errors. The same 9 Sigma `InvalidATTACKTagIssue` warnings remain.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
@@ -132,7 +134,7 @@ Not Windows:
 - Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 11.1 compares each `sentinelforge_*.xml` rule count with `GET /rules?filename=`.
 - Step 12A adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION.
 - Step 12B adds `configs/wazuh/` snippets, `configs/linux/auditd/sentinelforge.rules` (NOT TESTED, no auditctl on the Mac), `scripts/bash/deploy_rules.sh` (shellcheck clean, not run), and `docs/runbooks/03-wazuh-config.md`. `pytest tests/configs` passed (12). Ubuntu 24.04 auth logs stay on `/var/log/auth.log` via rsyslog, not journald. That file is still not observed on UBU01. `logall_json`, the Filebeat archives key, the ISM API, `rule_dir etc/rules`, the `wazuh` owner, and the API CA path stay **VERIFY** on WAZUH01.
-- Step 12C adds `scripts/powershell/01` through `40` and `99`, `scripts/bash/ubu01-setup.sh`, `scripts/bash/wazuh01-checks.sh`, `.github/workflows/scripts.yml`, and `docs/runbooks/01-lab-build.md`. PSScriptAnalyzer and shellcheck are clean on the Mac. The MSI URL `https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi` returned HTTP 200 on 2026-10-26. The file was not downloaded. Both hash files are still placeholders. The apt package revision `4.14.9-1` and the Linux `WAZUH_AGENT_NAME` variable stay **VERIFY**. Nothing is `LAB VALIDATED`. Step 13 is not started.
+- Step 12C adds `scripts/powershell/01` through `40` and `99`, `scripts/bash/ubu01-setup.sh`, `scripts/bash/wazuh01-checks.sh`, `.github/workflows/scripts.yml`, and `docs/runbooks/01-lab-build.md`. PSScriptAnalyzer and shellcheck are clean on the Mac. The MSI URL `https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi` returned HTTP 200 on 2026-10-26. The file was not downloaded. Both hash files are still placeholders. The apt package revision `4.14.9-1` and the Linux `WAZUH_AGENT_NAME` variable stay **VERIFY**. Nothing is `LAB VALIDATED`. Step 13A and 13B are written on the Mac and have not run on a VM.
 
 ## VERIFY in Step 17 (Wazuh 4.14.9)
 
@@ -191,8 +193,9 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 ## Open questions
 - [ ] **VERIFY** Wazuh 4.14.9 published hardware minimums, indexer heap file, and `-Xms`/`-Xmx` (or the real setting names) before install.
 - [ ] **VERIFY** Windows Server evaluation edition offered (2022 vs 2025) and Windows 11 eval length.
-- [ ] **VERIFY** manager API port, indexer port, dashboard port, and index pattern names on 4.14.9. Hunt YAML says `wazuh-archives-*`. The client queries `wazuh-archives-4.x-*`.
+- [ ] **VERIFY** manager API port, indexer port, dashboard port, and index pattern names on 4.14.9. Hunt YAML says `alerts` or `archives`. Those keys use `ALERTS_INDEX` and `ARCHIVES_INDEX` in `backend/app/core/config.py`.
 - [ ] **VERIFY** leading `*` in hunt query strings on WAZUH01. OpenSearch allows them by default. No hunt has been run against the indexer.
+- [ ] **VERIFY** `ssh.exe` `BindAddress` and `SSH_ASKPASS_REQUIRE` on WS01. **VERIFY** that `net use`, `mstsc`, and `Invoke-Command` events show source `10.10.10.20`.
 - [ ] WS01 stays at 4 GB unless the guest is unusable. 6 GB is allowed only with SURI01 powered off.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
@@ -200,6 +203,8 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 Step 8 is mock-tested on the Mac. The clients do not talk to a real manager here. Live behavior **REQUIRES LAB VALIDATION**. Dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows in demo mode are not live checks.
 
 Step 9 logtest does not prove Windows field names. CANARY-002 stayed logtest-limited after a second eventchannel replay (decoder `json`, rule 1002, alert false). Windows eventchannel events can't be faithfully replayed in logtest. Step 10 must not mark those detections `LOGTEST VALID` from this harness. They are validated in the lab. Windows Event IDs still need a lab agent.
+
+Step 13B scripts are written and are `NOT TESTED`. Snapshot first. Run them only inside `10.10.10.0/24`. Record the run JSON, the alert export, and a screenshot in the Step 18 table in `docs/runbooks/04-simulations.md`.
 
 Still documented, not built:
 

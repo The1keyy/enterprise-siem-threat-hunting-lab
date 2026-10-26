@@ -6,7 +6,7 @@ hypothesis: >
   filters on SF-007 and SF-008 do not match, or the create and the group
   add were far enough apart that nobody looked at them together.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: >-
   data.win.system.eventID:4720 OR data.win.system.eventID:4728 OR

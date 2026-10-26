@@ -55,6 +55,11 @@ jobs:
           pwsh -NoProfile -Command "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module PSScriptAnalyzer -Scope CurrentUser -Force"
           pwsh -NoProfile -File scripts/validation/lint_powershell.ps1
 
+      - name: Pester
+        run: |
+          pwsh -NoProfile -Command "Install-Module Pester -RequiredVersion 5.6.1 -Scope CurrentUser -Force"
+          pwsh -NoProfile -File scripts/powershell/simulations/tests/Invoke-Pester.ps1
+
   snippets:
     runs-on: ubuntu-latest
     timeout-minutes: 10

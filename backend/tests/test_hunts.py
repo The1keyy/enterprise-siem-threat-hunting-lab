@@ -22,9 +22,26 @@ def test_each_hunt_loads() -> None:
     hunts = list_hunt_definitions()
     assert [hunt["id"] for hunt in hunts] == [f"HUNT-{number:03d}" for number in range(1, 11)]
     assert {hunt["status"] for hunt in hunts} == {"NOT TESTED"}
+    assert {hunt["index"] for hunt in hunts} <= {"alerts", "archives"}
     rare = next(hunt for hunt in hunts if hunt["id"] == "HUNT-004")
     assert rare["aggregation"]["type"] == "terms"
     assert rare["aggregation"]["field"] == "data.win.eventdata.targetUserName"
+
+
+def test_hunt_index_keys_use_config_patterns() -> None:
+    from app.core.config import ALERTS_INDEX, ARCHIVES_INDEX
+    from app.integrations.errors import HuntQueryRejected
+    from app.integrations.wazuh_indexer import resolve_hunt_index
+
+    assert (
+        resolve_hunt_index("alerts", alerts=ALERTS_INDEX, archives=ARCHIVES_INDEX) == ALERTS_INDEX
+    )
+    assert (
+        resolve_hunt_index("archives", alerts=ALERTS_INDEX, archives=ARCHIVES_INDEX)
+        == ARCHIVES_INDEX
+    )
+    with pytest.raises(HuntQueryRejected, match="Unknown hunt index"):
+        resolve_hunt_index("wazuh-archives-*", alerts=ALERTS_INDEX, archives=ARCHIVES_INDEX)
 
 
 def test_allowlist_rejects_unknown_fields() -> None:

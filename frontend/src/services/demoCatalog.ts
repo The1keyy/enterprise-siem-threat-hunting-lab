@@ -53,7 +53,7 @@ export function setDemoDetectionEnabled(
 }
 
 export const HUNT_NOTICE =
-  'Demo results — matched fixture timeline events. Not a wazuh-archives-* result.'
+  'Demo results — matched fixture timeline events. Not an indexer result.'
 
 export function listDemoHunts(): Hunt[] {
   return huntFixtures.map((hunt) => ({ ...hunt }))

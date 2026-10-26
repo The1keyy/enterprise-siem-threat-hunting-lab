@@ -6,7 +6,7 @@ hypothesis: >
   share-name filters on SF-011. 5145 is collected and no stock rule alerts
   on it.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: >-
   data.win.system.eventID:5140 OR data.win.system.eventID:5145 OR

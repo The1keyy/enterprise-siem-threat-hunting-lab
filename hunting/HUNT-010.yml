@@ -7,7 +7,7 @@ hypothesis: >
   A process image ran once or twice in the window. SF-005 only alerts when
   that image is powershell.exe or pwsh.exe and the command line is encoded.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Microsoft-Windows-Sysmon/Operational; Security
 query: data.win.system.eventID:1 OR data.win.system.eventID:4688
 time_window_default: 7d

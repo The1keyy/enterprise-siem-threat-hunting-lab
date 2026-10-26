@@ -5,7 +5,7 @@ hypothesis: >
   Failed logons accumulated on one account or one source more slowly than
   SF-001's frequency window, so the detection never fired.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: data.win.system.eventID:4625
 time_window_default: 24h

@@ -21,7 +21,7 @@ if ($results) {
 }
 Write-Output 'PSScriptAnalyzer: 0 findings'
 
-Get-ChildItem -Path $roots -Recurse -Filter *.ps1 | ForEach-Object {
+Get-ChildItem -Path $roots -Recurse -File | Where-Object { $_.Extension -in '.ps1', '.psm1' } | ForEach-Object {
     $tokens = $null
     $parseErrors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$parseErrors)

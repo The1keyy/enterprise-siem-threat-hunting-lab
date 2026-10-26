@@ -16,7 +16,7 @@ from app.services.hunt_catalog import get_hunt, list_hunt_definitions
 from app.services.hunt_match import demo_buckets, event_matches_query, events_in_buckets
 
 HUNT_NOTICE = (
-    "Demo results — matched fixture timeline events. Not a wazuh-archives-* result."
+    "Demo results — matched fixture timeline events. Not an indexer result."
 )
 
 

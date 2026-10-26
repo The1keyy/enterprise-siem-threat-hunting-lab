@@ -2,7 +2,7 @@
 
 VERIFY (4.14.9):
 - Base URL https://<WAZUH_MANAGER_IP>:9200 with HTTP Basic auth
-- Index patterns wazuh-alerts-4.x-* and wazuh-archives-4.x-*
+- Index patterns are ALERTS_INDEX and ARCHIVES_INDEX in app.core.config
 - Alert time field is `timestamp` (not @timestamp)
 - Terms aggregations do not need a `.keyword` suffix on these fields
 - rule.groups values used below (authentication_failed, windows, sysmon, ...)
@@ -26,9 +26,6 @@ from app.integrations.errors import (
 )
 from app.integrations.tls import tls_verify
 
-# VERIFY (4.14.9): pattern names on the all-in-one indexer.
-ALERTS_INDEX = "wazuh-alerts-4.x-*"
-ARCHIVES_INDEX = "wazuh-archives-4.x-*"
 
 # Hunt query_string clauses may name only these fields. Values are passed as JSON,
 # never concatenated into the request body. The file is the same list CI checks.
@@ -45,18 +42,15 @@ def load_allowed_hunt_fields() -> frozenset[str]:
 ALLOWED_HUNT_FIELDS = load_allowed_hunt_fields()
 
 
-def resolve_hunt_index(name: str) -> str:
-    """Map a hunt's logical index onto the 4.x pattern this client queries.
+def resolve_hunt_index(name: str, *, alerts: str, archives: str) -> str:
+    """Map a hunt YAML key onto the configured index pattern."""
 
-    VERIFY (4.14.9): the indexed names are wazuh-alerts-4.x-* and
-    wazuh-archives-4.x-*, not the unsuffixed patterns written in the YAML.
-    """
-
-    if name in {"wazuh-archives-*", ARCHIVES_INDEX}:
-        return ARCHIVES_INDEX
-    if name in {"wazuh-alerts-*", ALERTS_INDEX}:
-        return ALERTS_INDEX
+    if name == "archives":
+        return archives
+    if name == "alerts":
+        return alerts
     raise HuntQueryRejected(f"Unknown hunt index: {name}")
+
 
 # VERIFY (4.14.9): group names Wazuh assigns to these sources.
 SOURCE_FILTERS: dict[str, dict[str, Any]] = {
@@ -332,13 +326,13 @@ class WazuhIndexerClient:
             search_after=search_after,
             sort_desc=sort_desc,
         )
-        status, payload = await self._post(f"/{ALERTS_INDEX}/_search", body)
+        status, payload = await self._post(self._alerts_search(), body)
         self._raise_for_status(status, payload)
         return _parse_hits(payload, page)
 
     async def aggregations(self, start: str, end: str) -> dict[str, Any]:
         status, payload = await self._post(
-            f"/{ALERTS_INDEX}/_search",
+            self._alerts_search(),
             build_overview_aggs(start, end),
         )
         self._raise_for_status(status, payload)
@@ -362,7 +356,7 @@ class WazuhIndexerClient:
                 }
             },
         }
-        status, payload = await self._post(f"/{ALERTS_INDEX}/_search", body)
+        status, payload = await self._post(self._alerts_search(), body)
         self._raise_for_status(status, payload)
         return parse_source_stats(payload)
 
@@ -386,7 +380,7 @@ class WazuhIndexerClient:
                 }
             },
         }
-        status, payload = await self._post(f"/{ALERTS_INDEX}/_search", body)
+        status, payload = await self._post(self._alerts_search(), body)
         self._raise_for_status(status, payload)
         return parse_rule_activity(payload)
 
@@ -405,7 +399,7 @@ class WazuhIndexerClient:
                 },
             },
         }
-        status, payload = await self._post(f"/{ALERTS_INDEX}/_search", body)
+        status, payload = await self._post(self._alerts_search(), body)
         self._raise_for_status(status, payload)
         aggs = payload.get("aggregations")
         if not isinstance(aggs, dict):
@@ -414,6 +408,9 @@ class WazuhIndexerClient:
             "hosts": _terms_with_last(aggs.get("hosts")),
             "users": _terms_with_last(aggs.get("users")),
         }
+
+    def _alerts_search(self) -> str:
+        return f"/{self._settings.wazuh_alerts_index}/_search"
 
     async def search_archives(
         self,
@@ -424,7 +421,7 @@ class WazuhIndexerClient:
         host: str = "",
         user: str = "",
         source: str = "",
-        index: str = ARCHIVES_INDEX,
+        index: str | None = None,
         aggregation: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         body = build_archive_search(
@@ -436,9 +433,10 @@ class WazuhIndexerClient:
             source=source,
             aggregation=aggregation,
         )
-        status, payload = await self._post(f"/{index}/_search", body)
+        chosen = index or self._settings.wazuh_archives_index
+        status, payload = await self._post(f"/{chosen}/_search", body)
         if _index_missing(status, payload):
-            if index == ARCHIVES_INDEX:
+            if chosen == self._settings.wazuh_archives_index:
                 raise ArchivesNotEnabled()
             raise WazuhResponseError("Wazuh alerts index was not found")
         self._raise_for_status(status, payload)

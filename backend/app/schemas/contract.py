@@ -285,7 +285,7 @@ class HuntModel(Strict):
     name: str
     hypothesis: str
     dataSource: str
-    index: Literal["wazuh-archives-*", "wazuh-alerts-*"]
+    index: Literal["alerts", "archives"]
     channel: str
     log: str
     query: str

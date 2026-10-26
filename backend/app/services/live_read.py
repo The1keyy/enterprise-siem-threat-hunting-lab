@@ -536,6 +536,12 @@ async def live_hunt(
         validate_hunt_query(query, start, end)
         if source and source not in SOURCE_FILTERS:
             raise HuntQueryRejected(f"Unknown hunt source filter: {source}")
+        configured = getattr(app.state, "settings", None) or indexer._settings
+        index_name = resolve_hunt_index(
+            str(hunt.get("index") or ""),
+            alerts=configured.wazuh_alerts_index,
+            archives=configured.wazuh_archives_index,
+        )
         result = await indexer.search_archives(
             query,
             start,
@@ -543,7 +549,7 @@ async def live_hunt(
             host=host,
             user=user,
             source=source,
-            index=resolve_hunt_index(str(hunt.get("index") or "")),
+            index=index_name,
             aggregation=aggregation,
         )
     except WazuhError as exc:
@@ -559,7 +565,6 @@ async def live_hunt(
         hits.append(mapped)
     if aggregation:
         hits = events_in_buckets(hits, str(aggregation["field"]), buckets)
-    index_name = str(hunt.get("index") or "wazuh-archives-*")
     return {
         "demo": False,
         "notice": f"Results from {index_name}. VERIFY (4.14.9) field names. Not a lab result.",

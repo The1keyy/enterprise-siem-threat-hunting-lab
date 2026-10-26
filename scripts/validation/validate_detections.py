@@ -69,7 +69,7 @@ HUNT_FIELDS = (
     "status",
 )
 HUNT_ID = re.compile(r"^HUNT-\d{3}$")
-HUNT_INDEXES = {"wazuh-archives-*", "wazuh-alerts-*"}
+HUNT_INDEXES = {"alerts", "archives"}
 HUNT_WINDOWS = {"24h", "7d"}
 # A query_string cannot express these. The YAML must carry aggregation.
 HUNT_NEEDS_AGG = re.compile(r"\b(rare|unusual|first seen)\b", re.IGNORECASE)
@@ -695,7 +695,7 @@ def _check_hunt_source(source: object, location: str, findings: list[Finding]) -
     index = source.get("index")
     if index not in HUNT_INDEXES:
         findings.append(
-            Finding("error", "hunt_source", location, "data_source.index must be wazuh-archives-* or wazuh-alerts-*")
+            Finding("error", "hunt_source", location, "data_source.index must be alerts or archives")
         )
     channel = str(source.get("channel") or "").strip()
     log = str(source.get("log") or "").strip()

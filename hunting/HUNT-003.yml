@@ -5,7 +5,7 @@ hypothesis: >
   A 4624 success belongs to the same account as earlier 4625 failures, but
   SF-003 did not chain them because the rule's correlation did not match.
 data_source:
-  index: wazuh-archives-*
+  index: archives
   channel: Security
 query: data.win.system.eventID:4624
 time_window_default: 24h

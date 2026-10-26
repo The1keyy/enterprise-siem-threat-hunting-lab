@@ -1,0 +1,45 @@
+# REQUIRES WINDOWS VALIDATION
+# Purpose: Drop IPC$, try to unlock sf-test-alice, remove .200.
+# Run on: WS01
+# Requires: Administrator, PowerShell 5.1+
+# Status: NOT TESTED
+
+#Requires -Version 5.1
+#Requires -RunAsAdministrator
+[CmdletBinding(SupportsShouldProcess = $true)]
+param(
+    [switch]$IUnderstandLabOnly,
+    [string]$SnapshotText
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+Import-Module (Join-Path $PSScriptRoot 'SentinelForge.LabGuard.psm1') -Force
+
+$started = [datetime]::UtcNow
+Assert-SentinelForgeLab -IUnderstandLabOnly:$IUnderstandLabOnly -SnapshotText $SnapshotText -AllowedHosts @('WS01', 'DC01')
+Remove-LabSmbMapping -Share 'IPC$' -WhatIf:$WhatIfPreference
+Remove-LabAttackerAddress -WhatIf:$WhatIfPreference
+
+$unlock = 'address-removed-unlock-manual'
+$module = Get-Module -ListAvailable -Name ActiveDirectory
+if (-not $module) {
+    Write-Output 'On DC01, if the account locked: Unlock-ADAccount -Identity sf-test-alice'
+}
+elseif (-not $WhatIfPreference) {
+    Import-Module ActiveDirectory
+    try {
+        Unlock-ADAccount -Identity 'sf-test-alice' -ErrorAction Stop
+        $unlock = 'removed'
+    }
+    catch {
+        $unlock = 'unlock-not-confirmed'
+        Write-Output "Unlock-ADAccount did not confirm: $($_.Exception.Message)"
+    }
+}
+else {
+    $unlock = 'whatif'
+}
+
+$recordPath = Write-LabRunRecord -DetectionId 'SF-003' -StartedUtc $started -EndedUtc ([datetime]::UtcNow) -Commands @('net use \\DC01\IPC$ /delete', 'Remove-NetIPAddress 10.10.10.200') -ExpectedRuleIds @('100120') -CleanupStatus $unlock -Notes 'Does not reset the password.' -WhatIf:$WhatIfPreference
+if ($recordPath) { Write-Output "RUN RECORD $recordPath" }

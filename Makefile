@@ -18,10 +18,12 @@ lint:
 	cd backend && .venv/bin/ruff check .
 	cd frontend && npm run lint
 
-# shellcheck and scripts/validation/lint_powershell.ps1. CI calls that same script.
+# shellcheck, scripts/validation/lint_powershell.ps1, and the lab-guard Pester
+# tests. CI calls the same two PowerShell files.
 lint-scripts:
 	shellcheck scripts/bash/*.sh
 	pwsh -NoProfile -File scripts/validation/lint_powershell.ps1
+	pwsh -NoProfile -File scripts/powershell/simulations/tests/Invoke-Pester.ps1
 
 validate:
 	$(PYTHON) scripts/validation/validate_detections.py

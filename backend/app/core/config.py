@@ -10,6 +10,9 @@ BACKEND_DIR = REPO_ROOT / "backend"
 APP_VERSION = "0.1.0"
 # Pinned target from docs/VERSIONS.md. This is not a live manager check.
 WAZUH_VERSION = "4.14.9"
+# VERIFY (4.14.9): pattern names on the all-in-one indexer. One definition.
+ALERTS_INDEX = "wazuh-alerts-4.x-*"
+ARCHIVES_INDEX = "wazuh-archives-4.x-*"
 # Wazuh rule.level bands. ADR 0004.
 # VERIFY (4.14.9): built-in levels top out at 15. 15 and above map to critical.
 WAZUH_LEVEL_LOW_MAX = 6
@@ -66,6 +69,8 @@ class Settings(BaseSettings):
     wazuh_ca_bundle: str = ""
     wazuh_tls_insecure: bool = False
     wazuh_timeout_seconds: float = 10.0
+    wazuh_alerts_index: str = ALERTS_INDEX
+    wazuh_archives_index: str = ARCHIVES_INDEX
     # VERIFY (4.14.9): authenticate does not return expires_in. 900s is the usual JWT life.
     wazuh_token_ttl_seconds: int = 900
     wazuh_token_refresh_skew_seconds: int = 60

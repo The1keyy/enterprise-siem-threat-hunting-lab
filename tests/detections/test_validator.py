@@ -81,7 +81,7 @@ def test_hunt_allowlist_rejects_an_unknown_field(tmp_path: Path) -> None:
             name: Fixture hunt
             hypothesis: Something the detection misses.
             data_source:
-              index: wazuh-archives-*
+              index: archives
               channel: Security
             query: not.a.field:1
             time_window_default: 24h

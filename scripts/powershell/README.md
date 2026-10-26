@@ -2,7 +2,7 @@
 
 > REQUIRES WINDOWS VALIDATION
 > Run on: DC01, WS01, or both, as each script header says
-> Status: SYNTAX VALID after PSScriptAnalyzer and the parser. Not run on a Windows host.
+> Status: setup scripts are SYNTAX VALID after PSScriptAnalyzer. Simulations under `simulations/` stay `NOT TESTED`. None of these scripts have run on a Windows host.
 
 | Script | Run on | What it does |
 |---|---|---|
@@ -14,8 +14,9 @@
 | `30-Apply-Telemetry.ps1` | both | Calls the Step 12A audit, PowerShell logging, and Sysmon scripts. |
 | `40-Install-WazuhAgent.ps1` | both | Wazuh agent 4.14.9. Refuses a placeholder MSI hash. Merges the 12B snippet. |
 | `99-Get-LabStatus.ps1` | both | Read-only report. Writes only its log file. |
+| `simulations/` | WS01 or DC01 | Lab-only telemetry. Status `NOT TESTED`. See `docs/runbooks/04-simulations.md`. |
 
-Order and snapshot points: `docs/runbooks/01-lab-build.md`.
+Order and snapshot points: `docs/runbooks/01-lab-build.md`. Do not run a simulation from the build runbook.
 
 Logs go to `C:\SentinelForge\logs\`. Passwords are prompted and are not written there. `-WhatIf` skips changes.
 
