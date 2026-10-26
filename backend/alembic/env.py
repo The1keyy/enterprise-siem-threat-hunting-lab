@@ -16,7 +16,9 @@ from app.models import tables as _tables  # noqa: E402, F401
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Keep application loggers. The default disables every logger that already exists,
+    # which would swallow the lab TLS warning emitted at startup.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

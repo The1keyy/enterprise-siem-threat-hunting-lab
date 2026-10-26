@@ -2,11 +2,25 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
 
 from app.core.config import WAZUH_VERSION, Settings
+from app.db import get_db
 from app.fixtures_loader import fixture_copy
 from app.schemas.api import DetectionPatch
+from app.services.live_read import (
+    known_detection_ids,
+    live_detections,
+    live_entity_hosts,
+    live_entity_users,
+    live_health,
+    live_host_profile,
+    live_mitre,
+    live_overview,
+    live_sources,
+    live_user_profile,
+)
 
 router = APIRouter()
 _detection_enabled: dict[str, bool] = {}
@@ -20,9 +34,9 @@ _RANK = {
 }
 
 
-def _with_demo(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _with_demo(rows: list[dict[str, Any]], *, demo: bool = True) -> list[dict[str, Any]]:
     for row in rows:
-        row["demo"] = True
+        row["demo"] = demo
     return rows
 
 
@@ -37,7 +51,10 @@ def _detection_rows() -> list[dict[str, Any]]:
 
 
 @router.get("/overview")
-def overview() -> dict[str, Any]:
+async def overview(request: Request, session: Session = Depends(get_db)) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_overview(request.app, session)
     data = fixture_copy("overview.json")
     data.pop("_notice", None)
     data["demo"] = True
@@ -45,12 +62,21 @@ def overview() -> dict[str, Any]:
 
 
 @router.get("/detections")
-def detections() -> list[dict[str, Any]]:
+async def detections(request: Request) -> list[dict[str, Any]]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_detections(request.app, _detection_enabled)
     return _detection_rows()
 
 
 @router.get("/detections/{detection_id}")
-def detection(detection_id: str) -> dict[str, Any]:
+async def detection(detection_id: str, request: Request) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        for item in await live_detections(request.app, _detection_enabled):
+            if item["id"] == detection_id:
+                return item
+        raise HTTPException(status_code=404, detail=f"Detection {detection_id} was not found.")
     for item in _detection_rows():
         if item["id"] == detection_id:
             return item
@@ -58,7 +84,20 @@ def detection(detection_id: str) -> dict[str, Any]:
 
 
 @router.patch("/detections/{detection_id}")
-def patch_detection(detection_id: str, body: DetectionPatch) -> dict[str, Any]:
+async def patch_detection(
+    detection_id: str,
+    body: DetectionPatch,
+    request: Request,
+) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        if detection_id not in known_detection_ids():
+            raise HTTPException(status_code=404, detail=f"Detection {detection_id} was not found.")
+        _detection_enabled[detection_id] = body.enabled
+        for item in await live_detections(request.app, _detection_enabled):
+            if item["id"] == detection_id:
+                return item
+        raise HTTPException(status_code=404, detail=f"Detection {detection_id} was not found.")
     for item in fixture_copy("detections.json")["detections"]:
         if item["id"] == detection_id:
             _detection_enabled[detection_id] = body.enabled
@@ -77,7 +116,10 @@ def _best(statuses: list[str]) -> str:
 
 
 @router.get("/mitre/coverage")
-def mitre_coverage() -> dict[str, Any]:
+def mitre_coverage(request: Request) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return live_mitre()
     grouped: dict[str, list[str]] = {}
     for detection_row in fixture_copy("detections.json")["detections"]:
         for technique in detection_row["mitre"]:
@@ -106,12 +148,25 @@ def mitre_coverage() -> dict[str, Any]:
 
 
 @router.get("/entities/users")
-def entity_users() -> list[dict[str, Any]]:
+async def entity_users(
+    request: Request,
+    session: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_entity_users(request.app, session)
     return _with_demo(fixture_copy("entities.json")["users"])
 
 
 @router.get("/entities/users/{name}")
-def entity_user(name: str) -> dict[str, Any]:
+async def entity_user(
+    name: str,
+    request: Request,
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_user_profile(request.app, session, name)
     for profile in fixture_copy("entities.json")["userProfiles"]:
         if profile["name"] == name:
             profile["demo"] = True
@@ -120,12 +175,25 @@ def entity_user(name: str) -> dict[str, Any]:
 
 
 @router.get("/entities/hosts")
-def entity_hosts() -> list[dict[str, Any]]:
+async def entity_hosts(
+    request: Request,
+    session: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_entity_hosts(request.app, session)
     return _with_demo(fixture_copy("entities.json")["hosts"])
 
 
 @router.get("/entities/hosts/{name}")
-def entity_host(name: str) -> dict[str, Any]:
+async def entity_host(
+    name: str,
+    request: Request,
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_host_profile(request.app, session, name)
     for profile in fixture_copy("entities.json")["hostProfiles"]:
         if profile["name"] == name:
             profile["demo"] = True
@@ -134,12 +202,18 @@ def entity_host(name: str) -> dict[str, Any]:
 
 
 @router.get("/sources")
-def sources() -> list[dict[str, Any]]:
+async def sources(request: Request) -> list[dict[str, Any]]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_sources(request.app)
     return _with_demo(fixture_copy("sources.json")["sources"])
 
 
 @router.get("/system/health")
-def system_health() -> dict[str, Any]:
+async def system_health(request: Request) -> dict[str, Any]:
+    settings: Settings = request.app.state.settings
+    if settings.data_mode == "live":
+        return await live_health(request.app)
     data = fixture_copy("health.json")
     data.pop("_notice", None)
     data["demo"] = True
@@ -191,7 +265,7 @@ def automation(request: Request) -> list[dict[str, Any]]:
             "status": "Not implemented (Step 14+)",
         },
     ]
-    return _with_demo(workflows)
+    return _with_demo(workflows, demo=settings.data_mode == "demo")
 
 
 @router.get("/settings")

@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 7 Done.** Backend serves demo data. Wazuh integration is next.
-**Next:** Step 8 not started.
+**Step 8 Done.** Wazuh API and indexer clients are mock-tested. Live mode does not serve fixtures.
+**Next:** Step 9 not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -24,7 +24,7 @@
 | 6B | Entities, sources, health, automation, settings (demo) | Done |
 | 7A | FastAPI backend core (demo) | Done |
 | 7B | Connect the frontend, plus Docker | Done |
-| 8 | Wazuh integration code | Not started |
+| 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Not started |
 | 10 | MVP detections | Not started |
 | 11 | Detection-as-code CI | Not started |
@@ -61,17 +61,47 @@ Real counts only. Update these as work actually happens.
 - `.cursor/rules/` (Cursor project rules)
 - `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), incidents (Step 5), and hunting, detections, and MITRE pages (Step 6A).
 - Detection rows are metadata fixtures for SF-001–SF-020. Every validation status is `NOT TESTED`. `lastTriggered` and `alertCount` are null. Wazuh XML and Sigma text are the placeholder "Not written yet (Step 10)". No rule has been written or tested.
-- Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events. It does not query `wazuh-archives-*`. Promoting a result writes an in-memory incident until reload.
+- Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events and does not query `wazuh-archives-*`. Live "Run hunt" queries that index and returns 503 if Wazuh is down. Promoting a result writes a SQLite incident.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
 - Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
 - Shared demo JSON lives in `/fixtures` (`overview`, `incidents`, `detections`, `hunts`, `entities`, `sources`, `health`). Each file has `_notice`: `DEMO DATA — synthetic, not real telemetry`. The frontend fixture modules import those files. `scripts/validation/export_fixtures.mjs` generated them.
-- `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode returns 503 (`Wazuh integration not implemented yet (Step 8)`) and does not serve fixtures.
+- `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode calls the Wazuh manager API and indexer. Responses set `"demo": false`. If Wazuh is unreachable the route returns 503 and does not serve fixtures. Incidents stay in SQLite. There is no live Wazuh in this environment, so nothing here is LAB VALIDATED.
 - Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
 - With `VITE_DATA_MODE=live` the console calls the API with credentials and redirects to `/login` on 401. `DATA_MODE=demo` on the API still returns `"demo": true`, so the DEMO banner and pill stay up. Incident status, notes, promoted hunts, and dry-run actions are stored in SQLite. Local fixture mode (`VITE_DATA_MODE=demo`) does not call the API.
 - Root `Makefile` targets: `dev-backend`, `dev-frontend`, `test`, `lint`, `up`. `docker compose up --build` runs the API and a static console. Plain `uvicorn` and `npm run dev` still work.
-- No Wazuh client calls and no lab scripts yet.
+- Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
+- No lab scripts yet. Step 9 (local wazuh-logtest) is not started.
+
+## VERIFY in Step 17 (Wazuh 4.14.9)
+
+These are coded as the expected 4.14 shape and are not confirmed on a running manager:
+
+- Manager API base `https://<WAZUH_MANAGER_IP>:55000`
+- `POST /security/user/authenticate` with HTTP Basic auth, JWT in `data.token`, no `expires_in` (cache TTL 900s)
+- `Authorization: Bearer <token>`
+- `GET /agents`, `GET /manager/status`, `GET /manager/info`, `GET /rules`
+- Pagination query names `limit` and `offset`, and `total_affected_items`
+- Rule object fields `filename` and `status` (`enabled`)
+- Agent fields `name`, `ip`, `status` (`active`, `disconnected`, `never_connected`), `os.name`, `os.version`, `version`, `lastKeepAlive`
+- Manager status `affected_items[0]` is a map of `wazuh-*` daemons to `running`
+- Manager info `version`
+- Read-only API RBAC role and policy names
+- Indexer base `https://<WAZUH_MANAGER_IP>:9200` with HTTP Basic auth
+- Index patterns `wazuh-alerts-4.x-*` and `wazuh-archives-4.x-*`
+- Time field `timestamp` (not `@timestamp`), and whether terms fields need a `.keyword` suffix
+- `date_histogram` `fixed_interval`, `key_as_string`, and `max.value_as_string`
+- `hits.total.value`
+- `rule.groups` values: `authentication_failed`, `authentication_success`, `windows`, `sysmon`, `windows_powershell`, `sshd`, `audit`, `suricata`
+- `data.srcip`, `data.win.system.eventID`, `data.win.eventdata.targetUserName`, `ipAddress`, `logonType`, `commandLine`, `image`, `parentImage`
+- `rule.mitre.id` and `rule.mitre.tactic`
+- `GET /_cluster/health` and `GET /_nodes/stats/fs` (`total_in_bytes`, `available_in_bytes`)
+- Built-in rule levels top out at 15 (ADR 0004)
+- `logall_json` and the Filebeat archives module path, plus archives retention
+- Indexer read-only role limited to the two index patterns
+- Path of `root-ca.pem` on the all-in-one
+- The Wazuh dashboard is not queried; its health status stays null until a later check
 
 ## Frontend versions (Step 3)
 Locked in `frontend/package-lock.json`. See `docs/VERSIONS.md`.
@@ -106,7 +136,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 7 is Mac-only. The API serves fixture JSON and a local SQLite file. It does not talk to Wazuh, and the dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
+Step 8 is mock-tested on the Mac. The clients do not talk to a real manager here. Live behavior **REQUIRES LAB VALIDATION**. Dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows in demo mode are not live checks.
 
 Still documented, not built:
 

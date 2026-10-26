@@ -4,6 +4,8 @@ All implementation through Step 14 happens on the Mac. The Windows PC is the hyp
 
 "Test on Mac" means a check that can fail the change before any VM exists: lint, unit tests, a production build, or `wazuh-logtest` against a labeled synthetic log. It does not mean the lab already proved the detection.
 
+The Wazuh manager API client and indexer client are built and mock-tested on the Mac (Step 8). Live behavior against WAZUH01 **REQUIRES LAB VALIDATION**. The mocks are labeled synthetic and are not lab alerts.
+
 | Component | Build on Mac? | Test on Mac? | How it is tested on Mac | Needs Windows/lab validation? |
 |---|---|---|---|---|
 | Architecture, roadmap, ADRs | Yes | Yes | Read-through against `docs/VERSIONS.md` and the core rules | No, except the network and VM plan when the lab is built |

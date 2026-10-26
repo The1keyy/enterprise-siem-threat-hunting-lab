@@ -15,6 +15,8 @@ from app.api.router import router as api_router
 from app.core.config import APP_VERSION, Settings, ensure_live_settings, get_settings
 from app.core.logging import configure_logging
 from app.db import init_database
+from app.integrations.wazuh_api import WazuhApiClient
+from app.integrations.wazuh_indexer import WazuhIndexerClient
 
 logger = logging.getLogger("sentinelforge")
 
@@ -39,7 +41,23 @@ async def _lifespan(app: FastAPI):
     settings: Settings = app.state.settings
     logger.info("starting SentinelForge mode=%s", settings.data_mode)
     init_database(settings)
-    yield
+    # Alembic's fileConfig must not leave these disabled. The TLS warning uses them.
+    logging.getLogger("sentinelforge").disabled = False
+    logging.getLogger("sentinelforge.wazuh").disabled = False
+    if settings.data_mode == "live":
+        if getattr(app.state, "wazuh_api", None) is None:
+            app.state.wazuh_api = WazuhApiClient(settings)
+        if getattr(app.state, "wazuh_indexer", None) is None:
+            app.state.wazuh_indexer = WazuhIndexerClient(settings)
+    try:
+        yield
+    finally:
+        api = getattr(app.state, "wazuh_api", None)
+        indexer = getattr(app.state, "wazuh_indexer", None)
+        if api is not None:
+            await api.aclose()
+        if indexer is not None:
+            await indexer.aclose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

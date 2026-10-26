@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"hits":{"total":{"value":1,"relation":"eq"},"hits":[{"_id":"1","sort":["2026-10-25T12:00:00Z","1"],"_source":{"timestamp":"2026-10-25T12:00:00Z","rule":{"id":"5710","level":5,"description":"sshd authentication failed","groups":["sshd","authentication_failed"],"mitre":{"id":["T1110"],"tactic":["Credential Access"]}},"agent":{"name":"UBU01","ip":"10.10.10.30"},"data":{"srcip":"10.10.10.20"},"full_log":"SYNTHETIC"}}]}}

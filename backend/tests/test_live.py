@@ -3,7 +3,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.db import SessionLocal
+from app.integrations.errors import WazuhUnavailable
 from app.main import create_app
+from app.models.tables import SavedHuntRow
 from tests.conftest import PASSWORD, demo_settings
 
 
@@ -13,9 +16,26 @@ def test_live_mode_refuses_to_start_when_wazuh_settings_are_missing(tmp_path: Pa
         create_app(settings)
 
 
-def test_live_mode_returns_503(tmp_path: Path) -> None:
-    settings = demo_settings(
-        tmp_path / "live.db",
+class _Down:
+    """Stand-in client. Every call reports Wazuh as unreachable."""
+
+    def __getattr__(self, name: str):
+        if name == "aclose":
+
+            async def close() -> None:
+                return None
+
+            return close
+
+        async def fail(*_args: object, **_kwargs: object) -> None:
+            raise WazuhUnavailable("Wazuh indexer unreachable")
+
+        return fail
+
+
+def _live_settings(database: Path):
+    return demo_settings(
+        database,
         data_mode="live",
         wazuh_api_url="https://10.10.10.40:55000",
         wazuh_api_user="readonly",
@@ -23,8 +43,14 @@ def test_live_mode_returns_503(tmp_path: Path) -> None:
         wazuh_indexer_url="https://10.10.10.40:9200",
         wazuh_indexer_user="readonly",
         wazuh_indexer_password="indexer-secret",
+        wazuh_ca_bundle="",
     )
-    app = create_app(settings)
+
+
+def test_live_mode_returns_503_when_wazuh_is_down(tmp_path: Path) -> None:
+    app = create_app(_live_settings(tmp_path / "live.db"))
+    app.state.wazuh_api = _Down()
+    app.state.wazuh_indexer = _Down()
     with TestClient(app) as client:
         health = client.get("/health")
         assert health.status_code == 200
@@ -35,11 +61,64 @@ def test_live_mode_returns_503(tmp_path: Path) -> None:
             json={"username": "analyst", "password": PASSWORD},
         )
         assert login.status_code == 200
-        denied = client.get("/api/overview")
-        assert denied.status_code == 503
-        assert denied.json()["detail"] == "Wazuh integration not implemented yet (Step 8)"
-        assert "api-secret" not in denied.text
-        assert "indexer-secret" not in denied.text
+
+        incidents = client.get("/api/incidents")
+        assert incidents.status_code == 200
+        assert incidents.json() == []
+
+        detections = client.get("/api/detections")
+        assert detections.status_code == 200
+        assert detections.json() == []
+
+        for path in ("/api/overview", "/api/sources", "/api/system/health", "/api/entities/hosts"):
+            denied = client.get(path)
+            assert denied.status_code == 503, path
+            assert "unreachable" in denied.json()["detail"]
+            assert "DEMO DATA" not in denied.text
+            assert "api-secret" not in denied.text
+            assert "indexer-secret" not in denied.text
+
+        with SessionLocal() as session:
+            session.add(
+                SavedHuntRow(
+                    id="H-1",
+                    name="Auth failures",
+                    hypothesis="Failed logons cluster",
+                    data_source="linux_auth",
+                    query="rule.groups:authentication_failed",
+                    expected_behavior="A few failures",
+                    suspicious_behavior="A burst",
+                    mitre=[],
+                    investigation_guidance="Check the host",
+                    status="NOT TESTED",
+                    demo=False,
+                )
+            )
+            session.commit()
+
+        too_wide = client.post(
+            "/api/hunts/run",
+            json={
+                "id": "H-1",
+                "query": "agent.name:WS01",
+                "from": "2026-10-01T00:00:00Z",
+                "to": "2026-10-09T00:00:00Z",
+            },
+        )
+        assert too_wide.status_code == 400
+        assert "7 days" in too_wide.json()["detail"]
+
+        down = client.post(
+            "/api/hunts/run",
+            json={
+                "id": "H-1",
+                "query": "agent.name:WS01",
+                "from": "2026-10-01T00:00:00Z",
+                "to": "2026-10-02T00:00:00Z",
+            },
+        )
+        assert down.status_code == 503
+        assert "unreachable" in down.json()["detail"]
 
         client.cookies.clear()
         anonymous = client.get("/api/overview")

@@ -10,6 +10,23 @@ BACKEND_DIR = REPO_ROOT / "backend"
 APP_VERSION = "0.1.0"
 # Pinned target from docs/VERSIONS.md. This is not a live manager check.
 WAZUH_VERSION = "4.14.9"
+# Wazuh rule.level bands. ADR 0004.
+# VERIFY (4.14.9): built-in levels top out at 15. 15 and above map to critical.
+WAZUH_LEVEL_LOW_MAX = 6
+WAZUH_LEVEL_MEDIUM_MAX = 11
+WAZUH_LEVEL_HIGH_MAX = 14
+
+
+def wazuh_level_severity(level: int) -> str:
+    """Map a Wazuh rule level to a console severity label."""
+
+    if level <= WAZUH_LEVEL_LOW_MAX:
+        return "low"
+    if level <= WAZUH_LEVEL_MEDIUM_MAX:
+        return "medium"
+    if level <= WAZUH_LEVEL_HIGH_MAX:
+        return "high"
+    return "critical"
 
 _LIVE_FIELDS = (
     "wazuh_api_url",
@@ -48,6 +65,10 @@ class Settings(BaseSettings):
     wazuh_indexer_password: str = ""
     wazuh_ca_bundle: str = ""
     wazuh_tls_insecure: bool = False
+    wazuh_timeout_seconds: float = 10.0
+    # VERIFY (4.14.9): authenticate does not return expires_in. 900s is the usual JWT life.
+    wazuh_token_ttl_seconds: int = 900
+    wazuh_token_refresh_skew_seconds: int = 60
 
     # Same defaults as frontend/src/lib/risk.ts. Step 14 can replace them via env.
     risk_weight_failed_auth: int = 15

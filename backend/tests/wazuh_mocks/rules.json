@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"data":{"affected_items":[{"filename":"sentinelforge_auth.xml","id":100101,"status":"enabled"},{"filename":"0095-sshd_rules.xml","id":5710,"status":"enabled"}],"total_affected_items":2},"error":0}

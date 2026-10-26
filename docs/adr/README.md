@@ -16,5 +16,6 @@ Each ADR has these sections:
 | [0001](0001-wazuh-as-siem.md) | Wazuh as the SIEM |
 | [0002](0002-fastapi-backend.md) | FastAPI backend |
 | [0003](0003-console-on-top-of-wazuh.md) | Analyst console on top of Wazuh |
+| [0004](0004-severity-mapping.md) | Wazuh rule level to console severity |
 
-**Status:** Step 2. 0001–0003 accepted.
+**Status:** 0001–0004 accepted. 0004 was added in Step 8.

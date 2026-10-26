@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"error":{"type":"index_not_found_exception","reason":"no such index [wazuh-archives-4.x-*]"},"status":404}

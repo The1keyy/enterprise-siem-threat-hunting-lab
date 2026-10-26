@@ -28,7 +28,7 @@ def list_hunts(session: Session) -> list[dict[str, Any]]:
             "mitre": row.mitre,
             "investigationGuidance": row.investigation_guidance,
             "status": row.status,
-            "demo": True,
+            "demo": row.demo,
         }
         for row in rows
     ]

@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"data":{"affected_items":[{"version":"v4.14.9"}],"total_affected_items":1},"error":0}

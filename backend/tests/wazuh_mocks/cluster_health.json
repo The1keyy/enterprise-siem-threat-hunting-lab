@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"cluster_name":"wazuh-cluster","status":"green","number_of_nodes":1}

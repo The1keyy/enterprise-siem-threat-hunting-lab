@@ -22,7 +22,7 @@ backend/.venv/bin/python scripts/validation/hash_password.py
 
 Copy the printed hash into `CONSOLE_ADMIN_PASSWORD_HASH`.
 
-`DATA_MODE=demo` serves fixtures and marks responses with `"demo": true`. `DATA_MODE=live` refuses to start when the Wazuh URL, user, or password is empty or still a placeholder. Live routes return **503** (`Wazuh integration not implemented yet (Step 8)`) and never fall back to demo data.
+`DATA_MODE=demo` serves fixtures and marks responses with `"demo": true`. `DATA_MODE=live` refuses to start when the Wazuh URL, user, or password is empty or still a placeholder. Live overview, sources, health, entities, detections, and hunt runs call Wazuh and return `"demo": false`. If Wazuh is unreachable they return **503** with the reason. They never fall back to demo data. Incidents stay in SQLite. Creating incidents from live alerts is Step 14.
 
 ## Migrate
 

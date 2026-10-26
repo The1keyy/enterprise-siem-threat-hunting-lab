@@ -1,0 +1,2 @@
+SYNTHETIC MOCK of Wazuh 4.14 response shape, not real data, VERIFY in lab
+{"data":{"affected_items":[{"id":"001","name":"WS01","ip":"10.10.10.20","status":"active","version":"v4.14.9","lastKeepAlive":"2026-10-25T12:00:00Z","os":{"name":"Microsoft Windows 11","version":"10.0"}}],"total_affected_items":1},"error":0}

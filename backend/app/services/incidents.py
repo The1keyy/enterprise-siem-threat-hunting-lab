@@ -65,7 +65,7 @@ def _summary(row: IncidentRow) -> dict[str, Any]:
         "mitre": row.mitre,
         "firstSeen": row.first_seen,
         "lastSeen": row.last_seen,
-        "demo": True,
+        "demo": row.demo,
     }
 
 
@@ -238,14 +238,20 @@ def create_incident(
     points = settings.promote_event_points
     subtotal = len(ordered) * points
     score = final_score(subtotal, multiplier)
-    detections = {
-        item["id"]: item for item in load_fixture("detections.json")["detections"]
-    }
+    demo_case = settings.data_mode != "live"
+    if demo_case:
+        detections = {item["id"]: item for item in load_fixture("detections.json")["detections"]}
+    else:
+        detections = {}
     mitre: dict[str, dict[str, Any]] = {}
     for event in ordered:
         detection = detections.get(str(event.get("ruleId", "")))
-        for technique in (detection or {}).get("mitre", []):
-            mitre[technique["id"]] = technique
+        techniques = list((detection or {}).get("mitre", []))
+        if not techniques and isinstance(event.get("mitre"), list):
+            techniques = [item for item in event["mitre"] if isinstance(item, dict)]
+        for technique in techniques:
+            if technique.get("id"):
+                mitre[technique["id"]] = technique
     first = ordered[0]
     last = ordered[-1]
     payload = {
@@ -287,12 +293,16 @@ def create_incident(
         },
         "notes": [],
         "disposition": "Undetermined",
-        "summary": "Promoted from a demo hunt. Not a lab finding.",
+        "summary": (
+            "Promoted from a demo hunt. Not a lab finding."
+            if demo_case
+            else "Promoted from a hunt."
+        ),
         "recommendedContainment": ["Snapshot the lab VM before any change."],
     }
     from app.services.seed import _insert_incident
 
-    _insert_incident(session, payload, demo=True)
+    _insert_incident(session, payload, demo=demo_case)
     session.commit()
     return incident_detail(session, incident_id)
 
@@ -308,7 +318,7 @@ def record_dry_run(
 ) -> dict[str, Any]:
     """LAB ONLY. confirm=true writes an audit row and executes nothing."""
 
-    _require(session, incident_id)
+    row = _require(session, incident_id)
     if not confirm:
         raise HTTPException(status_code=400, detail="confirm must be true")
     if action not in RESPONSE_ACTIONS:
@@ -327,4 +337,4 @@ def record_dry_run(
         dry_run=True,
     )
     session.commit()
-    return {"demo": True, "message": DRY_RUN_MESSAGE}
+    return {"demo": row.demo, "message": DRY_RUN_MESSAGE}
