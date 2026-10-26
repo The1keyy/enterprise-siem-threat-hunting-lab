@@ -60,3 +60,73 @@ Logtest: six invalid-user failures then `Accepted password` from the same IP end
 ### Collection path
 
 Logtest used `log_format: syslog` and `location: /var/log/auth.log`. The decoder matched the line text. Which file or journal the Ubuntu 24.04 agent reads is not in this ruleset. That path stays **VERIFY** until UBU01 is checked.
+
+## SF-001, SF-002, and SF-003 — Windows 4625 / 4624
+
+Evidence commands, run inside `wazuh/wazuh-manager:4.14.9`:
+
+```bash
+docker exec wazuh-logtest grep -n -E 'id="6000[01]"|decoded_as|win.system.channel' /var/ossec/ruleset/rules/0575-win-base_rules.xml
+docker exec wazuh-logtest grep -n -E 'id="6010[3456]"|id="60122"|id="6020[345]"|MS_FREQ|same_field|if_matched' /var/ossec/ruleset/rules/0580-win-security_rules.xml
+docker exec wazuh-logtest sh -c 'grep -c different_field /var/ossec/ruleset/rules/*.xml | grep -v ":0" || echo ZERO'
+```
+
+A second scan of every `<rule>` body in `/var/ossec/ruleset/rules/*.xml` found no rule with two `<same_field>` elements, and no `frequency` rule that also contains a `<field>` element.
+
+### Chain
+
+| Rule | Level | File | What it matches |
+|---|---|---|---|
+| 60000 | 0 | `0575-win-base_rules.xml` | `decoded_as windows_eventchannel`, `win.system.providerName` `.+` |
+| 60001 | 0 | same | `if_sid 60000`, `win.system.channel` `^Security$` |
+| 60104 | 5 | `0580-win-security_rules.xml` | `if_sid 60001`, severity `AUDIT_FAILURE` or `failure` |
+| 60105 | 5 | same | `if_sid 60104`, eventID list includes `4625`. Description "Windows Logon Failure". MITRE `T1078` |
+| 60122 | 5 | same | `if_sid 60105`, eventID `^529$\|^4625$`. Description "Logon Failure - Unknown user or bad password". MITRE `T1531` |
+| 60103 | 0 | same | `if_sid 60001`, severity `AUDIT_SUCCESS` or `success` |
+| 60106 | 3 | same | `if_sid 60103`, eventID `^528$\|^540$\|^673$\|^4624$\|^4769$`. "Windows Logon Success". MITRE `T1078` |
+
+60122 is the fired id for a 4625, the same way 5760 is the fired id for a known-user sshd failure. Its eventID check is every 4625, not a bad-password status code. There is no status or substatus check on that rule.
+
+`<var name="MS_FREQ">8</var>` is line 12 of `0580-win-security_rules.xml`.
+
+### Fields
+
+These names are in that file, not guessed:
+
+| Field | Where |
+|---|---|
+| `win.eventdata.targetUserName` | 60203 `same_field`; 60232 match |
+| `win.eventdata.ipAddress` | 60204 and 60205 `same_field`; 92651 in `0840-win_event_channel.xml` |
+| `win.eventdata.logonType` | 60118 (`^2$`), 60200 (`^8$`), 60232 (`^5$`), 92653 (`10`) |
+| `win.eventdata.workstationName` | 60118 |
+
+The sample JSON comment above rule 60106 uses the same four names. `different_field` is still zero matches.
+
+`type="pcre2" negate="yes"` on a `win.eventdata` field is rule 92651 (`ipAddress` not `127.0.0.1`). A literal trailing `$` needs pcre2. The default field matcher treats `$` as an end anchor.
+
+### Stock bursts, and how ours differ
+
+| Rule | What it actually is |
+|---|---|
+| 60203 | `frequency` 8, `timeframe` 240, `if_matched_sid` 60107, `same_field` `targetUserName`. 60107 is event 577 or 4673, a failed privileged operation. Not a 4625 rule. MITRE `T1110` |
+| 60204 | `frequency` 8, `timeframe` 240, `if_matched_group` `authentication_failed`, `same_field` `ipAddress`. "Multiple Windows Logon Failures". MITRE `T1110` |
+| 60205 | `frequency` 8, `timeframe` 240, `if_matched_sid` 60104 (any audit failure), `same_field` `ipAddress` |
+
+No stock rule does `same_field` `targetUserName` on 60122.
+
+- SF-001 (100100) is 60122, same account, frequency 6, timeframe 120, level 11, MITRE `T1110.001`. Level 11 is still medium (ADR 0004). It is above 100110 and 60204 so one account is not relabeled as a spray.
+- SF-002 (100110) is 60122, same IP, frequency 6, timeframe 120, level 10, MITRE `T1110.003`. It is not a distinct-user count. Step 14 does that count. A six-account spray does not meet SF-001. A six-failure single account matches both, and 100100 wins on level.
+- SF-003 (100120) is `if_sid` 60106, eventID `^4624$`, `if_matched_sid` 100100, frequency 2, timeframe 120, level 12, MITRE `T1078` only. 60106 also matches 4769. The eventID field drops that. Two `same_field` elements (account and IP) are written. This image never does that, so both being required is not proven until Windows.
+
+A `<field>` exclusion on a frequency rule is also unused in this image. The exclusions are still in the XML. Load success does not prove the match.
+
+### Exclusions written in `sentinelforge_100100_auth.xml`
+
+- Every rule: `targetUserName` matching pcre2 `\$$` is negated (machine account).
+- SF-002 only: `ipAddress` matching pcre2 `^-$` is negated. A dash is not a source IP.
+- No other exclusion. SYSTEM, LOCAL SERVICE, NETWORK SERVICE, ANONYMOUS LOGON, logon type, and `127.0.0.1` are not excluded.
+
+### Collection
+
+4624 and 4625 are written on the computer that handled the logon. Domain account logons aimed at DC01 are on DC01. Local account logons are on WS01. A domain account logon to WS01 is a WS01 event. Grep of `0580-win-security_rules.xml` found no 4771 and no 4776. Those are not parents of these rules.
+

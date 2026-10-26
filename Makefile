@@ -19,8 +19,10 @@ lint:
 up:
 	docker compose up --build
 
+# --wait blocks until the healthcheck is healthy. 120s is the cap; a stuck
+# analysisd fails here with compose's timeout instead of a later logtest error.
 logtest-up:
-	$(LOGTEST_COMPOSE) up -d
+	$(LOGTEST_COMPOSE) up -d --wait --wait-timeout 120
 
 logtest-down:
 	$(LOGTEST_COMPOSE) down -v --remove-orphans

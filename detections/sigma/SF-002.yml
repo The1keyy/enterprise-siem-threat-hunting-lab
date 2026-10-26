@@ -1,0 +1,26 @@
+title: SF-002 failed logons from one source IP
+id: 0cb47174-964b-4f72-9aa3-36a13e13ed4a
+status: experimental
+description: >
+  Security 4625 from one source IP. Wazuh 4.14.9 has no different_field, so
+  distinct usernames are not counted in rule 100110. That count is Step 14.
+  The six-event, 120 second threshold lives in the Wazuh rule. This selection
+  is one failure with a real source IP, excluding a machine account.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4625
+  filter_machine:
+    TargetUserName|endswith: '$'
+  filter_no_source:
+    IpAddress: '-'
+  condition: selection and not filter_machine and not filter_no_source
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110.003
+falsepositives:
+  - Several people behind one address fail a logon.
+  - One account's password guesses from that address. Rule 100100 is level 11 and is the intended alert for that case.

@@ -1,0 +1,22 @@
+title: SF-003 successful logon after repeated failures
+id: c88a786e-ee23-4397-8d3c-97094246ced4
+status: experimental
+description: >
+  Security 4624. The requirement that SF-001 already fired for the same
+  account and source IP inside 120 seconds lives in Wazuh rule 100120.
+  This selection is the success event only, excluding a machine account.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4624
+  filter_machine:
+    TargetUserName|endswith: '$'
+  condition: selection and not filter_machine
+level: high
+tags:
+  - attack.initial_access
+  - attack.t1078
+falsepositives:
+  - A person mistypes a password and then logs on. The Wazuh rule does not alert on a 4624 with no prior SF-001 alert.

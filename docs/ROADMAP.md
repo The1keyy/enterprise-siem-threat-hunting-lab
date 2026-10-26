@@ -1,6 +1,6 @@
 # Roadmap
 
-SF-013 and SF-014 are written and `LOGTEST VALID` on synthetic sshd lines. The other rows are not written yet. Nothing is `LAB VALIDATED`.
+SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001, SF-002, and SF-003 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
@@ -14,9 +14,9 @@ Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" m
 
 | ID | Name | MITRE | Telemetry | Event IDs or log | Tier | LOGTEST on Mac? | Step 10 batch |
 |---|---|---|---|---|---|---|---|
-| SF-001 | Repeated failed logons | T1110.001 | `windows_security` | Security **4625**. **VERIFY** Wazuh field names. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 1 |
-| SF-002 | Password spray | T1110.003 | `windows_security` | Security **4625** across many accounts from one source. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). **VERIFY** that logtest honors `frequency` / `timeframe` the same way the manager does. | 1 |
-| SF-003 | Successful logon after failures | T1078 | `windows_security` | Security **4624** after **4625**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Same frequency **VERIFY**. | 1 |
+| SF-001 | Repeated failed logons | T1110.001 | `windows_security` | Security **4625**. Field `win.eventdata.targetUserName` is in the 4.14.9 ruleset. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 1 |
+| SF-002 | Password spray | T1110.003 | `windows_security` | Security **4625** from one source IP. `different_field` is absent, so distinct users are Step 14. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). **VERIFY** that a Windows agent honors `frequency` / `timeframe` the same way logtest did for sshd. | 1 |
+| SF-003 | Successful logon after failures | T1078 | `windows_security` | Security **4624** after the SF-001 burst, same account and source IP. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Same frequency **VERIFY** on a Windows agent. | 1 |
 | SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Logging must be enabled first. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
 | SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** (`CommandLine`). Security **4688** only if command-line auditing is on. **VERIFY** 4688 setup. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
 | SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** plus Sysmon **3** when a connection is logged. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Sysmon 3 fields: **REQUIRES WINDOWS VALIDATION**. | 2 |

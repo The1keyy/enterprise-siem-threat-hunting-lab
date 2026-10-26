@@ -1,0 +1,71 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+comment: SYNTHETIC TEST INPUT
+id: SF-002
+description: >
+  Six 4625s from one source IP, each a different sf-test account, are the
+  intended SF-002 case. Five are not. A success is not. ipAddress "-" is not
+  a source. Distinct-user counting is not in the Wazuh rule.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    events:
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-alice","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-bob","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-carol","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-dave","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-erin","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-frank","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+    expect:
+      fires: true
+      rule_id: 100110
+      level: 10
+      mitre:
+        - T1110.003
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    events:
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-alice","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-bob","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-carol","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-dave","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-erin","ipAddress":"10.10.10.200","logonType":"3","workstationName":"LAB-CLIENT"}}}'
+    expect:
+      fires: false
+      rule_id: 100110
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"An account was successfully logged on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-carol","ipAddress":"127.0.0.1","logonType":"2","workstationName":"WS01"}}}'
+    expect:
+      fires: false
+      rule_id: 100110
+  - name: negative_no_source_ip
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    events:
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-alice","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-bob","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-carol","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-dave","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-erin","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+      - '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-frank","ipAddress":"-","logonType":"2","workstationName":"WS01"}}}'
+    expect:
+      fires: false
+      rule_id: 100110

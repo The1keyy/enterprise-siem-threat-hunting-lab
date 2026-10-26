@@ -4,7 +4,7 @@
     {
       "id": "SF-001",
       "name": "Repeated failed logons",
-      "description": "Security 4625 repeated against one account. VERIFY Wazuh field names.",
+      "description": "Six Security 4625 failures for one target account inside 120 seconds. Machine accounts are excluded.",
       "severity": "medium",
       "mitre": [
         {
@@ -16,29 +16,31 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100100"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4625",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-001. Not written yet.",
+      "falsePositives": "A person mistypes one password six times. A script that retries one sf-test account does the same thing.",
+      "tuningNotes": "frequency 6 and timeframe 120 on rule 60122, same targetUserName. Stock rule 60204 waits for 8 matches in 240 seconds and does not require one account. Level 11 stays medium (ADR 0004) and is above 100110 and 60204 so a one-account burst is not labeled as a spray. Names ending in $ are excluded. No other exclusion.\n",
+      "testProcedure": "make logtest ID=SF-001 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-001.md. Not run.\n",
+      "expectedEvent": "Security 4625 for one non-machine account, six times in 120 seconds.",
+      "expectedAlert": "Description starts with SF-001. Rule 100100, level 11. MITRE T1110.001.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100100\" level=\"11\" frequency=\"6\" timeframe=\"120\" ignore=\"60\">\n    <!-- 60122 is the fired id for event 4625. 60105 is its parent and is not the alert id. -->\n    <if_matched_sid>60122</if_matched_sid>\n    <same_field>win.eventdata.targetUserName</same_field>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <description>SF-001: repeated 4625 failures for one target account</description>\n    <mitre>\n      <id>T1110.001</id>\n    </mitre>\n    <group>sentinelforge,auth,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-001 repeated failed logons for one account\nid: 2426bf0c-0333-4756-ada9-627fe2921c53\nstatus: experimental\ndescription: >\n  Security 4625 for one target account. The six-event, 120 second threshold\n  lives in Wazuh rule 100100. This selection is one failure, excluding a\n  machine account name.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4625\n  filter_machine:\n    TargetUserName|endswith: '$'\n  condition: selection and not filter_machine\nlevel: medium\ntags:\n  - attack.credential_access\n  - attack.t1110.001\nfalsepositives:\n  - A person mistypes one account's password.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-002",
       "name": "Password spray",
-      "description": "Security 4625 across many accounts from one source. VERIFY frequency and timeframe.",
-      "severity": "critical",
+      "description": "Six Security 4625 failures from one source IP inside 120 seconds. Distinct usernames are not counted in this rule. That is Step 14. Machine accounts and an ipAddress of \"-\" are excluded.\n",
+      "severity": "medium",
       "mitre": [
         {
           "id": "T1110.003",
@@ -49,28 +51,30 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100110"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4625",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-002. Not written yet.",
+      "falsePositives": "Several failed logons from one host, including one person guessing a single password. Rule 100100 is the intended alert when that one account reaches six failures. Shared NAT would also look like one source. The lab network is not NATed that way.\n",
+      "tuningNotes": "frequency 6, timeframe 120, same ipAddress, level 10. The 4.14.9 ruleset has zero different_field uses, so this is a same-IP burst, not a distinct-user count. Step 14 does that count. Stock 60204 is frequency 8 in 240 seconds on the authentication_failed group and MITRE T1110. Level 10 is medium (ADR 0004). Exclusions are machine accounts and ipAddress \"-\". No other exclusion.\n",
+      "testProcedure": "make logtest ID=SF-002 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-002.md. Not run.\n",
+      "expectedEvent": "Security 4625 from one source IP, six times in 120 seconds, for non-machine accounts.",
+      "expectedAlert": "Description starts with SF-002. Rule 100110, level 10. MITRE T1110.003.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100110\" level=\"10\" frequency=\"6\" timeframe=\"120\" ignore=\"60\">\n    <!--\n      Same-IP burst. Distinct usernames are not counted here.\n      different_field is absent from the 4.14.9 ruleset. Step 14 counts them.\n      Level 10 loses to 100100 (level 11) when one account also reaches 6.\n    -->\n    <if_matched_sid>60122</if_matched_sid>\n    <same_field>win.eventdata.ipAddress</same_field>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <field name=\"win.eventdata.ipAddress\" type=\"pcre2\" negate=\"yes\">^-$</field>\n    <description>SF-002: repeated 4625 failures from one source IP</description>\n    <mitre>\n      <id>T1110.003</id>\n    </mitre>\n    <group>sentinelforge,auth,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-002 failed logons from one source IP\nid: 0cb47174-964b-4f72-9aa3-36a13e13ed4a\nstatus: experimental\ndescription: >\n  Security 4625 from one source IP. Wazuh 4.14.9 has no different_field, so\n  distinct usernames are not counted in rule 100110. That count is Step 14.\n  The six-event, 120 second threshold lives in the Wazuh rule. This selection\n  is one failure with a real source IP, excluding a machine account.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4625\n  filter_machine:\n    TargetUserName|endswith: '$'\n  filter_no_source:\n    IpAddress: '-'\n  condition: selection and not filter_machine and not filter_no_source\nlevel: medium\ntags:\n  - attack.credential_access\n  - attack.t1110.003\nfalsepositives:\n  - Several people behind one address fail a logon.\n  - One account's password guesses from that address. Rule 100100 is level 11 and is the intended alert for that case.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-003",
       "name": "Successful logon after failures",
-      "description": "Security 4624 after 4625. VERIFY frequency handling.",
+      "description": "Security 4624 for the same account and source IP within 120 seconds after SF-001. MITRE T1078 only. Machine accounts are excluded.\n",
       "severity": "high",
       "mitre": [
         {
@@ -82,21 +86,23 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100120"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4624 after 4625",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-003. Not written yet.",
+      "falsePositives": "A person mistypes a password six times and then succeeds. That is the detection. It is high, not critical.",
+      "tuningNotes": "Rule 100120 is if_sid 60106, eventID 4624, if_matched_sid 100100, frequency 2, timeframe 120, level 12. Level 12 is high (ADR 0004). Stock success 60106 is level 3 and also matches 4769, which this rule drops. Two same_field elements (account and source IP) do not appear together in the 4.14.9 ruleset, so both being required is not proven until a Windows agent fires the rule. A success after a same-IP spray that never reached six failures on that one account does not fire 100120. Machine accounts are excluded. No other exclusion.\n",
+      "testProcedure": "make logtest ID=SF-003 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-003.md. Not run.\n",
+      "expectedEvent": "Security 4624 for the same non-machine account and source IP after six 4625s inside 120 seconds.",
+      "expectedAlert": "Description starts with SF-003. Rule 100120, level 12. MITRE T1078 only.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100120\" level=\"12\" frequency=\"2\" timeframe=\"120\">\n    <!--\n      if_sid + if_matched_sid is the shape of built-in rule 2509.\n      60106 also matches 4769. The eventID field keeps this on 4624.\n      Two same_field elements are not used together anywhere in this image.\n    -->\n    <if_sid>60106</if_sid>\n    <field name=\"win.system.eventID\">^4624$</field>\n    <if_matched_sid>100100</if_matched_sid>\n    <same_field>win.eventdata.targetUserName</same_field>\n    <same_field>win.eventdata.ipAddress</same_field>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <description>SF-003: 4624 after repeated failures for the same account and source IP</description>\n    <mitre>\n      <id>T1078</id>\n    </mitre>\n    <group>sentinelforge,auth,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-003 successful logon after repeated failures\nid: c88a786e-ee23-4397-8d3c-97094246ced4\nstatus: experimental\ndescription: >\n  Security 4624. The requirement that SF-001 already fired for the same\n  account and source IP inside 120 seconds lives in Wazuh rule 100120.\n  This selection is the success event only, excluding a machine account.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4624\n  filter_machine:\n    TargetUserName|endswith: '$'\n  condition: selection and not filter_machine\nlevel: high\ntags:\n  - attack.initial_access\n  - attack.t1078\nfalsepositives:\n  - A person mistypes a password and then logs on. The Wazuh rule does not alert on a 4624 with no prior SF-001 alert.\n",
       "tuningHistory": [],
       "demo": true
     },

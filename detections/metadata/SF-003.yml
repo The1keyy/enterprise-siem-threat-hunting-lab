@@ -1,0 +1,52 @@
+id: SF-003
+name: Successful logon after failures
+description: >
+  Security 4624 for the same account and source IP within 120 seconds
+  after SF-001. MITRE T1078 only. Machine accounts are excluded.
+severity: high
+mitre:
+  - T1078
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100120"
+sigma_file: detections/sigma/SF-003.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60106"
+  - "100100"
+required_telemetry: >
+  Audit Logon success and failure. The 4624 is written on the computer
+  that accepted the logon. Domain account logons aimed at DC01 are on
+  DC01. Local account logons are on WS01. A domain account logon to WS01
+  is a WS01 4624.
+false_positives: A person mistypes a password six times and then succeeds. That is the detection. It is high, not critical.
+tuning_notes: >
+  Rule 100120 is if_sid 60106, eventID 4624, if_matched_sid 100100,
+  frequency 2, timeframe 120, level 12. Level 12 is high (ADR 0004).
+  Stock success 60106 is level 3 and also matches 4769, which this rule
+  drops. Two same_field elements (account and source IP) do not appear
+  together in the 4.14.9 ruleset, so both being required is not proven
+  until a Windows agent fires the rule. A success after a same-IP spray
+  that never reached six failures on that one account does not fire
+  100120. Machine accounts are excluded. No other exclusion.
+test_procedure: >
+  make logtest ID=SF-003 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-003.md. Not run.
+expected_event: Security 4624 for the same non-machine account and source IP after six 4625s inside 120 seconds.
+expected_alert: Description starts with SF-003. Rule 100120, level 12. MITRE T1078 only.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Total rules enabled: '8459'
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Started (pid: 639).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). GET /rules returned 100120 level 12 enabled from
+  sentinelforge_100100_auth.xml.

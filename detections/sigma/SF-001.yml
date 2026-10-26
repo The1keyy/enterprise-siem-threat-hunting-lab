@@ -1,0 +1,22 @@
+title: SF-001 repeated failed logons for one account
+id: 2426bf0c-0333-4756-ada9-627fe2921c53
+status: experimental
+description: >
+  Security 4625 for one target account. The six-event, 120 second threshold
+  lives in Wazuh rule 100100. This selection is one failure, excluding a
+  machine account name.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4625
+  filter_machine:
+    TargetUserName|endswith: '$'
+  condition: selection and not filter_machine
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+falsepositives:
+  - A person mistypes one account's password.

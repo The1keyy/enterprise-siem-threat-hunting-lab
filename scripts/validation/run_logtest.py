@@ -30,7 +30,7 @@ ENV_FILE = REPO / "scripts" / "validation" / "logtest" / ".env"
 CONTAINER = "wazuh-logtest"
 UP_COMMAND = (
     "docker compose --env-file scripts/validation/logtest/.env "
-    "-f scripts/validation/logtest/docker-compose.yml up -d"
+    "-f scripts/validation/logtest/docker-compose.yml up -d --wait --wait-timeout 120"
 )
 
 # VERIFY (4.14.9): these phase labels come from /var/ossec/bin/wazuh-logtest.

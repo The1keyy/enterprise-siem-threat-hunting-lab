@@ -1,0 +1,46 @@
+id: SF-001
+name: Repeated failed logons
+description: Six Security 4625 failures for one target account inside 120 seconds. Machine accounts are excluded.
+severity: medium
+mitre:
+  - T1110.001
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100100"
+sigma_file: detections/sigma/SF-001.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60122"
+required_telemetry: >
+  Audit Logon success and failure on the computer that handled the logon.
+  Domain account logons aimed at DC01 are collected on DC01. Local account
+  logons are collected on WS01. A domain account logon to WS01 is a WS01
+  4625, not a DC01 4625. Kerberos 4771 and NTLM 4776 are not this rule.
+false_positives: A person mistypes one password six times. A script that retries one sf-test account does the same thing.
+tuning_notes: >
+  frequency 6 and timeframe 120 on rule 60122, same targetUserName. Stock
+  rule 60204 waits for 8 matches in 240 seconds and does not require one
+  account. Level 11 stays medium (ADR 0004) and is above 100110 and 60204
+  so a one-account burst is not labeled as a spray. Names ending in $ are
+  excluded. No other exclusion.
+test_procedure: >
+  make logtest ID=SF-001 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-001.md. Not run.
+expected_event: Security 4625 for one non-machine account, six times in 120 seconds.
+expected_alert: Description starts with SF-001. Rule 100100, level 11. MITRE T1110.001.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Total rules enabled: '8459'
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Started (pid: 639).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). GET /rules returned 100100 level 11 enabled from
+  sentinelforge_100100_auth.xml.

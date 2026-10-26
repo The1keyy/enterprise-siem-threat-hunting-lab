@@ -1,0 +1,54 @@
+id: SF-002
+name: Password spray
+description: >
+  Six Security 4625 failures from one source IP inside 120 seconds.
+  Distinct usernames are not counted in this rule. That is Step 14.
+  Machine accounts and an ipAddress of "-" are excluded.
+severity: medium
+mitre:
+  - T1110.003
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100110"
+sigma_file: detections/sigma/SF-002.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60122"
+required_telemetry: >
+  Audit Logon success and failure on the computer that handled the logon.
+  Domain account logons aimed at DC01 are collected on DC01. Local account
+  logons are collected on WS01. The source IP is win.eventdata.ipAddress.
+  A value of "-" is not a source and does not count.
+false_positives: >
+  Several failed logons from one host, including one person guessing a
+  single password. Rule 100100 is the intended alert when that one account
+  reaches six failures. Shared NAT would also look like one source. The
+  lab network is not NATed that way.
+tuning_notes: >
+  frequency 6, timeframe 120, same ipAddress, level 10. The 4.14.9 ruleset
+  has zero different_field uses, so this is a same-IP burst, not a
+  distinct-user count. Step 14 does that count. Stock 60204 is frequency 8
+  in 240 seconds on the authentication_failed group and MITRE T1110.
+  Level 10 is medium (ADR 0004). Exclusions are machine accounts and
+  ipAddress "-". No other exclusion.
+test_procedure: >
+  make logtest ID=SF-002 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-002.md. Not run.
+expected_event: Security 4625 from one source IP, six times in 120 seconds, for non-machine accounts.
+expected_alert: Description starts with SF-002. Rule 100110, level 10. MITRE T1110.003.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Total rules enabled: '8459'
+  2026/10/26 14:25:43 wazuh-analysisd: INFO: Started (pid: 639).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). GET /rules returned 100110 level 10 enabled from
+  sentinelforge_100100_auth.xml.

@@ -23,6 +23,12 @@ describe('ATT&CK coverage', () => {
       expect(detection.status).not.toBe('LAB VALIDATED')
       if (detection.id === 'SF-013' || detection.id === 'SF-014') {
         expect(detection.status).toBe('LOGTEST VALID')
+      } else if (
+        detection.id === 'SF-001' ||
+        detection.id === 'SF-002' ||
+        detection.id === 'SF-003'
+      ) {
+        expect(detection.status).toBe('SYNTAX VALID')
       } else {
         expect(detection.status).toBe('NOT TESTED')
       }

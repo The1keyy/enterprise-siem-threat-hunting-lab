@@ -1,0 +1,77 @@
+<!--
+  REQUIRES WINDOWS VALIDATION
+  Eventchannel JSON cannot be replayed in this logtest harness (CANARY-002).
+  Status stops at SYNTAX VALID after analysisd loads this file. Not LAB VALIDATED.
+
+  Chain, read from wazuh/wazuh-manager:4.14.9:
+    60000 decoded_as windows_eventchannel
+      /var/ossec/ruleset/rules/0575-win-base_rules.xml
+    60001 channel Security
+    60104 AUDIT_FAILURE -> 60105 event 4625 -> 60122
+    60103 AUDIT_SUCCESS -> 60106 event 4624 (also 4769)
+      /var/ossec/ruleset/rules/0580-win-security_rules.xml
+  60122 matches every 4625: its eventID check is ^529$|^4625$. The description
+  says "Unknown user or bad password". It does not check a status code.
+  Stock burst 60204 is frequency 8, timeframe 240, same ipAddress, MITRE T1110.
+  There is no different_field in this image. SF-002 cannot count distinct users.
+
+  Exclusions on every rule below:
+    targetUserName ending in $ (machine account), type pcre2 negate.
+  SF-002 also excludes ipAddress exactly "-". That value is not a source IP.
+  No other account, logon type, or address is excluded.
+
+  A <field> check on a frequency rule, and two <same_field> elements in one
+  rule, do not appear in this image. The file may load. The match behavior
+  still REQUIRES WINDOWS VALIDATION.
+-->
+<group name="windows,windows_security,">
+
+  <rule id="100100" level="11" frequency="6" timeframe="120" ignore="60">
+    <!-- 60122 is the fired id for event 4625. 60105 is its parent and is not the alert id. -->
+    <if_matched_sid>60122</if_matched_sid>
+    <same_field>win.eventdata.targetUserName</same_field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">\$$</field>
+    <description>SF-001: repeated 4625 failures for one target account</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>sentinelforge,auth,</group>
+  </rule>
+
+  <rule id="100110" level="10" frequency="6" timeframe="120" ignore="60">
+    <!--
+      Same-IP burst. Distinct usernames are not counted here.
+      different_field is absent from the 4.14.9 ruleset. Step 14 counts them.
+      Level 10 loses to 100100 (level 11) when one account also reaches 6.
+    -->
+    <if_matched_sid>60122</if_matched_sid>
+    <same_field>win.eventdata.ipAddress</same_field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">\$$</field>
+    <field name="win.eventdata.ipAddress" type="pcre2" negate="yes">^-$</field>
+    <description>SF-002: repeated 4625 failures from one source IP</description>
+    <mitre>
+      <id>T1110.003</id>
+    </mitre>
+    <group>sentinelforge,auth,</group>
+  </rule>
+
+  <rule id="100120" level="12" frequency="2" timeframe="120">
+    <!--
+      if_sid + if_matched_sid is the shape of built-in rule 2509.
+      60106 also matches 4769. The eventID field keeps this on 4624.
+      Two same_field elements are not used together anywhere in this image.
+    -->
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <if_matched_sid>100100</if_matched_sid>
+    <same_field>win.eventdata.targetUserName</same_field>
+    <same_field>win.eventdata.ipAddress</same_field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">\$$</field>
+    <description>SF-003: 4624 after repeated failures for the same account and source IP</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>sentinelforge,auth,</group>
+  </rule>
+
+</group>

@@ -17,4 +17,4 @@ Custom Wazuh rules (XML). They are deployed to `/var/ossec/etc/rules/` on WAZUH0
 | 100900 | Network |
 | 101000 | Correlation |
 
-**Status:** Empty.
+**Status:** `sentinelforge_100700_linux.xml` (SF-013, SF-014) and `sentinelforge_100100_auth.xml` (SF-001, SF-002, SF-003). Windows rules are `SYNTAX VALID` only.

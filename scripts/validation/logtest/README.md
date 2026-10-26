@@ -36,7 +36,7 @@ make logtest-down
 make logtest-clean
 ```
 
-`make logtest` does not start the container. If it is not healthy, the runner prints the compose command and exits 1.
+`make logtest-up` runs `docker compose up -d --wait --wait-timeout 120`. It returns when the healthcheck is healthy, or it fails if that takes longer than 120 seconds. `make logtest` does not start the container. If it is not healthy, the runner prints the compose command and exits 1.
 
 With no `tests/logs/SF-*.yml` files, the runner prints `0 detections found` and still runs canaries. `--update-status` writes `LOGTEST VALID` only when every case for that `SF-XXX` passes. It never writes `LAB VALIDATED`.
 
