@@ -11,6 +11,10 @@
 # Linux scripts must stay LF or they break on Ubuntu.
 *.sh   text eol=lf
 
+# Pinned upstream Sysmon XML. A few lines are CRLF. Leave the bytes alone so the
+# SHA256 matches the sysmon-modular release asset.
+configs/sysmon/upstream/sysmonconfig-15.21.xml -text -eol
+
 # Binary files
 *.png  binary
 *.jpg  binary

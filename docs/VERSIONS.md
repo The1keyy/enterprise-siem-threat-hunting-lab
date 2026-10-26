@@ -33,8 +33,8 @@ support; the lab stays on a host-only network.
 
 | Component | Version | Notes |
 |---|---|---|
-| Sysmon | Latest from Microsoft Sysinternals | **VERIFY** version at install and record it here. |
-| Sysmon config base | sysmon-modular or SwiftOnSecurity | Credited in `configs/sysmon/README.md`. Chosen in Step 12. |
+| Sysmon | **VERIFY** at install. The committed config targets 15.21. | Do not record a binary version until `Sysmon64.exe` is hashed on the lab host. |
+| Sysmon config base | sysmon-modular tag `configs-a45dedb13a43`, commit `a45dedb13a43c0d8ea1fc6b580a0ac396fa74457` | MIT. File `configs/sysmon/upstream/sysmonconfig-15.21.xml`, `schemaversion` **4.91**. SwiftOnSecurity was not copied. |
 | auditd | Ubuntu 24.04 package | |
 
 ## Application stack

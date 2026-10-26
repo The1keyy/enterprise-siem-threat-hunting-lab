@@ -1,0 +1,7 @@
+# REQUIRES WINDOWS VALIDATION
+# Run on: both
+# Status: NOT TESTED. The hash is a placeholder until lab setup.
+# Replace the placeholder with the SHA256 of the Sysmon.zip you download on the lab host.
+# In PowerShell: Get-FileHash -Algorithm SHA256 -Path .\Sysmon.zip
+# install-sysmon.ps1 refuses to run while this line is still the placeholder.
+<SYSMON_ZIP_SHA256>

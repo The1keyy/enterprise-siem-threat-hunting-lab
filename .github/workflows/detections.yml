@@ -49,7 +49,7 @@ jobs:
         run: python scripts/validation/validate_detections.py
 
       - name: Detection pytest
-        run: python -m pytest tests/detections
+        run: python -m pytest tests/detections tests/configs
 
       - name: Sigma check and convert
         run: python scripts/validation/sigma_check.py

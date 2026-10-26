@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 11.1 compares XML rule counts with `GET /rules?filename=`. Local run on 2026-10-26 printed `loaded 23 = 23`. The logtest Actions run for that commit is not observed yet. Step 12A is not started.
+**Next:** Step 12B writes the Wazuh agent `localfile` entries from `docs/TELEMETRY_MATRIX.md`. 12B is not started. Step 12A configs are SYNTAX VALID on the Mac only. Nothing is installed on a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -28,8 +28,8 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
-| 11 | Detection-as-code CI | 11A and 11B done. 11.1 load-count check added; its Actions run is not observed yet |
-| 12 | Lab configs + scripts | Not started |
+| 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
+| 12 | Lab configs + scripts | 12A written. Audit policy, PowerShell logging, and Sysmon configs are SYNTAX VALID. 12B and 12C are not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |
@@ -46,7 +46,7 @@ Real counts only. Update these as work actually happens.
 | Saved hunts | 0 |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | On 2026-10-26: `detections` 40381588009 succeeded. `app` 40379538866 succeeded (this step did not change `frontend/`, `backend/`, or `fixtures/`, so `app` did not re-run). `secrets` 40382184369 succeeded. `logtest` 40382184242 succeeded in 1m13s after two failures: 40381587906 (hex-only API password, container exited 0) and 40381952511 (the load check treated a missing `sentinelforge` line as a failure). Dependabot's own updater jobs failed with `fetching job details: missing response`. |
+| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. The 12A Actions run is not in this table until that push finishes. |
 
 | ID | Status | Evidence |
 |---|---|---|
@@ -68,7 +68,7 @@ Real counts only. Update these as work actually happens.
 
 ## Step 12 needs
 
-Step 12 builds the agent and audit configs from this list. Nothing here is installed yet.
+Step 12A writes the Windows side of this list. The matrix is `docs/TELEMETRY_MATRIX.md`. Nothing here is installed on a Windows host. 12B (agent `localfile`) and 12C (Linux) are not started. Process Creation is in the audit script only so Security 4688 can include a command line. Special Logon, Other Object Access Events, and Security System Extension are not in the matrix and are not set. `schtasks.exe` and `sc.exe` are in the Sysmon include and no current rule alerts on them. The System channel is in `configs/windows/channels.md` for 12B and no current rule reads it.
 
 Windows channels:
 
@@ -129,7 +129,8 @@ Not Windows:
 - `make logtest-up` runs `docker compose up -d --wait --wait-timeout 120` and returns only after the healthcheck is healthy, or fails at 120 seconds. It starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. That script deletes `/etc/services.d/filebeat` before s6 starts services, so Filebeat is not running. Alert and archive directories are 32m tmpfs. There are no named volumes. `make logtest-down` and `make logtest-clean` remove this container and its volumes only. Analysisd still reached `is running`.
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
-- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 12 is not started.
+- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 11.1 compares each `sentinelforge_*.xml` rule count with `GET /rules?filename=`.
+- Step 12A adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `pytest tests/configs` passed (4). `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION. 12B is not started.
 
 ## VERIFY in Step 17 (Wazuh 4.14.9)
 
