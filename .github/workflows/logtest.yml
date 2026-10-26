@@ -43,13 +43,21 @@ jobs:
 
       - name: Write a throwaway API password
         run: |
-          password="$(openssl rand -hex 24)"
+          # 4.14.9 create_user.py rejects a hex-only password (no uppercase
+          # and no symbol). A rejected password makes 2-manager exit 0 and
+          # the container stop, so compose --wait fails. The value is masked
+          # and is not printed.
+          password="Aa1_$(openssl rand -hex 16)"
           echo "::add-mask::${password}"
           umask 077
           printf 'WAZUH_LOGTEST_API_USER=sentinelforge-logtest\nWAZUH_LOGTEST_API_PASSWORD=%s\n' "$password" > scripts/validation/logtest/.env
 
       - name: Start wazuh-logtest
         run: make logtest-up
+
+      - name: Show manager logs if startup failed
+        if: failure()
+        run: docker logs wazuh-logtest || true
 
       - name: Analysisd load check
         run: |
