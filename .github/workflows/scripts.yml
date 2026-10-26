@@ -1,0 +1,99 @@
+name: scripts
+
+on:
+  push:
+    paths:
+      - "scripts/**"
+      - "configs/**"
+      - ".github/workflows/scripts.yml"
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "configs/**"
+      - ".github/workflows/scripts.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scripts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck scripts/bash/*.sh
+
+  powershell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https
+          . /etc/os-release
+          wget -q "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $roots = @('scripts/powershell', 'configs/windows', 'configs/sysmon')
+          $results = foreach ($root in $roots) {
+            Invoke-ScriptAnalyzer -Path $root -Recurse -Severity Error,Warning
+          }
+          if ($results) {
+            $results | Format-Table -AutoSize Severity, RuleName, ScriptName, Line, Message | Out-String -Width 200
+            exit 1
+          }
+          Write-Output 'PSScriptAnalyzer: 0 findings'
+
+      - name: Parse PowerShell
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = Get-ChildItem -Path scripts/powershell, configs/windows, configs/sysmon -Recurse -Filter *.ps1
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
+            if ($errors -and $errors.Count -gt 0) {
+              Write-Output ("PARSE FAIL " + $file.FullName)
+              $errors | ForEach-Object { Write-Output $_.ToString() }
+              exit 1
+            }
+            Write-Output ("PARSE OK " + $file.FullName)
+          }
+
+  snippets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sysmon and agent snippet tests
+        run: |
+          python -m pip install pytest==9.1.1
+          python -m pytest tests/configs

@@ -1,0 +1,8 @@
+# REQUIRES WINDOWS VALIDATION
+# Run on: both
+# Status: NOT TESTED. The hash is a placeholder until lab setup.
+# Download https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi
+# That URL returned HTTP 200 on 2026-10-26. The file was not downloaded here.
+# Get-FileHash -Algorithm SHA256, then replace the placeholder below.
+# 40-Install-WazuhAgent.ps1 refuses to install while this line is the placeholder.
+<WAZUH_AGENT_MSI_SHA256>

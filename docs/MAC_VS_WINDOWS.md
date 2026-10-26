@@ -24,23 +24,23 @@ The `logtest` GitHub Actions job uses that same image and `scripts/validation/lo
 | Wazuh rules and decoders | Yes | Yes | `wazuh-logtest` in Docker (Step 9) on sample lines | **REQUIRES WINDOWS VALIDATION** for Windows events and `win.eventdata.*` |
 | Sigma rules | Yes | Yes | `sigma convert` in CI | Field accuracy on real logs: yes for Windows sources |
 | Detection metadata | Yes | Yes | `pytest` for IDs, MITRE format, required fields | `observed_result` stays `NOT YET VALIDATED` until the lab |
-| GitHub Actions CI | Written on Mac | Yes, on push | `detections`, `app`, `logtest` (`wazuh-manager:4.14.9`), and `secrets` (gitleaks 8.30.1) | CI cannot mark a rule `LAB VALIDATED` |
+| GitHub Actions CI | Written on Mac | Yes, on push | `detections`, `app`, `logtest` (`wazuh-manager:4.14.9`), `secrets` (gitleaks 8.30.1), and `scripts` (shellcheck, PSScriptAnalyzer, snippet pytest) | CI cannot mark a rule `LAB VALIDATED` |
 | Sysmon config | Written on Mac | No | XML review and credit to the upstream config only | **REQUIRES WINDOWS VALIDATION** on WS01 and DC01 |
 | Windows audit policy and PowerShell logging | Written on Mac | No | Review of the documented `auditpol` / GPO steps | **REQUIRES WINDOWS VALIDATION** |
-| PowerShell setup and simulation scripts | Written on Mac | Lint only | PSScriptAnalyzer via `pwsh` | **REQUIRES WINDOWS VALIDATION**. Run only on `sentinelforge.lab`. |
-| Bash lab scripts | Written on Mac | Lint only | `shellcheck` | Runtime on UBU01 or WAZUH01, not on the Mac host |
-| auditd rules | Written on Mac | No | Review only | UBU01 in the lab |
-| Wazuh `ossec.conf` snippets | Written on Mac | No | Review only. Placeholders such as `<WAZUH_MANAGER_IP>`. | Yes, when applied on agents and the manager |
+| PowerShell setup and simulation scripts | Written on Mac | Lint only | PSScriptAnalyzer and the language parser, locally and in the `scripts` workflow. Numbered `01` through `40` and `99` | **REQUIRES WINDOWS VALIDATION**. Run only on `sentinelforge.lab`. |
+| Bash lab scripts | Written on Mac | Lint only | `shellcheck` on `deploy_rules.sh`, `ubu01-setup.sh`, and `wazuh01-checks.sh` | Runtime on UBU01 or WAZUH01, not on the Mac host |
+| auditd rules | Written on Mac | No | Review only. `auditctl` is not on the Mac, so the rules file stays `NOT TESTED` | UBU01 in the lab |
+| Wazuh `ossec.conf` snippets | Written on Mac | Yes | `pytest tests/configs` parses the XML and checks the matrix | Yes, when applied on agents and the manager |
 | Suricata config | Written on Mac | No | Review only. Stretch. | SURI01, and only when that VM is powered on |
 | Saved hunts | Written on Mac | Schema only | YAML lint. Queries are not executed. | Yes, against the indexer |
 | Attack simulations | Written on Mac | No | Must refuse to run outside the domain | **REQUIRES WINDOWS VALIDATION**. Snapshot first. |
-| VMware networks, static IPs, NAT update window | No | No | Documented in `architecture/ARCHITECTURE.md` | **REQUIRES WINDOWS VALIDATION** |
+| VMware networks, static IPs, NAT update window | Guest scripts written on Mac | Lint only | `01-Set-StaticIP.ps1` and `ubu01-setup.sh` encode the IP plan. The hypervisor network is still only documented | **REQUIRES WINDOWS VALIDATION** |
 | WS01 vTPM and VM encryption | No | No | Documented only | **REQUIRES WINDOWS VALIDATION** on Workstation Pro 26.0.1 |
-| DC01 AD DS and DNS | No | No | — | **REQUIRES WINDOWS VALIDATION** |
-| WS01 domain join | No | No | — | **REQUIRES WINDOWS VALIDATION** |
+| DC01 AD DS and DNS | Script written on Mac | Lint only | `10-Install-ADDS-Forest.ps1` and `11-New-LabOUsAndUsers.ps1` | **REQUIRES WINDOWS VALIDATION** |
+| WS01 domain join | Script written on Mac | Lint only | `20-Join-Domain.ps1` | **REQUIRES WINDOWS VALIDATION** |
 | Wazuh 4.14.9 all-in-one install | No | No | Docker logtest is not this install | **REQUIRES WINDOWS VALIDATION** on WAZUH01 |
-| Wazuh Windows agent | No | No | — | **REQUIRES WINDOWS VALIDATION** on DC01 and WS01 |
-| Wazuh Linux agent | No | No | — | UBU01 (and SURI01 if used) |
+| Wazuh Windows agent | Install script written on Mac | Lint only | `40-Install-WazuhAgent.ps1`. MSI hash is still a placeholder | **REQUIRES WINDOWS VALIDATION** on DC01 and WS01 |
+| Wazuh Linux agent | Install script written on Mac | Lint only | `ubu01-setup.sh`. Package revision `4.14.9-1` is **VERIFY** on apt | UBU01 (and SURI01 if used) |
 | SSH tunnel from the Mac to WAZUH01 | Config on the Mac later | Port check only after the tunnel exists | `curl` to `127.0.0.1` forwards | **REQUIRES WINDOWS VALIDATION** of the host SSH listener and firewall |
 | Screenshots | No | No | Do not capture fixtures and label them as the lab | Yes. Real UI and Wazuh screens only. |
 | Incident report `INC-0001` | Written after the run | No | — | Yes. Step 19, from real alerts. |

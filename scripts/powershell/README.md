@@ -1,28 +1,22 @@
 # scripts/powershell/
 
-> **REQUIRES WINDOWS VALIDATION.** Everything here is written on macOS and is `NOT TESTED` until
-> it runs in the lab.
+> REQUIRES WINDOWS VALIDATION
+> Run on: DC01, WS01, or both, as each script header says
+> Status: SYNTAX VALID after PSScriptAnalyzer and the parser. Not run on a Windows host.
 
-These scripts set up the Windows lab:
-- DC01 promotion
-- test OUs/users (`sf-test-*`)
-- WS01 domain join
-- audit policy
-- PowerShell logging
-- Sysmon
-- Wazuh agent
+| Script | Run on | What it does |
+|---|---|---|
+| `01-Set-StaticIP.ps1` | DC01 or WS01 | Lab address from the architecture plan. DNS `10.10.10.10`. |
+| `02-Rename-Computer.ps1` | DC01 or WS01 | Rename. Does not reboot. |
+| `10-Install-ADDS-Forest.ps1` | DC01 | `sentinelforge.lab`. Prompts for the DSRM password. Reboots. |
+| `11-New-LabOUsAndUsers.ps1` | DC01 | Lab OUs and `sf-test-*` users. `sf-test-admin` is not a Domain Admin. |
+| `20-Join-Domain.ps1` | WS01 | Prompts for a join account. Reboots. |
+| `30-Apply-Telemetry.ps1` | both | Calls the Step 12A audit, PowerShell logging, and Sysmon scripts. |
+| `40-Install-WazuhAgent.ps1` | both | Wazuh agent 4.14.9. Refuses a placeholder MSI hash. Merges the 12B snippet. |
+| `99-Get-LabStatus.ps1` | both | Read-only report. Writes only its log file. |
 
-## Standards
-- Idempotent
-- `-WhatIf` support
-- Strict mode
-- No hardcoded passwords
-- CRLF line endings (enforced by `.gitattributes`)
+Order and snapshot points: `docs/runbooks/01-lab-build.md`.
 
-## Lint on Mac
-```bash
-pwsh -c "Install-Module PSScriptAnalyzer -Scope CurrentUser -Force"
-pwsh -c "Invoke-ScriptAnalyzer -Path scripts/powershell -Recurse"
-```
+Logs go to `C:\SentinelForge\logs\`. Passwords are prompted and are not written there. `-WhatIf` skips changes.
 
-**Status:** Empty (Step 12).
+`WAZUH_AGENT_MSI_SHA256.txt` is still the placeholder `<WAZUH_AGENT_MSI_SHA256>`.
