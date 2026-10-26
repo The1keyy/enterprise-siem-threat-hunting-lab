@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router'
+import { AuthProvider, RequireAuth } from './auth/AuthContext.tsx'
 import { LoadingState } from './components/LoadingState.tsx'
 import { AppShell } from './layouts/AppShell.tsx'
+import { LoginPage } from './pages/LoginPage.tsx'
 import { AutomationPage } from './pages/AutomationPage.tsx'
 import { DetectionsPage } from './pages/DetectionsPage.tsx'
 import { EntitiesPage } from './pages/EntitiesPage.tsx'
@@ -24,7 +26,10 @@ const DevComponentsPage = import.meta.env.DEV
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <Routes>
+        <Route path="login" element={<LoginPage />} />
+        <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route index element={<SocOverview />} />
           <Route path="incidents" element={<Incidents />} />
@@ -53,7 +58,9 @@ export default function App() {
             />
           ) : null}
         </Route>
+        </Route>
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

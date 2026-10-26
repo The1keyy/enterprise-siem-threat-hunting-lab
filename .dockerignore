@@ -1,0 +1,10 @@
+.git
+**/.venv
+**/node_modules
+**/dist
+**/.env
+frontend/.vite
+backend/data
+**/*.db
+**/.pytest_cache
+**/.ruff_cache

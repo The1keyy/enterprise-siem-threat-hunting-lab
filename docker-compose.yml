@@ -1,0 +1,44 @@
+# Convenience stack. `npm run dev` and `uvicorn` still work without Docker.
+# Secrets stay in the gitignored .env and are not copied into the images.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////data/sentinelforge.db
+      API_CORS_ORIGIN: http://localhost:8080
+    ports:
+      - "8000:8000"
+    volumes:
+      - sentinelforge-sqlite:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_DATA_MODE: ${VITE_DATA_MODE:-live}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  sentinelforge-sqlite:

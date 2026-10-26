@@ -25,6 +25,15 @@ class IncidentPatch(BaseModel):
     owner: str | None = None
 
 
+class AnalystPatch(BaseModel):
+    disposition: Literal["Undetermined", "True positive", "Benign", "False positive"] | None = None
+    summary: str | None = None
+
+
+class DetectionPatch(BaseModel):
+    enabled: bool
+
+
 class NoteIn(BaseModel):
     text: str = Field(min_length=1)
 

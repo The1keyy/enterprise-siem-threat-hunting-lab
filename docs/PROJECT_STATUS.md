@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 7A Done.** FastAPI backend core in demo mode. Wazuh is not connected.
-**Next:** Step 7B not started.
+**Step 7 Done.** Backend serves demo data. Wazuh integration is next.
+**Next:** Step 8 not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -23,7 +23,7 @@
 | 6A | Hunting, detections, MITRE (demo) | Done |
 | 6B | Entities, sources, health, automation, settings (demo) | Done |
 | 7A | FastAPI backend core (demo) | Done |
-| 7B | Connect the frontend, plus Docker | Not started |
+| 7B | Connect the frontend, plus Docker | Done |
 | 8 | Wazuh integration code | Not started |
 | 9 | Local wazuh-logtest in Docker | Not started |
 | 10 | MVP detections | Not started |
@@ -69,7 +69,8 @@ Real counts only. Update these as work actually happens.
 - Shared demo JSON lives in `/fixtures` (`overview`, `incidents`, `detections`, `hunts`, `entities`, `sources`, `health`). Each file has `_notice`: `DEMO DATA — synthetic, not real telemetry`. The frontend fixture modules import those files. `scripts/validation/export_fixtures.mjs` generated them.
 - `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode returns 503 (`Wazuh integration not implemented yet (Step 8)`) and does not serve fixtures.
 - Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
-- The React app still reads fixtures in demo mode. Wiring it to this API is Step 7B, which is not started.
+- With `VITE_DATA_MODE=live` the console calls the API with credentials and redirects to `/login` on 401. `DATA_MODE=demo` on the API still returns `"demo": true`, so the DEMO banner and pill stay up. Incident status, notes, promoted hunts, and dry-run actions are stored in SQLite. Local fixture mode (`VITE_DATA_MODE=demo`) does not call the API.
+- Root `Makefile` targets: `dev-backend`, `dev-frontend`, `test`, `lint`, `up`. `docker compose up --build` runs the API and a static console. Plain `uvicorn` and `npm run dev` still work.
 - No Wazuh client calls and no lab scripts yet.
 
 ## Frontend versions (Step 3)
@@ -105,7 +106,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 7A is Mac-only. The API serves fixture JSON and a local SQLite file. It does not talk to Wazuh, and the dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
+Step 7 is Mac-only. The API serves fixture JSON and a local SQLite file. It does not talk to Wazuh, and the dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows are not live checks.
 
 Still documented, not built:
 

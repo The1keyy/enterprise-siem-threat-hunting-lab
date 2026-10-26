@@ -175,6 +175,21 @@ def update_incident(
     return incident_detail(session, incident_id)
 
 
+def update_analyst(
+    session: Session,
+    incident_id: str,
+    disposition: str | None,
+    summary: str | None,
+) -> dict[str, Any]:
+    row = _require(session, incident_id)
+    if disposition is not None:
+        row.disposition = disposition
+    if summary is not None:
+        row.summary = summary
+    session.commit()
+    return incident_detail(session, incident_id)
+
+
 def add_note(session: Session, incident_id: str, author: str, text: str) -> dict[str, Any]:
     _require(session, incident_id)
     existing = session.scalars(select(NoteRow.id).where(NoteRow.incident_id == incident_id)).all()

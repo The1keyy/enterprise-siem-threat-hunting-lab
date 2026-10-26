@@ -2,14 +2,29 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { useAuth } from '../hooks/useAuth.ts'
 import { DemoBanner } from '../components/DemoBanner.tsx'
 import { ToastViewport } from '../components/ToastViewport.tsx'
 import { useDataMode } from '../hooks/useDataMode.ts'
+import { useServiceHealth } from '../hooks/useServiceHealth.ts'
+import { useDemoNotice } from '../services/demoNotice.ts'
 import { NAV_ITEMS } from '../navigation.ts'
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const mode = useDataMode()
+  const backend = useServiceHealth()
+  const sawDemo = useDemoNotice()
+  const auth = useAuth()
+  const showDemo = mode === 'demo' || backend === 'demo' || sawDemo
+  const pill =
+    backend === 'down' && mode === 'live' && !showDemo
+      ? 'API DOWN'
+      : backend === 'loading' && mode === 'live' && !showDemo
+        ? 'CHECKING'
+        : showDemo
+          ? 'DEMO'
+          : 'LIVE'
   const { pathname } = useLocation()
   const current = NAV_ITEMS.find((item) =>
     item.end
@@ -23,7 +38,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
-      {mode === 'demo' ? <DemoBanner /> : null}
+      {mode === 'demo' || sawDemo || backend === 'demo' ? <DemoBanner /> : null}
       <div className="flex min-h-0 flex-1">
         <aside
           className={clsx(
@@ -119,14 +134,27 @@ export function AppShell() {
               <span
                 className={clsx(
                   'rounded-full border px-2 py-0.5 text-xs font-medium',
-                  mode === 'demo'
+                  pill === 'DEMO'
                     ? 'border-medium/40 bg-medium/15 text-medium'
-                    : 'border-ok/40 bg-ok/15 text-ok',
+                    : pill === 'LIVE'
+                      ? 'border-ok/40 bg-ok/15 text-ok'
+                      : 'border-border bg-surface-2 text-text-muted',
                 )}
               >
-                {mode === 'demo' ? 'DEMO' : 'LIVE'}
+                {pill}
               </span>
-              <span className="text-sm text-text-muted">Analyst</span>
+              <span className="text-sm text-text-muted">
+                {auth.username ?? 'Analyst'}
+              </span>
+              {mode === 'live' ? (
+                <button
+                  type="button"
+                  className="rounded-md border border-border px-2 py-1 text-xs text-text"
+                  onClick={() => void auth.logout()}
+                >
+                  Logout
+                </button>
+              ) : null}
             </div>
           </header>
           <main className="flex-1 p-4">

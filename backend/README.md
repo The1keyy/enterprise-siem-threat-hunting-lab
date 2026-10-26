@@ -54,9 +54,21 @@ Wazuh credentials are never returned by an endpoint. Request logs record the met
 
 ## Test
 
-From `backend/`:
+From the repo root:
 
 ```bash
-.venv/bin/ruff check .
-.venv/bin/pytest
+make test
+make lint
 ```
+
+Plain `uvicorn` from `backend/` and `npm run dev` from `frontend/` still work. Docker is optional:
+
+```bash
+docker compose up --build
+```
+
+The API is on http://localhost:8000 and the built console is on http://localhost:8080. Compose sets `API_CORS_ORIGIN` to that console origin. Local Vite stays on http://localhost:5173, which is the default in `.env.example`.
+
+Use `localhost` for `VITE_API_URL`, not `127.0.0.1`. The session cookie is same-site only when the page and the API share a host name.
+
+`make dev-backend` and `make dev-frontend` start the two processes separately.

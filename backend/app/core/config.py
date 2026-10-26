@@ -8,6 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BACKEND_DIR = REPO_ROOT / "backend"
 APP_VERSION = "0.1.0"
+# Pinned target from docs/VERSIONS.md. This is not a live manager check.
+WAZUH_VERSION = "4.14.9"
 
 _LIVE_FIELDS = (
     "wazuh_api_url",

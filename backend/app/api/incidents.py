@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 from app.api.deps import require_demo_user
 from app.core.config import Settings
 from app.db import get_db
-from app.schemas.api import ActionIn, IncidentPatch, NoteIn, PromoteIn
+from app.schemas.api import ActionIn, AnalystPatch, IncidentPatch, NoteIn, PromoteIn
 from app.services.incidents import (
     add_note,
     create_incident,
     incident_detail,
     list_incidents,
     record_dry_run,
+    update_analyst,
     update_incident,
 )
 
@@ -79,6 +80,16 @@ def patch_incident(
     _user: str = Depends(require_demo_user),
 ) -> dict:
     return update_incident(session, incident_id, body.status, body.owner)
+
+
+@router.patch("/incidents/{incident_id}/analyst")
+def patch_analyst(
+    incident_id: str,
+    body: AnalystPatch,
+    session: Session = Depends(get_db),
+    _user: str = Depends(require_demo_user),
+) -> dict:
+    return update_analyst(session, incident_id, body.disposition, body.summary)
 
 
 @router.post("/incidents/{incident_id}/notes")

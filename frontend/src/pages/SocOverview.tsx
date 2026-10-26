@@ -247,24 +247,25 @@ export function SocOverview() {
           >
             <ul className="flex flex-col gap-2">
               {criticalIncidents.map((incident) => (
-                <li key={incident.id}>
+                <li
+                  key={incident.id}
+                  className="rounded-md px-2 py-2 hover:bg-surface-2"
+                >
                   <Link
                     to={`/incidents/${incident.id}`}
-                    className="block rounded-md px-2 py-2 hover:bg-surface-2"
+                    className="block text-sm font-medium text-text"
                   >
-                    <span className="block text-sm font-medium text-text">
-                      {incident.id} · {incident.title}
-                    </span>
-                    <span className="mt-2 flex flex-wrap items-center gap-2">
-                      <SeverityBadge severity={incident.severity} />
-                      <StatusPill kind="incident" status={incident.status} />
-                    </span>
-                    <span className="mt-1 block text-xs text-text-muted">
-                      <HostLink name={incident.host} /> ·{' '}
-                      <UserLink name={incident.user} /> ·{' '}
-                      {formatLabTime(incident.lastSeen)}
-                    </span>
+                    {incident.id} · {incident.title}
                   </Link>
+                  <span className="mt-2 flex flex-wrap items-center gap-2">
+                    <SeverityBadge severity={incident.severity} />
+                    <StatusPill kind="incident" status={incident.status} />
+                  </span>
+                  <span className="mt-1 block text-xs text-text-muted">
+                    <HostLink name={incident.host} /> ·{' '}
+                    <UserLink name={incident.user} /> ·{' '}
+                    {formatLabTime(incident.lastSeen)}
+                  </span>
                 </li>
               ))}
             </ul>

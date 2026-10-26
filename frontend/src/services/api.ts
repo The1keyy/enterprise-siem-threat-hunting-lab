@@ -9,6 +9,8 @@ import type {
 } from '../types/incident.ts'
 import { ApiError } from './apiError.ts'
 import { getApiUrl, getDataMode } from './config.ts'
+import { noteDemo } from './demoNotice.ts'
+import { pushToast } from './toasts.ts'
 import {
   addDemoNote,
   createDemoIncident,
@@ -67,21 +69,132 @@ function loadDemoFixture<T>(path: string): T {
   return demoFixtures.get(path) as T
 }
 
+type SendOptions = {
+  redirectOn401?: boolean
+  notify?: boolean
+}
+
+const ACTION_CODES = {
+  'Isolate lab endpoint': 'isolate_endpoint',
+  'Disable test account': 'disable_account',
+  'Block test IP': 'block_ip',
+} as const
+
+function apiPath(path: string): string {
+  if (
+    path.startsWith('/auth') ||
+    path === '/health' ||
+    path.startsWith('/api/')
+  ) {
+    return path
+  }
+  return `/api${path}`
+}
+
+function payloadIsDemo(value: unknown): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'demo' in value &&
+    value.demo === true
+  )
+}
+
+function noteDemoPayload(payload: unknown): void {
+  if (Array.isArray(payload)) {
+    noteDemo(payload.some((item) => payloadIsDemo(item)))
+    return
+  }
+  noteDemo(payloadIsDemo(payload))
+}
+
+function redirectToLogin(): void {
+  if (window.location.pathname === '/login') return
+  window.location.assign('/login')
+}
+
 async function liveSend<T>(
   path: string,
   method: string,
   body?: unknown,
+  options: SendOptions = {},
 ): Promise<T> {
-  const response = await fetch(`${getApiUrl()}${path}`, {
-    method,
-    headers:
-      body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
-  if (!response.ok) {
-    throw new ApiError(`Request failed (${response.status})`, response.status)
+  const notify = options.notify !== false
+  let response: Response
+  try {
+    response = await fetch(`${getApiUrl()}${apiPath(path)}`, {
+      method,
+      credentials: 'include',
+      headers:
+        body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  } catch {
+    const error = new ApiError('Cannot reach the API.')
+    if (notify) pushToast(error.message)
+    throw error
   }
-  return (await response.json()) as T
+  if (response.status === 401) {
+    if (options.redirectOn401 !== false) redirectToLogin()
+    throw new ApiError('Sign in required.', 401)
+  }
+  if (!response.ok) {
+    let detail = `Request failed (${response.status})`
+    try {
+      const payload = (await response.json()) as { detail?: unknown }
+      if (typeof payload.detail === 'string' && payload.detail.length > 0) {
+        detail = payload.detail
+      }
+    } catch {
+      detail = `Request failed (${response.status})`
+    }
+    if (notify) pushToast(detail)
+    throw new ApiError(detail, response.status)
+  }
+  const payload = (await response.json()) as T
+  noteDemoPayload(payload)
+  return payload
+}
+
+export type ServiceHealth = {
+  status: string
+  mode: 'demo' | 'live'
+  version: string
+}
+
+export async function fetchServiceHealth(): Promise<ServiceHealth> {
+  return liveSend<ServiceHealth>('/health', 'GET', undefined, {
+    redirectOn401: false,
+  })
+}
+
+export async function login(
+  username: string,
+  password: string,
+): Promise<{ username: string }> {
+  return liveSend('/auth/login', 'POST', { username, password }, {
+    redirectOn401: false,
+    notify: false,
+  })
+}
+
+export async function logout(): Promise<void> {
+  await liveSend('/auth/logout', 'POST', undefined, {
+    redirectOn401: false,
+    notify: false,
+  })
+}
+
+export async function currentUser(): Promise<{ username: string } | null> {
+  try {
+    return await liveSend<{ username: string }>('/auth/me', 'GET', undefined, {
+      redirectOn401: false,
+      notify: false,
+    })
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return null
+    throw error
+  }
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
@@ -174,11 +287,13 @@ export async function logResponseDryRun(
   if (getDataMode() === 'demo') {
     return logDemoDryRun(id, action, target)
   }
-  return liveSend<IncidentDetail>(
-    `/incidents/${encodeURIComponent(id)}/response`,
+  const result = await liveSend<{ message: string }>(
+    `/incidents/${encodeURIComponent(id)}/actions`,
     'POST',
-    { action, target, dryRun: true },
+    { action: ACTION_CODES[action], target, confirm: true },
   )
+  pushToast(result.message)
+  return getIncident(id)
 }
 
 export async function listDetections(): Promise<Detection[]> {
@@ -273,7 +388,7 @@ export async function getHealth(): Promise<HealthReport> {
     const enabled = listDemoDetections().filter((item) => item.enabled).length
     return buildHealth(enabled)
   }
-  return liveSend<HealthReport>('/health', 'GET')
+  return liveSend<HealthReport>('/system/health', 'GET')
 }
 
 export async function listWorkflows(): Promise<Workflow[]> {
