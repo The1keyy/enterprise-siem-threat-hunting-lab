@@ -1,0 +1,26 @@
+# Field names a hunt query or aggregation may use.
+# The console loads this same file. Do not add a name that is only a guess.
+# Sources: the hunt allow-list in backend/app/integrations/wazuh_indexer.py,
+# which already queries these names, and the rule fields confirmed in
+# docs/detections/_ruleset-notes.md (win.eventdata.* / win.system.eventID,
+# stored under data.win in indexed documents).
+# This list does not prove a hunt returns the right events. That is lab work.
+
+timestamp
+agent.name
+agent.ip
+rule.id
+rule.level
+rule.description
+rule.groups
+rule.mitre.id
+rule.mitre.tactic
+data.srcip
+data.win.system.eventID
+data.win.eventdata.targetUserName
+data.win.eventdata.ipAddress
+data.win.eventdata.logonType
+data.win.eventdata.commandLine
+data.win.eventdata.image
+data.win.eventdata.parentImage
+full_log

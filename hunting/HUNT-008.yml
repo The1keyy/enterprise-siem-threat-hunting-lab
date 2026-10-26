@@ -1,0 +1,40 @@
+# Status: NOT TESTED. A definition, not a lab result.
+id: HUNT-008
+name: SMB/Lateral Movement Indicators
+hypothesis: >
+  A host opened a share, or logged on with type 3, without matching the
+  share-name filters on SF-011. 5145 is collected and no stock rule alerts
+  on it.
+data_source:
+  index: wazuh-archives-*
+  channel: Security
+query: >-
+  data.win.system.eventID:5140 OR data.win.system.eventID:5145 OR
+  (data.win.system.eventID:4624 AND data.win.eventdata.logonType:3)
+time_window_default: 24h
+expected_behavior: >
+  Share access from the lab hosts to the shares those hosts normally use.
+suspicious_behavior: >
+  5140 or 5145 from a source that does not usually talk to that host, or a
+  type 3 4624 that SF-011 did not alert on because the share was not
+  ADMIN$, C$, or IPC$.
+mitre:
+  - id: T1021.002
+    tactic: Lateral Movement
+related_detections:
+  - SF-011
+differs_from_detections: >
+  SF-011 alerts on ADMIN$, C$, and IPC$, and on a type 3 logon. This hunt
+  returns 5140, 5145, and type 3 4624 with no share-name filter. 5145 is
+  the detailed share event the stock rules do not alert on. The hunt does
+  not copy those share-name checks.
+investigation_guidance:
+  - Separate 5140, 5145, and type 3 4624. 5145 is high volume on a domain controller.
+  - Compare data.win.eventdata.ipAddress with the lab subnet 10.10.10.0/24. A source outside that subnet is outside this lab's plan.
+  - Check SF-011 for the same host and time. A hit the rule filtered out is the one to read.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.ipAddress
+  - data.win.system.eventID
+  - agent.name
+status: NOT TESTED

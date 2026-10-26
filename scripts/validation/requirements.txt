@@ -2,6 +2,8 @@
 # pySigma 2.0.1 does not install next to this sigma-cli.
 # pySigma-backend-opensearch 2.0.3 needs pysigma-backend-elasticsearch>=2.
 PyYAML==6.0.3
+luqum==1.0.0
+ply==3.11
 pytest==9.1.1
 yamllint==1.38.0
 sigma-cli==3.1.0

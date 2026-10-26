@@ -1,0 +1,41 @@
+# Status: NOT TESTED. A definition, not a lab result.
+# VERIFY: query_string leading wildcards are allowed by default. Confirm on WAZUH01.
+id: HUNT-006
+name: Scheduled Task Persistence
+hypothesis: >
+  schtasks.exe or sc.exe created a recurring task or service. No current
+  SentinelForge rule alerts on those images.
+data_source:
+  index: wazuh-archives-*
+  channel: Microsoft-Windows-Sysmon/Operational
+query: >-
+  (data.win.system.eventID:1 AND data.win.eventdata.image:*schtasks.exe*) OR
+  (data.win.system.eventID:1 AND data.win.eventdata.image:*sc.exe*)
+time_window_default: 7d
+expected_behavior: >
+  No schtasks.exe or sc.exe process starts after the VM baseline, other
+  than an admin who announced the change.
+suspicious_behavior: >
+  Either image started from a user session, with a command line that
+  creates or changes a task or service.
+mitre:
+  - id: T1053.005
+    tactic: Persistence
+related_detections:
+  - SF-005
+differs_from_detections: >
+  SF-005 alerts only when the Sysmon event 1 image is powershell.exe or
+  pwsh.exe and the command line has an encoded-command flag. schtasks.exe
+  and sc.exe are in the Sysmon include and no SF rule matches them. Security
+  4698 is not in the agent allow-list, so this hunt uses the process-create
+  event the agent does forward.
+investigation_guidance:
+  - Read data.win.eventdata.commandLine. The task name and the action are in that string.
+  - Pivot on agent.name. A hit on DC01 and a hit on WS01 are different questions.
+  - There is no SF alert to compare. Absence of an alert is expected, not a miss.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.image
+  - data.win.eventdata.commandLine
+  - agent.name
+status: NOT TESTED

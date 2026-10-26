@@ -4,9 +4,9 @@
 > every step.
 
 ## Current step
-**Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
+**Step 13A complete locally.** HUNT-001 through HUNT-010 are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`, and nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 13 is hunts and simulations. It is not started. Step 12.1 moves the PowerShell lint into `scripts/validation/lint_powershell.ps1`. `make lint-scripts` runs that script and shellcheck. Nothing is installed on WAZUH01, UBU01, or a Windows host.
+**Next:** Step 13A is done locally. Ten hunts in `hunting/` are `NOT TESTED`. The validator checks syntax and field names, not that a hunt returns the right events. Step 13B is not started. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -30,7 +30,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
 | 12 | Lab configs + scripts | 12A, 12B, and 12C written. 12.1 is `make lint-scripts` and `scripts/validation/lint_powershell.ps1`. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
-| 13 | Hunts + simulations | Not started |
+| 13 | Hunts + simulations | 13A written. HUNT-001 through HUNT-010 are `NOT TESTED`. 13B is not started |
 | 14 | Correlation + risk scoring | Not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |
 
@@ -43,10 +43,10 @@ Real counts only. Update these as work actually happens.
 | `SYNTAX VALID` | 12 (Windows, SF-001 through SF-012) |
 | `LOGTEST VALID` | 2 (Linux SSH, SF-013 and SF-014) |
 | `LAB VALIDATED` | 0 |
-| Saved hunts | 0 |
+| Saved hunts | 10 (HUNT-001 through HUNT-010), all `NOT TESTED` |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. Step 12B: `detections` 40391492945 succeeded. `secrets` 40391493005 succeeded. `logtest` and `app` did not run. Step 12C: `scripts` 40393444997 succeeded (shellcheck, powershell, snippets). `secrets` 40393445016 succeeded. `detections`, `logtest`, and `app` did not run; their path filters do not include `scripts/` or `docs/`. |
+| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. Step 12B: `detections` 40391492945 succeeded. `secrets` 40391493005 succeeded. `logtest` and `app` did not run. Step 12C: `scripts` 40393444997 succeeded (shellcheck, powershell, snippets). `secrets` 40393445016 succeeded. `detections`, `logtest`, and `app` did not run; their path filters do not include `scripts/` or `docs/`. Step 12.1: `scripts` 40394873108 succeeded. `detections` 40394873059 succeeded. `secrets` 40394872867 succeeded. |
 
 | ID | Status | Evidence |
 |---|---|---|
@@ -116,7 +116,7 @@ Not Windows:
 - SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-007, SF-008, and SF-009 are real rules in `detections/wazuh/rules/sentinelforge_100300_accounts.xml` (100300, 100310, 100311, 100320). On 2026-10-26 analysisd started with `Total rules enabled: 8471` and no analysisd error. `GET /rules?filename=sentinelforge_100300_accounts.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T175154Z.json`) printed `LIMITED` for every account case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-020 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`.
-- Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events and does not query `wazuh-archives-*`. Live "Run hunt" queries that index and returns 503 if Wazuh is down. Promoting a result writes a SQLite incident.
+- HUNT-001 through HUNT-010 are YAML in `hunting/`. All are `NOT TESTED`. `/api/hunts` loads those files in demo mode and in live mode. Demo "Run hunt" matches fixture timeline events and is labeled demo. Live "Run hunt" queries `wazuh-archives-4.x-*` (the YAML says `wazuh-archives-*`), keeps the 7-day cap and `indexed_fields.txt`, and returns 503 if Wazuh is down. HUNT-004 and HUNT-010 are terms aggregations; low-count buckets are not a lab result. Promoting a result writes a SQLite incident. `fixtures/hunts.json` is generated by `scripts/validation/build_hunt_fixtures.py`.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
@@ -191,7 +191,8 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 ## Open questions
 - [ ] **VERIFY** Wazuh 4.14.9 published hardware minimums, indexer heap file, and `-Xms`/`-Xmx` (or the real setting names) before install.
 - [ ] **VERIFY** Windows Server evaluation edition offered (2022 vs 2025) and Windows 11 eval length.
-- [ ] **VERIFY** manager API port, indexer port, dashboard port, and index pattern names on 4.14.9.
+- [ ] **VERIFY** manager API port, indexer port, dashboard port, and index pattern names on 4.14.9. Hunt YAML says `wazuh-archives-*`. The client queries `wazuh-archives-4.x-*`.
+- [ ] **VERIFY** leading `*` in hunt query strings on WAZUH01. OpenSearch allows them by default. No hunt has been run against the indexer.
 - [ ] WS01 stays at 4 GB unless the guest is unusable. 6 GB is allowed only with SURI01 powered off.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 

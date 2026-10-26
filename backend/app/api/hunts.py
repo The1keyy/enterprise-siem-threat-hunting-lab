@@ -13,10 +13,9 @@ router = APIRouter()
 
 @router.get("/hunts")
 def get_hunts(
-    session: Session = Depends(get_db),
     _user: str = Depends(require_demo_user),
 ) -> list[dict]:
-    return list_hunts(session)
+    return list_hunts()
 
 
 @router.post("/hunts/run")
@@ -30,7 +29,6 @@ async def post_hunt(
     if settings.data_mode == "live":
         return await live_hunt(
             request.app,
-            session,
             hunt_id=body.id,
             query=body.query,
             host=body.host,

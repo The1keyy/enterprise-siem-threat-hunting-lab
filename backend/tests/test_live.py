@@ -3,10 +3,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from app.db import SessionLocal
 from app.integrations.errors import WazuhUnavailable
 from app.main import create_app
-from app.models.tables import SavedHuntRow
 from tests.conftest import PASSWORD, demo_settings
 
 
@@ -80,28 +78,10 @@ def test_live_mode_returns_503_when_wazuh_is_down(tmp_path: Path) -> None:
             assert "api-secret" not in denied.text
             assert "indexer-secret" not in denied.text
 
-        with SessionLocal() as session:
-            session.add(
-                SavedHuntRow(
-                    id="H-1",
-                    name="Auth failures",
-                    hypothesis="Failed logons cluster",
-                    data_source="linux_auth",
-                    query="rule.groups:authentication_failed",
-                    expected_behavior="A few failures",
-                    suspicious_behavior="A burst",
-                    mitre=[],
-                    investigation_guidance="Check the host",
-                    status="NOT TESTED",
-                    demo=False,
-                )
-            )
-            session.commit()
-
         too_wide = client.post(
             "/api/hunts/run",
             json={
-                "id": "H-1",
+                "id": "HUNT-002",
                 "query": "agent.name:WS01",
                 "from": "2026-10-01T00:00:00Z",
                 "to": "2026-10-09T00:00:00Z",
@@ -113,7 +93,7 @@ def test_live_mode_returns_503_when_wazuh_is_down(tmp_path: Path) -> None:
         down = client.post(
             "/api/hunts/run",
             json={
-                "id": "H-1",
+                "id": "HUNT-002",
                 "query": "agent.name:WS01",
                 "from": "2026-10-01T00:00:00Z",
                 "to": "2026-10-02T00:00:00Z",

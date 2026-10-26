@@ -1,0 +1,44 @@
+# Status: NOT TESTED. A definition, not a lab result.
+id: HUNT-005
+name: New Privileged Account
+hypothesis: >
+  An account was created or added to a privileged group in a way the SID
+  filters on SF-007 and SF-008 do not match, or the create and the group
+  add were far enough apart that nobody looked at them together.
+data_source:
+  index: wazuh-archives-*
+  channel: Security
+query: >-
+  data.win.system.eventID:4720 OR data.win.system.eventID:4728 OR
+  data.win.system.eventID:4732 OR data.win.system.eventID:4756
+time_window_default: 7d
+expected_behavior: >
+  The known lab-user script creates sf-test-* accounts and adds
+  sf-test-admin to Lab Admins. Those events are expected once, during setup.
+suspicious_behavior: >
+  A 4720, 4728, 4732, or 4756 after setup, or a group change whose target
+  is not the local Administrators SID and not the domain RIDs SF-008 names.
+mitre:
+  - id: T1136.001
+    tactic: Persistence
+  - id: T1098
+    tactic: Persistence
+related_detections:
+  - SF-007
+  - SF-008
+  - SF-009
+differs_from_detections: >
+  SF-009 matches 4720 only. SF-007 matches 4732 only when targetSid is the
+  local Administrators SID. SF-008 matches specific domain-group RIDs.
+  This hunt keeps 4720, 4728, 4732, and 4756 with no SID filter, so a group
+  change those rules skip is still in the result. It does not alert.
+investigation_guidance:
+  - Separate 4720 creates from 4728, 4732, and 4756 group changes. A create with no later group add is the slow case.
+  - Compare targetUserName with the lab accounts from 11-New-LabOUsAndUsers.ps1. A name outside that set is the one to read.
+  - Check whether SF-007, SF-008, or SF-009 already alerted. This hunt is for the events they filtered out.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.targetUserName
+  - data.win.system.eventID
+  - agent.name
+status: NOT TESTED

@@ -1,0 +1,37 @@
+# Status: NOT TESTED. A definition, not a lab result.
+id: HUNT-002
+name: Failed Authentication Burst
+hypothesis: >
+  Failed logons accumulated on one account or one source more slowly than
+  SF-001's frequency window, so the detection never fired.
+data_source:
+  index: wazuh-archives-*
+  channel: Security
+query: data.win.system.eventID:4625
+time_window_default: 24h
+expected_behavior: >
+  A few 4625 events from a mistyped lab password, spread across the day.
+suspicious_behavior: >
+  Many 4625 events for one targetUserName or one ipAddress that stayed under
+  the SF-001 count inside its short timeframe.
+mitre:
+  - id: T1110.001
+    tactic: Credential Access
+related_detections:
+  - SF-001
+  - SF-002
+differs_from_detections: >
+  SF-001 fires only after its frequency threshold inside a short timeframe.
+  SF-002 is the same-IP burst across accounts. This hunt lists every 4625
+  so a slower series, including one that never reaches that threshold, stays
+  visible. It does not count or alert.
+investigation_guidance:
+  - Group the 4625 events by data.win.eventdata.ipAddress and by data.win.eventdata.targetUserName.
+  - Compare the count with SF-001. A series that never reached the rule's frequency is the case this hunt is for.
+  - Confirm the accounts are lab accounts before treating the source as hostile.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.targetUserName
+  - data.win.eventdata.ipAddress
+  - agent.name
+status: NOT TESTED

@@ -1,7 +1,7 @@
 import { detectionFixtures } from '../fixtures/detections.ts'
 import { huntFixtures } from '../fixtures/hunts.ts'
 import { incidentFixtures } from '../fixtures/incidents.ts'
-import { eventMatchesQuery } from '../lib/huntQuery.ts'
+import { aggregateLowCounts, eventMatchesQuery } from '../lib/huntQuery.ts'
 import type { Detection } from '../types/detection.ts'
 import type {
   Hunt,
@@ -53,7 +53,7 @@ export function setDemoDetectionEnabled(
 }
 
 export const HUNT_NOTICE =
-  'Demo results — live hunts query wazuh-archives-* (Step 8)'
+  'Demo results — matched fixture timeline events. Not a wazuh-archives-* result.'
 
 export function listDemoHunts(): Hunt[] {
   return huntFixtures.map((hunt) => ({ ...hunt }))
@@ -74,7 +74,7 @@ export function runDemoHunt(
   if (!hunt) {
     throw new ApiError(`Hunt ${id} was not found.`, 404)
   }
-  const hits = huntCorpus().filter((event) => {
+  let hits = huntCorpus().filter((event) => {
     if (!eventMatchesQuery(query, event)) return false
     if (filters.host && event.host !== filters.host) return false
     if (filters.user && event.user !== filters.user) return false
@@ -84,5 +84,15 @@ export function runDemoHunt(
     if (filters.to && eventMs > Date.parse(filters.to)) return false
     return true
   })
-  return { demo: true, notice: HUNT_NOTICE, huntId: id, hits }
+  const grouped = hunt.aggregation
+    ? aggregateLowCounts(hits, hunt.aggregation)
+    : null
+  if (grouped) hits = grouped.hits
+  return {
+    demo: true,
+    notice: HUNT_NOTICE,
+    huntId: id,
+    hits,
+    buckets: grouped?.buckets ?? [],
+  }
 }

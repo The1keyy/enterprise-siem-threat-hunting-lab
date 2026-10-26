@@ -8,8 +8,14 @@ from sqlalchemy.orm import Session
 
 from app.integrations.errors import HuntQueryRejected, WazuhError
 from app.integrations.wazuh_api import WazuhApiClient
-from app.integrations.wazuh_indexer import SOURCE_FILTERS, WazuhIndexerClient, validate_hunt_query
-from app.models.tables import SavedHuntRow
+from app.integrations.wazuh_indexer import (
+    SOURCE_FILTERS,
+    WazuhIndexerClient,
+    resolve_hunt_index,
+    validate_hunt_query,
+)
+from app.services.hunt_catalog import get_hunt
+from app.services.hunt_match import events_in_buckets, low_count_buckets
 from app.services.incidents import list_incidents
 from app.services.mapping import (
     agent_to_host,
@@ -512,7 +518,6 @@ def _logins(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 async def live_hunt(
     app: Any,
-    session: Session,
     *,
     hunt_id: str,
     query: str,
@@ -522,29 +527,45 @@ async def live_hunt(
     start: str,
     end: str,
 ) -> dict[str, Any]:
-    hunt = session.get(SavedHuntRow, hunt_id)
+    hunt = get_hunt(hunt_id)
     if hunt is None:
         raise HTTPException(status_code=404, detail=f"Hunt {hunt_id} was not found.")
     _api, indexer = _clients(app)
+    aggregation = hunt.get("aggregation") if isinstance(hunt.get("aggregation"), dict) else None
     try:
         validate_hunt_query(query, start, end)
         if source and source not in SOURCE_FILTERS:
             raise HuntQueryRejected(f"Unknown hunt source filter: {source}")
         result = await indexer.search_archives(
-            query, start, end, host=host, user=user, source=source
+            query,
+            start,
+            end,
+            host=host,
+            user=user,
+            source=source,
+            index=resolve_hunt_index(str(hunt.get("index") or "")),
+            aggregation=aggregation,
         )
     except WazuhError as exc:
         raise_wazuh(exc)
+    buckets = result.get("buckets") or []
+    if aggregation:
+        buckets = low_count_buckets(buckets, int(aggregation["maxDocCount"]))
     hits = []
     for event in result["events"]:
         mapped = alert_to_timeline(event)
         mapped["incidentId"] = None
+        mapped["raw"] = event
         hits.append(mapped)
+    if aggregation:
+        hits = events_in_buckets(hits, str(aggregation["field"]), buckets)
+    index_name = str(hunt.get("index") or "wazuh-archives-*")
     return {
         "demo": False,
-        "notice": "Results from wazuh-archives-*. VERIFY (4.14.9) field names.",
+        "notice": f"Results from {index_name}. VERIFY (4.14.9) field names. Not a lab result.",
         "huntId": hunt_id,
         "hits": hits,
+        "buckets": buckets,
     }
 
 

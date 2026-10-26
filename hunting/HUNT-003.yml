@@ -1,0 +1,38 @@
+# Status: NOT TESTED. A definition, not a lab result.
+id: HUNT-003
+name: Successful Login After Failures
+hypothesis: >
+  A 4624 success belongs to the same account as earlier 4625 failures, but
+  SF-003 did not chain them because the rule's correlation did not match.
+data_source:
+  index: wazuh-archives-*
+  channel: Security
+query: data.win.system.eventID:4624
+time_window_default: 24h
+expected_behavior: >
+  Successful logons from the usual lab hosts with no preceding 4625 burst
+  for that account.
+suspicious_behavior: >
+  A 4624 whose targetUserName and ipAddress also appear in 4625 events in
+  the same window, including a pair SF-003 did not promote.
+mitre:
+  - id: T1078
+    tactic: Initial Access
+related_detections:
+  - SF-003
+differs_from_detections: >
+  SF-003 fires only when a 4624 follows an SF-001 match on the same account
+  and source within the rule timeframe. This hunt returns 4624 events
+  without that chain, so the analyst can line a success up with failures
+  the correlation missed. It is not a copy of the frequency rule.
+investigation_guidance:
+  - Run HUNT-002 for the same window and compare targetUserName and ipAddress with these 4624 events.
+  - Note logonType. Type 10 is also covered by the RDP hunt; this hunt does not require it.
+  - Check whether SF-003 already alerted. If it did, this row is the raw success, not a new finding.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.targetUserName
+  - data.win.eventdata.ipAddress
+  - data.win.eventdata.logonType
+  - agent.name
+status: NOT TESTED

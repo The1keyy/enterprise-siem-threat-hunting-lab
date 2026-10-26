@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { TimeSeriesChart } from '../charts/TimeSeriesChart.tsx'
 import { HostLink, UserLink } from '../components/EntityLink.tsx'
 import { EmptyState } from '../components/EmptyState.tsx'
@@ -99,8 +99,19 @@ export function HuntingPage() {
     setSelectedId(hunt.id)
     setQueryOverride(hunt.query)
     setTitleOverride(hunt.name)
+    setRange(hunt.timeWindowDefault)
     setSelectedHits([])
     setOpenRaw(null)
+  }
+
+  function applyPivot(field: string) {
+    let clause = `${field}:`
+    if (field === 'agent.name' && host) clause = `agent.name:${host}`
+    if (field === 'data.win.eventdata.targetUserName' && user) {
+      clause = `data.win.eventdata.targetUserName:${user}`
+    }
+    if (query.includes(clause)) return
+    setQueryOverride(`${query.trim()} AND ${clause}`)
   }
 
   function toggleHit(key: string) {
@@ -135,7 +146,7 @@ export function HuntingPage() {
     <div className="min-w-0 overflow-x-hidden">
       <PageHeader
         title="Threat Hunting"
-        description="Saved hunts are drafts. Demo mode matches fixture timeline events."
+        description="Definitions are hunting/*.yml. Demo mode matches fixture events. Status stays NOT TESTED until a lab run."
       />
       <div className="grid gap-4 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <section className="rounded-card border border-border bg-surface p-3">
@@ -292,7 +303,10 @@ export function HuntingPage() {
           </section>
           {selected ? (
             <section className="rounded-card border border-border bg-surface p-4 text-sm">
-              <h2 className="font-medium text-text">{selected.name}</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-medium text-text">{selected.name}</h2>
+                <StatusPill kind="validation" status={selected.status} />
+              </div>
               <dl className="mt-3 grid gap-3 md:grid-cols-2">
                 <div>
                   <dt className="text-xs text-text-muted">Hypothesis</dt>
@@ -302,6 +316,55 @@ export function HuntingPage() {
                   <dt className="text-xs text-text-muted">Data source</dt>
                   <dd className="text-text">{selected.dataSource}</dd>
                 </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Default window</dt>
+                  <dd className="text-text">{selected.timeWindowDefault}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">
+                    How this differs from the detection
+                  </dt>
+                  <dd className="text-text">{selected.differsFromDetections}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Related detections</dt>
+                  <dd className="flex flex-wrap gap-2">
+                    {selected.relatedDetections.map((id) => (
+                      <Link
+                        key={id}
+                        className="text-accent"
+                        to={`/detections/${id}`}
+                      >
+                        {id}
+                      </Link>
+                    ))}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-text-muted">Pivot fields</dt>
+                  <dd className="flex flex-wrap gap-2">
+                    {selected.pivotFields.map((field) => (
+                      <button
+                        key={field}
+                        type="button"
+                        className="rounded-md border border-border bg-surface-2 px-2 py-1 font-mono text-xs text-accent"
+                        onClick={() => applyPivot(field)}
+                      >
+                        {field}
+                      </button>
+                    ))}
+                  </dd>
+                </div>
+                {selected.aggregation ? (
+                  <div>
+                    <dt className="text-xs text-text-muted">Aggregation</dt>
+                    <dd className="text-text">
+                      Terms on {selected.aggregation.field}. Keep buckets
+                      with doc_count at or below {selected.aggregation.maxDocCount}.
+                      A query string cannot express this. Not a lab result.
+                    </dd>
+                  </div>
+                ) : null}
                 <div>
                   <dt className="text-xs text-text-muted">Expected behavior</dt>
                   <dd className="text-text">{selected.expectedBehavior}</dd>
@@ -318,11 +381,11 @@ export function HuntingPage() {
                     {selected.mitre.map((item) => item.id).join(', ')}
                   </dd>
                 </div>
-                <div>
+                <div className="md:col-span-2">
                   <dt className="text-xs text-text-muted">
                     Investigation guidance
                   </dt>
-                  <dd className="text-text">
+                  <dd className="whitespace-pre-line text-text">
                     {selected.investigationGuidance}
                   </dd>
                 </div>
@@ -343,6 +406,27 @@ export function HuntingPage() {
             {run.result ? (
               <div className="space-y-3">
                 <p className="text-sm text-text-muted">{run.result.notice}</p>
+                {selected?.aggregation ? (
+                  <div className="rounded-card border border-border bg-surface p-3">
+                    <h3 className="text-sm font-medium text-text">
+                      Low-count buckets
+                    </h3>
+                    {(run.result.buckets ?? []).length === 0 ? (
+                      <p className="mt-2 text-sm text-text-muted">
+                        No bucket at or below {selected.aggregation.maxDocCount}.
+                      </p>
+                    ) : (
+                      <ul className="mt-2 space-y-1 text-sm">
+                        {(run.result.buckets ?? []).map((bucket) => (
+                          <li key={bucket.key}>
+                            <span className="font-mono text-text">{bucket.key}</span>
+                            <span className="text-text-muted"> · {bucket.count}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : null}
                 {hits.length === 0 ? (
                   <EmptyState title="No events matched" />
                 ) : (

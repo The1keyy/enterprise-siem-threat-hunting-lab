@@ -1,0 +1,45 @@
+# Status: NOT TESTED. A definition, not a lab result.
+# VERIFY: query_string leading wildcards are allowed by default. Confirm on WAZUH01.
+id: HUNT-001
+name: Suspicious PowerShell
+hypothesis: >
+  PowerShell ran on a lab host without the specific strings SF-004, SF-005,
+  and SF-006 require. The interesting cases are script blocks and PowerShell
+  process starts that never became those alerts.
+data_source:
+  index: wazuh-archives-*
+  channel: Microsoft-Windows-PowerShell/Operational; Microsoft-Windows-Sysmon/Operational
+query: >-
+  data.win.system.eventID:4104 OR
+  (data.win.system.eventID:1 AND data.win.eventdata.image:*powershell.exe*) OR
+  (data.win.system.eventID:1 AND data.win.eventdata.image:*pwsh.exe*)
+time_window_default: 24h
+expected_behavior: >
+  Interactive PowerShell from a known admin session, with a short command
+  line and no network child.
+suspicious_behavior: >
+  powershell.exe or pwsh.exe started by an unexpected parent, or a 4104
+  script block, on a host that did not also fire SF-004, SF-005, or SF-006.
+mitre:
+  - id: T1059.001
+    tactic: Execution
+related_detections:
+  - SF-004
+  - SF-005
+  - SF-006
+differs_from_detections: >
+  SF-004 alerts on 4104 only when the script block contains a listed string.
+  SF-005 alerts on Sysmon event 1 only for powershell.exe or pwsh.exe with an
+  encoded-command flag. SF-006 alerts on a download cradle or on a PowerShell
+  network connection. This hunt returns the 4104 and PowerShell process-start
+  events those rules are allowed to ignore.
+investigation_guidance:
+  - Read data.win.eventdata.commandLine and the parent image. A string in the command line is attacker-controlled.
+  - Compare the host and user with the same window of SF-004, SF-005, and SF-006 alerts. An event that already alerted is not the point of this hunt.
+  - Pivot on agent.name, then on the image, and decide whether the parent is a known admin tool.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - agent.name
+  - data.win.eventdata.image
+  - data.win.eventdata.commandLine
+status: NOT TESTED

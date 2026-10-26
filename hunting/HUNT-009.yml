@@ -1,0 +1,38 @@
+# Status: NOT TESTED. A definition, not a lab result.
+# VERIFY: /var/log/auth.log until UBU01 shows that path. The agent snippet
+# reads it after rsyslog is installed.
+id: HUNT-009
+name: Linux SSH Brute Force
+hypothesis: >
+  sshd failures on UBU01 stayed below the sixth-failure threshold of SF-013,
+  so the burst rule never fired.
+data_source:
+  index: wazuh-archives-*
+  log: /var/log/auth.log
+query: full_log:"Failed password" OR full_log:"Invalid user"
+time_window_default: 24h
+expected_behavior: >
+  An occasional failed SSH password from a lab admin who mistyped once.
+suspicious_behavior: >
+  Failed-password or invalid-user lines from one data.srcip that never
+  reach six failures inside the SF-013 window.
+mitre:
+  - id: T1110
+    tactic: Credential Access
+related_detections:
+  - SF-013
+differs_from_detections: >
+  SF-013 fires on the sixth sshd failure. Five failures stay on the stock
+  sshd rule. This hunt returns Failed password and Invalid user lines with
+  no count, which is the low-and-slow case the frequency rule is built to
+  ignore. It does not alert and it does not implement SF-013's threshold.
+investigation_guidance:
+  - Count lines per data.srcip by hand or with the host filter. A count under six is the case SF-013 will not raise.
+  - Compare the source with 10.10.10.0/24. The lab gateway is 10.10.10.1.
+  - SF-014 is the success-after-failure rule. This hunt does not include accepted passwords.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.srcip
+  - agent.name
+  - full_log
+status: NOT TESTED

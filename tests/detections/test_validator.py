@@ -68,6 +68,45 @@ def test_orphan_rule(tmp_path: Path) -> None:
     assert "orphan_rule" in _codes(tmp_path)
 
 
+def test_hunt_allowlist_rejects_an_unknown_field(tmp_path: Path) -> None:
+    _write_repo(tmp_path)
+    allow = tmp_path / "scripts" / "validation" / "indexed_fields.txt"
+    allow.write_text("agent.name\n", encoding="utf-8")
+    hunts = tmp_path / "hunting"
+    hunts.mkdir()
+    (hunts / "HUNT-001.yml").write_text(
+        textwrap.dedent(
+            """\
+            id: HUNT-001
+            name: Fixture hunt
+            hypothesis: Something the detection misses.
+            data_source:
+              index: wazuh-archives-*
+              channel: Security
+            query: not.a.field:1
+            time_window_default: 24h
+            expected_behavior: Quiet.
+            suspicious_behavior: Noisy.
+            mitre:
+              - id: T1059.001
+                tactic: Execution
+            related_detections:
+              - SF-001
+            differs_from_detections: SF-001 alerts on a threshold. This lists the events.
+            investigation_guidance:
+              - Read the field.
+            pivot_fields:
+              - agent.name
+            status: NOT TESTED
+            """
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "fixtures").mkdir(exist_ok=True)
+    (tmp_path / "fixtures" / "hunts.json").write_text("{}\n", encoding="utf-8")
+    assert "hunt_field" in _codes(tmp_path)
+
+
 def test_missing_doc(tmp_path: Path) -> None:
     _write_repo(tmp_path, include_doc=False)
     assert "missing_doc" in _codes(tmp_path)

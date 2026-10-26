@@ -17,7 +17,7 @@ from typing import Any
 
 import httpx
 
-from app.core.config import Settings
+from app.core.config import REPO_ROOT, Settings
 from app.integrations.errors import (
     ArchivesNotEnabled,
     HuntQueryRejected,
@@ -31,29 +31,32 @@ ALERTS_INDEX = "wazuh-alerts-4.x-*"
 ARCHIVES_INDEX = "wazuh-archives-4.x-*"
 
 # Hunt query_string clauses may name only these fields. Values are passed as JSON,
-# never concatenated into the request body.
-ALLOWED_HUNT_FIELDS = frozenset(
-    {
-        "timestamp",
-        "agent.name",
-        "agent.ip",
-        "rule.id",
-        "rule.level",
-        "rule.description",
-        "rule.groups",
-        "rule.mitre.id",
-        "rule.mitre.tactic",
-        "data.srcip",
-        "data.win.system.eventID",
-        "data.win.eventdata.targetUserName",
-        "data.win.eventdata.ipAddress",
-        "data.win.eventdata.logonType",
-        "data.win.eventdata.commandLine",
-        "data.win.eventdata.image",
-        "data.win.eventdata.parentImage",
-        "full_log",
-    }
-)
+# never concatenated into the request body. The file is the same list CI checks.
+def load_allowed_hunt_fields() -> frozenset[str]:
+    path = REPO_ROOT / "scripts" / "validation" / "indexed_fields.txt"
+    names: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        text = line.split("#", 1)[0].strip()
+        if text:
+            names.add(text)
+    return frozenset(names)
+
+
+ALLOWED_HUNT_FIELDS = load_allowed_hunt_fields()
+
+
+def resolve_hunt_index(name: str) -> str:
+    """Map a hunt's logical index onto the 4.x pattern this client queries.
+
+    VERIFY (4.14.9): the indexed names are wazuh-alerts-4.x-* and
+    wazuh-archives-4.x-*, not the unsuffixed patterns written in the YAML.
+    """
+
+    if name in {"wazuh-archives-*", ARCHIVES_INDEX}:
+        return ARCHIVES_INDEX
+    if name in {"wazuh-alerts-*", ALERTS_INDEX}:
+        return ALERTS_INDEX
+    raise HuntQueryRejected(f"Unknown hunt index: {name}")
 
 # VERIFY (4.14.9): group names Wazuh assigns to these sources.
 SOURCE_FILTERS: dict[str, dict[str, Any]] = {
@@ -220,6 +223,7 @@ def build_archive_search(
     host: str = "",
     user: str = "",
     source: str = "",
+    aggregation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     validate_hunt_query(query, start, end)
     filters: list[dict[str, Any]] = [
@@ -240,11 +244,20 @@ def build_archive_search(
         if source not in SOURCE_FILTERS:
             raise HuntQueryRejected(f"Unknown hunt source filter: {source}")
         filters.append(SOURCE_FILTERS[source])
-    return {
+    body: dict[str, Any] = {
         "size": 200,
         "sort": [{"timestamp": "asc"}, {"_id": "asc"}],
         "query": {"bool": {"filter": filters}},
     }
+    if aggregation:
+        field = str(aggregation.get("field") or "")
+        if field not in ALLOWED_HUNT_FIELDS:
+            raise HuntQueryRejected(f"Hunt aggregation uses a disallowed field: {field}")
+        size = aggregation.get("size")
+        if type(size) is not int or not 1 <= size <= 100:
+            raise HuntQueryRejected("Hunt aggregation size must be 1..100")
+        body["aggs"] = {"hunt_terms": {"terms": {"field": field, "size": size}}}
+    return body
 
 
 class WazuhIndexerClient:
@@ -411,14 +424,26 @@ class WazuhIndexerClient:
         host: str = "",
         user: str = "",
         source: str = "",
+        index: str = ARCHIVES_INDEX,
+        aggregation: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        body = build_archive_search(query, start, end, host=host, user=user, source=source)
-        status, payload = await self._post(f"/{ARCHIVES_INDEX}/_search", body)
+        body = build_archive_search(
+            query,
+            start,
+            end,
+            host=host,
+            user=user,
+            source=source,
+            aggregation=aggregation,
+        )
+        status, payload = await self._post(f"/{index}/_search", body)
         if _index_missing(status, payload):
-            raise ArchivesNotEnabled()
+            if index == ARCHIVES_INDEX:
+                raise ArchivesNotEnabled()
+            raise WazuhResponseError("Wazuh alerts index was not found")
         self._raise_for_status(status, payload)
         parsed = _parse_hits(payload, body["size"])
-        parsed["events"] = [hit for hit in parsed["events"]]
+        parsed["buckets"] = _hunt_buckets(payload) if aggregation else []
         return parsed
 
     async def health(self) -> dict[str, Any]:
@@ -484,6 +509,13 @@ def _max_time(agg: Any) -> str | None:
     if isinstance(stamp, str):
         return stamp
     return None
+
+
+def _hunt_buckets(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    aggs = payload.get("aggregations")
+    if not isinstance(aggs, dict):
+        raise WazuhResponseError("Indexer response missing aggregations")
+    return [{"key": row["label"], "count": row["count"]} for row in _terms(aggs.get("hunt_terms"))]
 
 
 def _terms(agg: Any) -> list[dict[str, Any]]:

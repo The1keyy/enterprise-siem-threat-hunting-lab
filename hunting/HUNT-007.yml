@@ -1,0 +1,39 @@
+# Status: NOT TESTED. A definition, not a lab result.
+id: HUNT-007
+name: RDP Activity
+hypothesis: >
+  RDP logons of type 10 form a baseline. SF-010 alerts on that type, but a
+  type 10 that the rule treats as routine is still worth reading when the
+  source is new for this lab.
+data_source:
+  index: wazuh-archives-*
+  channel: Security
+query: data.win.system.eventID:4624 AND data.win.eventdata.logonType:10
+time_window_default: 7d
+expected_behavior: >
+  Type 10 logons only from the known admin workstation to the hosts that
+  are supposed to accept RDP.
+suspicious_behavior: >
+  A type 10 4624 from an ipAddress or workstation that has not appeared in
+  this window before, including one SF-010 scored below the cases you care
+  about.
+mitre:
+  - id: T1021.001
+    tactic: Lateral Movement
+related_detections:
+  - SF-010
+differs_from_detections: >
+  SF-010 raises alerts for logon type 10, including separate rules for
+  sf-test-admin and for DC01. This hunt returns every type 10 success in
+  the window with no account filter, so the set of sources is visible
+  whether or not those rules fired. It does not replace the alert.
+investigation_guidance:
+  - List data.win.eventdata.ipAddress for each type 10 success and compare it with agent.name.
+  - Compare each row with SF-010. A row that already alerted is context. A type 10 with no SF-010 alert is the gap to explain.
+  - Type 3 and type 2 are not this hunt. They stay on HUNT-003.
+  - Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.
+pivot_fields:
+  - data.win.eventdata.ipAddress
+  - data.win.eventdata.targetUserName
+  - agent.name
+status: NOT TESTED

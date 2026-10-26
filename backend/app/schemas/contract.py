@@ -273,16 +273,31 @@ class DetectionFile(NoticeFile):
     detections: list[DetectionModel]
 
 
+class HuntAggregation(Strict):
+    type: Literal["terms"]
+    field: str
+    size: int
+    maxDocCount: int
+
+
 class HuntModel(Strict):
     id: str
     name: str
     hypothesis: str
     dataSource: str
+    index: Literal["wazuh-archives-*", "wazuh-alerts-*"]
+    channel: str
+    log: str
     query: str
+    timeWindowDefault: Literal["24h", "7d"]
     expectedBehavior: str
     suspiciousBehavior: str
     mitre: list[MitreTechnique]
+    relatedDetections: list[str]
+    differsFromDetections: str
     investigationGuidance: str
+    pivotFields: list[str]
+    aggregation: HuntAggregation | None
     status: ValidationName
     demo: Literal[True]
 

@@ -1,62 +1,87 @@
 {
-  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "_notice": "DEMO DATA \u2014 synthetic, not real telemetry. Hunt definitions are copied from hunting/*.yml. Queries are not lab results.",
   "hunts": [
     {
       "id": "HUNT-001",
       "name": "Suspicious PowerShell",
-      "hypothesis": "A lab account ran encoded or script-block PowerShell.",
-      "dataSource": "powershell, sysmon",
-      "query": "SF-004 OR SF-005 OR SF-006 OR EncodedCommand",
-      "expectedBehavior": "No encoded PowerShell on WS01 during a quiet lab window.",
-      "suspiciousBehavior": "powershell.exe with -EncodedCommand, or a 4104 script block.",
+      "hypothesis": "PowerShell ran on a lab host without the specific strings SF-004, SF-005, and SF-006 require. The interesting cases are script blocks and PowerShell process starts that never became those alerts.",
+      "dataSource": "wazuh-archives-* \u00b7 Microsoft-Windows-PowerShell/Operational; Microsoft-Windows-Sysmon/Operational",
+      "index": "wazuh-archives-*",
+      "channel": "Microsoft-Windows-PowerShell/Operational; Microsoft-Windows-Sysmon/Operational",
+      "log": "",
+      "query": "data.win.system.eventID:4104 OR (data.win.system.eventID:1 AND data.win.eventdata.image:*powershell.exe*) OR (data.win.system.eventID:1 AND data.win.eventdata.image:*pwsh.exe*)",
+      "timeWindowDefault": "24h",
+      "expectedBehavior": "Interactive PowerShell from a known admin session, with a short command line and no network child.",
+      "suspiciousBehavior": "powershell.exe or pwsh.exe started by an unexpected parent, or a 4104 script block, on a host that did not also fire SF-004, SF-005, or SF-006.",
       "mitre": [
         {
           "id": "T1059.001",
           "name": "PowerShell",
           "tactic": "Execution"
-        },
-        {
-          "id": "T1105",
-          "name": "Ingress Tool Transfer",
-          "tactic": "Command and Control"
         }
       ],
-      "investigationGuidance": "Read the command line and parent process. Do not treat this fixture hit as a lab finding.",
+      "relatedDetections": [
+        "SF-004",
+        "SF-005",
+        "SF-006"
+      ],
+      "differsFromDetections": "SF-004 alerts on 4104 only when the script block contains a listed string. SF-005 alerts on Sysmon event 1 only for powershell.exe or pwsh.exe with an encoded-command flag. SF-006 alerts on a download cradle or on a PowerShell network connection. This hunt returns the 4104 and PowerShell process-start events those rules are allowed to ignore.",
+      "investigationGuidance": "1. Read data.win.eventdata.commandLine and the parent image. A string in the command line is attacker-controlled.\n2. Compare the host and user with the same window of SF-004, SF-005, and SF-006 alerts. An event that already alerted is not the point of this hunt.\n3. Pivot on agent.name, then on the image, and decide whether the parent is a known admin tool.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "agent.name",
+        "data.win.eventdata.image",
+        "data.win.eventdata.commandLine"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-002",
       "name": "Failed Authentication Burst",
-      "hypothesis": "One source produced a burst of failed logons.",
-      "dataSource": "windows_security, linux_auth",
-      "query": "eventID:4625 OR SF-001 OR SF-002 OR SF-013",
-      "expectedBehavior": "A handful of typos, not a burst across accounts.",
-      "suspiciousBehavior": "Many 4625 or sshd failures from one lab IP.",
+      "hypothesis": "Failed logons accumulated on one account or one source more slowly than SF-001's frequency window, so the detection never fired.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:4625",
+      "timeWindowDefault": "24h",
+      "expectedBehavior": "A few 4625 events from a mistyped lab password, spread across the day.",
+      "suspiciousBehavior": "Many 4625 events for one targetUserName or one ipAddress that stayed under the SF-001 count inside its short timeframe.",
       "mitre": [
         {
           "id": "T1110.001",
           "name": "Password Guessing",
           "tactic": "Credential Access"
-        },
-        {
-          "id": "T1110.003",
-          "name": "Password Spraying",
-          "tactic": "Credential Access"
         }
       ],
-      "investigationGuidance": "Group by source IP and target account. Confirm the accounts are sf-test-*.",
+      "relatedDetections": [
+        "SF-001",
+        "SF-002"
+      ],
+      "differsFromDetections": "SF-001 fires only after its frequency threshold inside a short timeframe. SF-002 is the same-IP burst across accounts. This hunt lists every 4625 so a slower series, including one that never reaches that threshold, stays visible. It does not count or alert.",
+      "investigationGuidance": "1. Group the 4625 events by data.win.eventdata.ipAddress and by data.win.eventdata.targetUserName.\n2. Compare the count with SF-001. A series that never reached the rule's frequency is the case this hunt is for.\n3. Confirm the accounts are lab accounts before treating the source as hostile.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.targetUserName",
+        "data.win.eventdata.ipAddress",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-003",
       "name": "Successful Login After Failures",
-      "hypothesis": "A success follows a failure burst for the same account.",
-      "dataSource": "windows_security, linux_auth",
-      "query": "SF-003 OR SF-014",
-      "expectedBehavior": "Successes without a preceding failure burst.",
-      "suspiciousBehavior": "4624 or an accepted ssh password soon after failures.",
+      "hypothesis": "A 4624 success belongs to the same account as earlier 4625 failures, but SF-003 did not chain them because the rule's correlation did not match.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:4624",
+      "timeWindowDefault": "24h",
+      "expectedBehavior": "Successful logons from the usual lab hosts with no preceding 4625 burst for that account.",
+      "suspiciousBehavior": "A 4624 whose targetUserName and ipAddress also appear in 4625 events in the same window, including a pair SF-003 did not promote.",
       "mitre": [
         {
           "id": "T1078",
@@ -64,66 +89,111 @@
           "tactic": "Initial Access"
         }
       ],
-      "investigationGuidance": "Compare the success source IP with the failure source IP.",
+      "relatedDetections": [
+        "SF-003"
+      ],
+      "differsFromDetections": "SF-003 fires only when a 4624 follows an SF-001 match on the same account and source within the rule timeframe. This hunt returns 4624 events without that chain, so the analyst can line a success up with failures the correlation missed. It is not a copy of the frequency rule.",
+      "investigationGuidance": "1. Run HUNT-002 for the same window and compare targetUserName and ipAddress with these 4624 events.\n2. Note logonType. Type 10 is also covered by the RDP hunt; this hunt does not require it.\n3. Check whether SF-003 already alerted. If it did, this row is the raw success, not a new finding.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.targetUserName",
+        "data.win.eventdata.ipAddress",
+        "data.win.eventdata.logonType",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-004",
       "name": "Rare Administrator Login",
-      "hypothesis": "A privileged account logged on from an unusual lab host.",
-      "dataSource": "windows_security",
-      "query": "SF-010 OR Domain Admins",
-      "expectedBehavior": "Admin logons only from the known admin workstation.",
-      "suspiciousBehavior": "RDP type 10 or a Domain Admins member logon from WS01.",
+      "hypothesis": "A lab account that almost never logs on succeeded. SF-010 will not see it unless the logon is RDP type 10.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:4624",
+      "timeWindowDefault": "7d",
+      "expectedBehavior": "The lab accounts that sign in every day land in high-count buckets and are dropped. Low-count accounts are the ones to read.",
+      "suspiciousBehavior": "A targetUserName with one or two 4624 events in the window, especially from a host or logonType that account does not normally use.",
       "mitre": [
-        {
-          "id": "T1021.001",
-          "name": "Remote Desktop Protocol",
-          "tactic": "Lateral Movement"
-        },
         {
           "id": "T1078",
           "name": "Valid Accounts",
           "tactic": "Initial Access"
         }
       ],
-      "investigationGuidance": "Check logon type and the source workstation name.",
+      "relatedDetections": [
+        "SF-010"
+      ],
+      "differsFromDetections": "SF-010 alerts on RDP logon type 10, with extra rules for sf-test-admin and for DC01. This hunt does not filter on logon type or on that account. It groups every 4624 by targetUserName and keeps the low-count buckets. A busy account is discarded. A single query_string cannot express that.",
+      "investigationGuidance": "1. Read the low-count targetUserName values. Compare them with Lab Admins. sf-test-admin is not a Domain Admin.\n2. For each low-count account, pivot to agent.name and data.win.eventdata.logonType.\n3. Check SF-010 only to see whether the same logon was already an RDP alert. A type 3 or type 2 success is outside that rule.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.targetUserName",
+        "data.win.eventdata.logonType",
+        "agent.name"
+      ],
+      "aggregation": {
+        "type": "terms",
+        "field": "data.win.eventdata.targetUserName",
+        "size": 50,
+        "maxDocCount": 2
+      },
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-005",
       "name": "New Privileged Account",
-      "hypothesis": "A user was created or added to a privileged group.",
-      "dataSource": "windows_security",
-      "query": "SF-007 OR SF-008 OR SF-009 OR Domain Admins",
-      "expectedBehavior": "No group membership changes during a hunt window.",
-      "suspiciousBehavior": "4732, 4728, or 4720 for an sf-test account.",
+      "hypothesis": "An account was created or added to a privileged group in a way the SID filters on SF-007 and SF-008 do not match, or the create and the group add were far enough apart that nobody looked at them together.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:4720 OR data.win.system.eventID:4728 OR data.win.system.eventID:4732 OR data.win.system.eventID:4756",
+      "timeWindowDefault": "7d",
+      "expectedBehavior": "The known lab-user script creates sf-test-* accounts and adds sf-test-admin to Lab Admins. Those events are expected once, during setup.",
+      "suspiciousBehavior": "A 4720, 4728, 4732, or 4756 after setup, or a group change whose target is not the local Administrators SID and not the domain RIDs SF-008 names.",
       "mitre": [
-        {
-          "id": "T1098",
-          "name": "Account Manipulation",
-          "tactic": "Persistence"
-        },
         {
           "id": "T1136.001",
           "name": "Local Account",
           "tactic": "Persistence"
+        },
+        {
+          "id": "T1098",
+          "name": "Account Manipulation",
+          "tactic": "Persistence"
         }
       ],
-      "investigationGuidance": "Name the group and the member. Snapshot DC01 before any lab change.",
+      "relatedDetections": [
+        "SF-007",
+        "SF-008",
+        "SF-009"
+      ],
+      "differsFromDetections": "SF-009 matches 4720 only. SF-007 matches 4732 only when targetSid is the local Administrators SID. SF-008 matches specific domain-group RIDs. This hunt keeps 4720, 4728, 4732, and 4756 with no SID filter, so a group change those rules skip is still in the result. It does not alert.",
+      "investigationGuidance": "1. Separate 4720 creates from 4728, 4732, and 4756 group changes. A create with no later group add is the slow case.\n2. Compare targetUserName with the lab accounts from 11-New-LabOUsAndUsers.ps1. A name outside that set is the one to read.\n3. Check whether SF-007, SF-008, or SF-009 already alerted. This hunt is for the events they filtered out.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.targetUserName",
+        "data.win.system.eventID",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-006",
       "name": "Scheduled Task Persistence",
-      "hypothesis": "A new scheduled task was created on a lab host.",
-      "dataSource": "windows_security",
-      "query": "SF-017 OR DemoTask",
-      "expectedBehavior": "No new tasks outside the known lab image.",
-      "suspiciousBehavior": "Security 4698 for a task that is not part of the image.",
+      "hypothesis": "schtasks.exe or sc.exe created a recurring task or service. No current SentinelForge rule alerts on those images.",
+      "dataSource": "wazuh-archives-* \u00b7 Microsoft-Windows-Sysmon/Operational",
+      "index": "wazuh-archives-*",
+      "channel": "Microsoft-Windows-Sysmon/Operational",
+      "log": "",
+      "query": "(data.win.system.eventID:1 AND data.win.eventdata.image:*schtasks.exe*) OR (data.win.system.eventID:1 AND data.win.eventdata.image:*sc.exe*)",
+      "timeWindowDefault": "7d",
+      "expectedBehavior": "No schtasks.exe or sc.exe process starts after the VM baseline, other than an admin who announced the change.",
+      "suspiciousBehavior": "Either image started from a user session, with a command line that creates or changes a task or service.",
       "mitre": [
         {
           "id": "T1053.005",
@@ -131,18 +201,32 @@
           "tactic": "Persistence"
         }
       ],
-      "investigationGuidance": "Record the task name. Do not delete it until the lab test plan says so.",
+      "relatedDetections": [
+        "SF-005"
+      ],
+      "differsFromDetections": "SF-005 alerts only when the Sysmon event 1 image is powershell.exe or pwsh.exe and the command line has an encoded-command flag. schtasks.exe and sc.exe are in the Sysmon include and no SF rule matches them. Security 4698 is not in the agent allow-list, so this hunt uses the process-create event the agent does forward.",
+      "investigationGuidance": "1. Read data.win.eventdata.commandLine. The task name and the action are in that string.\n2. Pivot on agent.name. A hit on DC01 and a hit on WS01 are different questions.\n3. There is no SF alert to compare. Absence of an alert is expected, not a miss.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.image",
+        "data.win.eventdata.commandLine",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-007",
       "name": "RDP Activity",
-      "hypothesis": "Someone opened an RDP session inside the lab subnet.",
-      "dataSource": "windows_security",
-      "query": "SF-010",
-      "expectedBehavior": "No type 10 logons unless a test plan calls for RDP.",
-      "suspiciousBehavior": "4624 logon type 10 onto DC01 or WS01.",
+      "hypothesis": "RDP logons of type 10 form a baseline. SF-010 alerts on that type, but a type 10 that the rule treats as routine is still worth reading when the source is new for this lab.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:4624 AND data.win.eventdata.logonType:10",
+      "timeWindowDefault": "7d",
+      "expectedBehavior": "Type 10 logons only from the known admin workstation to the hosts that are supposed to accept RDP.",
+      "suspiciousBehavior": "A type 10 4624 from an ipAddress or workstation that has not appeared in this window before, including one SF-010 scored below the cases you care about.",
       "mitre": [
         {
           "id": "T1021.001",
@@ -150,74 +234,121 @@
           "tactic": "Lateral Movement"
         }
       ],
-      "investigationGuidance": "Note source IP, workstation, and account.",
+      "relatedDetections": [
+        "SF-010"
+      ],
+      "differsFromDetections": "SF-010 raises alerts for logon type 10, including separate rules for sf-test-admin and for DC01. This hunt returns every type 10 success in the window with no account filter, so the set of sources is visible whether or not those rules fired. It does not replace the alert.",
+      "investigationGuidance": "1. List data.win.eventdata.ipAddress for each type 10 success and compare it with agent.name.\n2. Compare each row with SF-010. A row that already alerted is context. A type 10 with no SF-010 alert is the gap to explain.\n3. Type 3 and type 2 are not this hunt. They stay on HUNT-003.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.ipAddress",
+        "data.win.eventdata.targetUserName",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-008",
       "name": "SMB/Lateral Movement Indicators",
-      "hypothesis": "An admin share session moved between lab hosts.",
-      "dataSource": "windows_security",
-      "query": "SF-011 OR ADMIN$",
-      "expectedBehavior": "No ADMIN$ or C$ sessions from WS01.",
-      "suspiciousBehavior": "4624 type 3 plus an admin share name.",
+      "hypothesis": "A host opened a share, or logged on with type 3, without matching the share-name filters on SF-011. 5145 is collected and no stock rule alerts on it.",
+      "dataSource": "wazuh-archives-* \u00b7 Security",
+      "index": "wazuh-archives-*",
+      "channel": "Security",
+      "log": "",
+      "query": "data.win.system.eventID:5140 OR data.win.system.eventID:5145 OR (data.win.system.eventID:4624 AND data.win.eventdata.logonType:3)",
+      "timeWindowDefault": "24h",
+      "expectedBehavior": "Share access from the lab hosts to the shares those hosts normally use.",
+      "suspiciousBehavior": "5140 or 5145 from a source that does not usually talk to that host, or a type 3 4624 that SF-011 did not alert on because the share was not ADMIN$, C$, or IPC$.",
       "mitre": [
         {
           "id": "T1021.002",
-          "name": "SMB / Windows Admin Shares",
+          "name": "SMB/Windows Admin Shares",
           "tactic": "Lateral Movement"
         }
       ],
-      "investigationGuidance": "VERIFY whether the share is on 4624 or on 5140/5145.",
+      "relatedDetections": [
+        "SF-011"
+      ],
+      "differsFromDetections": "SF-011 alerts on ADMIN$, C$, and IPC$, and on a type 3 logon. This hunt returns 5140, 5145, and type 3 4624 with no share-name filter. 5145 is the detailed share event the stock rules do not alert on. The hunt does not copy those share-name checks.",
+      "investigationGuidance": "1. Separate 5140, 5145, and type 3 4624. 5145 is high volume on a domain controller.\n2. Compare data.win.eventdata.ipAddress with the lab subnet 10.10.10.0/24. A source outside that subnet is outside this lab's plan.\n3. Check SF-011 for the same host and time. A hit the rule filtered out is the one to read.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.ipAddress",
+        "data.win.system.eventID",
+        "agent.name"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-009",
       "name": "Linux SSH Brute Force",
-      "hypothesis": "sshd on UBU01 saw a failure burst or a success after failures.",
-      "dataSource": "linux_auth",
-      "query": "SF-013 OR SF-014 OR Failed password",
-      "expectedBehavior": "No sshd failures from the Windows lab hosts.",
-      "suspiciousBehavior": "Repeated failed password lines, then an accepted password.",
+      "hypothesis": "sshd failures on UBU01 stayed below the sixth-failure threshold of SF-013, so the burst rule never fired.",
+      "dataSource": "wazuh-archives-* \u00b7 /var/log/auth.log",
+      "index": "wazuh-archives-*",
+      "channel": "",
+      "log": "/var/log/auth.log",
+      "query": "full_log:\"Failed password\" OR full_log:\"Invalid user\"",
+      "timeWindowDefault": "24h",
+      "expectedBehavior": "An occasional failed SSH password from a lab admin who mistyped once.",
+      "suspiciousBehavior": "Failed-password or invalid-user lines from one data.srcip that never reach six failures inside the SF-013 window.",
       "mitre": [
         {
-          "id": "T1110.001",
-          "name": "Password Guessing",
+          "id": "T1110",
+          "name": "Brute Force",
           "tactic": "Credential Access"
-        },
-        {
-          "id": "T1078",
-          "name": "Valid Accounts",
-          "tactic": "Initial Access"
         }
       ],
-      "investigationGuidance": "VERIFY the Ubuntu 24.04 log path before treating a live line as this hunt.",
+      "relatedDetections": [
+        "SF-013"
+      ],
+      "differsFromDetections": "SF-013 fires on the sixth sshd failure. Five failures stay on the stock sshd rule. This hunt returns Failed password and Invalid user lines with no count, which is the low-and-slow case the frequency rule is built to ignore. It does not alert and it does not implement SF-013's threshold.",
+      "investigationGuidance": "1. Count lines per data.srcip by hand or with the host filter. A count under six is the case SF-013 will not raise.\n2. Compare the source with 10.10.10.0/24. The lab gateway is 10.10.10.1.\n3. SF-014 is the success-after-failure rule. This hunt does not include accepted passwords.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.srcip",
+        "agent.name",
+        "full_log"
+      ],
+      "aggregation": null,
       "status": "NOT TESTED",
       "demo": true
     },
     {
       "id": "HUNT-010",
       "name": "Unusual Process Execution",
-      "hypothesis": "A lab host ran a process that is not part of the quiet baseline.",
-      "dataSource": "auditd, sysmon",
-      "query": "SF-015 OR EXECVE OR EncodedCommand",
-      "expectedBehavior": "Only image and package processes.",
-      "suspiciousBehavior": "auditd EXECVE for curl, or an encoded PowerShell process.",
+      "hypothesis": "A process image ran once or twice in the window. SF-005 only alerts when that image is powershell.exe or pwsh.exe and the command line is encoded.",
+      "dataSource": "wazuh-archives-* \u00b7 Microsoft-Windows-Sysmon/Operational; Security",
+      "index": "wazuh-archives-*",
+      "channel": "Microsoft-Windows-Sysmon/Operational; Security",
+      "log": "",
+      "query": "data.win.system.eventID:1 OR data.win.system.eventID:4688",
+      "timeWindowDefault": "7d",
+      "expectedBehavior": "Images that start all day, including powershell.exe on a busy host, land in high-count buckets and are dropped.",
+      "suspiciousBehavior": "An image with one or two events, especially one that is not a Windows component you already expect on WS01 or DC01.",
       "mitre": [
         {
-          "id": "T1059.004",
-          "name": "Unix Shell",
-          "tactic": "Execution"
-        },
-        {
-          "id": "T1059.001",
-          "name": "PowerShell",
+          "id": "T1059",
+          "name": "Command and Scripting Interpreter",
           "tactic": "Execution"
         }
       ],
-      "investigationGuidance": "Compare the binary path with the lab image. This hit is fixture data.",
+      "relatedDetections": [
+        "SF-005"
+      ],
+      "differsFromDetections": "SF-005 alerts only for powershell.exe or pwsh.exe with an encoded-command flag on Sysmon event 1. This hunt groups Sysmon event 1 and Security 4688 by image and keeps the low-count buckets. A common image is discarded. 4688 is collected and no SF rule alerts on a 4688 command line. A single query_string cannot express a low count.",
+      "investigationGuidance": "1. Read the low-count image values. A high-count image such as powershell.exe is not this result.\n2. For a low-count image, open data.win.eventdata.commandLine and data.win.eventdata.parentImage on the matching events.\n3. Sysmon event 1 and Security 4688 can both describe one process. Do not count them as two techniques.\n4. Snapshot the VM before any response. Response actions are LAB ONLY and need explicit approval.",
+      "pivotFields": [
+        "data.win.eventdata.image",
+        "data.win.eventdata.parentImage",
+        "agent.name"
+      ],
+      "aggregation": {
+        "type": "terms",
+        "field": "data.win.eventdata.image",
+        "size": 50,
+        "maxDocCount": 2
+      },
       "status": "NOT TESTED",
       "demo": true
     }
