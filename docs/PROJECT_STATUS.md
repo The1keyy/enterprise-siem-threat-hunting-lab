@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 11B is not started.
+**Next:** Step 11B adds logtest CI, gitleaks, and Dependabot. The logtest and secrets runs are not observed yet. Step 12 is not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -28,7 +28,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
-| 11 | Detection-as-code CI | 11A done. 11B not started |
+| 11 | Detection-as-code CI | 11A done. 11B workflows added; logtest and secrets results not observed yet |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
@@ -46,7 +46,7 @@ Real counts only. Update these as work actually happens.
 | Saved hunts | 0 |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | Green on 2026-10-26. `detections` run 40379538889 succeeded (validate, 21s). `app` run 40379538866 succeeded (backend 24s, frontend 28s). Both runs warned that `actions/checkout@v4` and the setup actions still target Node 20, and that `ubuntu-latest` moves to Ubuntu 26. |
+| CI | `detections` run 40379538889 succeeded. `app` run 40379538866 succeeded. `logtest` and `secrets` are not observed yet. |
 
 | ID | Status | Evidence |
 |---|---|---|
@@ -129,7 +129,7 @@ Not Windows:
 - `make logtest-up` runs `docker compose up -d --wait --wait-timeout 120` and returns only after the healthcheck is healthy, or fails at 120 seconds. It starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. That script deletes `/etc/services.d/filebeat` before s6 starts services, so Filebeat is not running. Alert and archive directories are 32m tmpfs. There are no named volumes. `make logtest-down` and `make logtest-clean` remove this container and its volumes only. Analysisd still reached `is running`.
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
-- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B is not started.
+- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 12 is not started.
 
 ## VERIFY in Step 17 (Wazuh 4.14.9)
 

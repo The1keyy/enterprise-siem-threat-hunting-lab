@@ -1,0 +1,24 @@
+title = "SentinelForge"
+
+[extend]
+useDefault = true
+
+# Exact strings only. No path allowlists.
+# Placeholders are the tokens in .env.example and scripts/validation/logtest/.env.example.
+# The base64 value is the synthetic PowerShell token in tests/logs/SF-005.yml
+# (it decodes to the words SYNTHETIC TEST INPUT). A gitleaks 8.30.1 scan of
+# all 22 commits on 2026-10-26 reported no leaks before this file existed.
+[[allowlists]]
+description = "Env placeholders and the synthetic SF-005 token"
+regexTarget = "secret"
+regexes = [
+  '''<BCRYPT_HASH>''',
+  '''<RANDOM_64_CHARS>''',
+  '''<WAZUH_MANAGER_IP>''',
+  '''<WAZUH_READONLY_API_USER>''',
+  '''<WAZUH_READONLY_API_PASSWORD>''',
+  '''<WAZUH_READONLY_INDEXER_USER>''',
+  '''<WAZUH_READONLY_INDEXER_PASSWORD>''',
+  '''change-me''',
+  '''U1lOVEhFVElDIFRFU1QgSU5QVVQ=''',
+]

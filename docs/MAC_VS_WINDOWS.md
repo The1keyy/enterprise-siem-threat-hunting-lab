@@ -8,6 +8,8 @@ The Wazuh manager API client and indexer client are built and mock-tested on the
 
 Step 9 runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aarch64`) with no Rosetta platform flag. `make logtest` passed CANARY-001 on built-in sshd rule 5710. CANARY-002, a synthetic Windows 4625 event, did not reach decoder `windows_eventchannel` (observed decoder `json`, rule 1002). That case is `REQUIRES WINDOWS VALIDATION / logtest-limited`. Logtest does not replace the WAZUH01 install.
 
+The `logtest` GitHub Actions job uses that same image and `scripts/validation/logtest/docker-compose.yml` on `ubuntu-latest` (amd64). It sets no `platform` flag. The API password is generated in the job and is not committed. Windows cases stay `LIMITED` there too.
+
 | Component | Build on Mac? | Test on Mac? | How it is tested on Mac | Needs Windows/lab validation? |
 |---|---|---|---|---|
 | Architecture, roadmap, ADRs | Yes | Yes | Read-through against `docs/VERSIONS.md` and the core rules | No, except the network and VM plan when the lab is built |
@@ -22,7 +24,7 @@ Step 9 runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aa
 | Wazuh rules and decoders | Yes | Yes | `wazuh-logtest` in Docker (Step 9) on sample lines | **REQUIRES WINDOWS VALIDATION** for Windows events and `win.eventdata.*` |
 | Sigma rules | Yes | Yes | `sigma convert` in CI | Field accuracy on real logs: yes for Windows sources |
 | Detection metadata | Yes | Yes | `pytest` for IDs, MITRE format, required fields | `observed_result` stays `NOT YET VALIDATED` until the lab |
-| GitHub Actions CI | Written on Mac | Partially | Act or a push that runs lint, XML, YAML, Sigma, pytest | CI cannot mark a rule `LAB VALIDATED` |
+| GitHub Actions CI | Written on Mac | Yes, on push | `detections`, `app`, `logtest` (`wazuh-manager:4.14.9`), and `secrets` (gitleaks 8.30.1) | CI cannot mark a rule `LAB VALIDATED` |
 | Sysmon config | Written on Mac | No | XML review and credit to the upstream config only | **REQUIRES WINDOWS VALIDATION** on WS01 and DC01 |
 | Windows audit policy and PowerShell logging | Written on Mac | No | Review of the documented `auditpol` / GPO steps | **REQUIRES WINDOWS VALIDATION** |
 | PowerShell setup and simulation scripts | Written on Mac | Lint only | PSScriptAnalyzer via `pwsh` | **REQUIRES WINDOWS VALIDATION**. Run only on `sentinelforge.lab`. |

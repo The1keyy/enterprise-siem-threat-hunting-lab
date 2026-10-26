@@ -18,7 +18,7 @@ Windows eventchannel events can't be faithfully replayed in logtest; Windows det
 
 ## Apple Silicon
 
-`docker image inspect` reported `linux/arm64` for `wazuh/wazuh-manager:4.14.9`. The container started on this Mac without `platform: linux/amd64`, and `uname -m` inside the container was `aarch64`. If a later host fails to start that image, set `platform: linux/amd64` on the service and record it here.
+`docker image inspect` reported `linux/arm64` for `wazuh/wazuh-manager:4.14.9`. The container started on this Mac without `platform: linux/amd64`, and `uname -m` inside the container was `aarch64`. GitHub Actions runs this same compose file on `ubuntu-latest` (amd64), also with no `platform` flag. If a later host fails to start that image, set `platform: linux/amd64` on the service and record it here.
 
 Filebeat is not started. The 4.14.9 image has `/etc/services.d/filebeat/run`, which execs Filebeat, and `/etc/cont-init.d/1-config-filebeat` only rewrites `filebeat.yml`. There is no disable env var. `/etc/s6/init/init-stage2` runs `cont-init.d` before it scans `/etc/services.d`. A `down` file stops the Filebeat binary but leaves `s6-supervise filebeat` running, so the entrypoint script deletes `/etc/services.d/filebeat` before that scan.
 

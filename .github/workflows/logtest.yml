@@ -1,0 +1,112 @@
+name: logtest
+
+on:
+  push:
+    paths:
+      - "detections/wazuh/**"
+      - "tests/logs/**"
+      - "scripts/validation/logtest/**"
+      - ".github/workflows/logtest.yml"
+  pull_request:
+    paths:
+      - "detections/wazuh/**"
+      - "tests/logs/**"
+      - "scripts/validation/logtest/**"
+      - ".github/workflows/logtest.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: logtest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  logtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/validation/requirements.txt
+
+      - name: Install the logtest runner
+        run: |
+          python -m venv backend/.venv
+          backend/.venv/bin/pip install "PyYAML==6.0.3"
+
+      - name: Write a throwaway API password
+        run: |
+          password="$(openssl rand -hex 24)"
+          echo "::add-mask::${password}"
+          umask 077
+          printf 'WAZUH_LOGTEST_API_USER=sentinelforge-logtest\nWAZUH_LOGTEST_API_PASSWORD=%s\n' "$password" > scripts/validation/logtest/.env
+
+      - name: Start wazuh-logtest
+        run: make logtest-up
+
+      - name: Analysisd load check
+        run: |
+          set -euo pipefail
+          docker exec wazuh-logtest grep -i sentinelforge /var/ossec/logs/ossec.log > /tmp/sf-load.txt
+          cat /tmp/sf-load.txt
+          if grep -E 'ERROR:' /tmp/sf-load.txt; then
+            echo "analysisd ERROR mentions a sentinelforge file"
+            exit 1
+          fi
+          echo "No ERROR lines mention sentinelforge files."
+
+      - name: Run logtest
+        run: make logtest
+
+      - name: LOGTEST VALID must fully pass
+        run: |
+          backend/.venv/bin/python - <<'PY'
+          import json
+          import re
+          import sys
+          from pathlib import Path
+
+          results = sorted(Path("tests/results").glob("logtest-*.json"))
+          if not results:
+              print("no logtest result file")
+              sys.exit(1)
+          latest = results[-1]
+          payload = json.loads(latest.read_text(encoding="utf-8"))
+          by_id: dict[str, list[str]] = {}
+          for row in payload.get("cases") or []:
+              by_id.setdefault(str(row.get("id")), []).append(str(row.get("status")))
+          failed = False
+          for path in sorted(Path("detections/metadata").glob("SF-*.yml")):
+              text = path.read_text(encoding="utf-8")
+              match = re.search(r"^status:\s*(.+?)\s*$", text, flags=re.M)
+              status = match.group(1).strip().strip("'\"") if match else ""
+              if status != "LOGTEST VALID":
+                  continue
+              seen = by_id.get(path.stem, [])
+              if not seen or any(item != "PASS" for item in seen):
+                  print(f"{path.stem}: metadata is LOGTEST VALID but this run is {seen or 'missing'}")
+                  failed = True
+              else:
+                  print(f"{path.stem}: LOGTEST VALID and every case PASS ({len(seen)})")
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Upload logtest results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logtest-results
+          path: tests/results/*.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Stop wazuh-logtest
+        if: always()
+        run: make logtest-down
