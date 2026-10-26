@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 13 is hunts and simulations. It is not started. Step 12C scripts are SYNTAX VALID on the Mac only. Nothing is installed on WAZUH01, UBU01, or a Windows host.
+**Next:** Step 13 is hunts and simulations. It is not started. Step 12.1 moves the PowerShell lint into `scripts/validation/lint_powershell.ps1`. `make lint-scripts` runs that script and shellcheck. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -29,7 +29,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
-| 12 | Lab configs + scripts | 12A, 12B, and 12C written. Windows and bash setup scripts are SYNTAX VALID on the Mac. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
+| 12 | Lab configs + scripts | 12A, 12B, and 12C written. 12.1 is `make lint-scripts` and `scripts/validation/lint_powershell.ps1`. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |

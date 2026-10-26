@@ -1,4 +1,4 @@
-.PHONY: dev-backend dev-frontend test lint validate up logtest-up logtest-down logtest logtest-clean
+.PHONY: dev-backend dev-frontend test lint lint-scripts validate up logtest-up logtest-down logtest logtest-clean
 
 PYTHON = backend/.venv/bin/python
 
@@ -17,6 +17,11 @@ test:
 lint:
 	cd backend && .venv/bin/ruff check .
 	cd frontend && npm run lint
+
+# shellcheck and scripts/validation/lint_powershell.ps1. CI calls that same script.
+lint-scripts:
+	shellcheck scripts/bash/*.sh
+	pwsh -NoProfile -File scripts/validation/lint_powershell.ps1
 
 validate:
 	$(PYTHON) scripts/validation/validate_detections.py

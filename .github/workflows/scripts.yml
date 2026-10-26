@@ -50,38 +50,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y powershell
 
-      - name: PSScriptAnalyzer
-        shell: pwsh
+      - name: Lint PowerShell
         run: |
-          $ErrorActionPreference = 'Stop'
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
-          $roots = @('scripts/powershell', 'configs/windows', 'configs/sysmon')
-          $results = foreach ($root in $roots) {
-            Invoke-ScriptAnalyzer -Path $root -Recurse -Severity Error,Warning
-          }
-          if ($results) {
-            $results | Format-Table -AutoSize Severity, RuleName, ScriptName, Line, Message | Out-String -Width 200
-            exit 1
-          }
-          Write-Output 'PSScriptAnalyzer: 0 findings'
-
-      - name: Parse PowerShell
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $files = Get-ChildItem -Path scripts/powershell, configs/windows, configs/sysmon -Recurse -Filter *.ps1
-          foreach ($file in $files) {
-            $tokens = $null
-            $errors = $null
-            [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
-            if ($errors -and $errors.Count -gt 0) {
-              Write-Output ("PARSE FAIL " + $file.FullName)
-              $errors | ForEach-Object { Write-Output $_.ToString() }
-              exit 1
-            }
-            Write-Output ("PARSE OK " + $file.FullName)
-          }
+          pwsh -NoProfile -Command "Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module PSScriptAnalyzer -Scope CurrentUser -Force"
+          pwsh -NoProfile -File scripts/validation/lint_powershell.ps1
 
   snippets:
     runs-on: ubuntu-latest
