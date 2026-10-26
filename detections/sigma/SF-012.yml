@@ -1,0 +1,27 @@
+title: SF-012 WinRM host process or port 5985
+id: 7ba4677c-7bbe-4b7a-9b7d-90a3b5a7a197
+status: experimental
+description: >
+  Sysmon process creation of wsmprovhost.exe, or a Sysmon network connection
+  to destination port 5985. Wazuh 100520 is the process, level 12. Wazuh
+  100521 is the port, level 10, and chains on stock 92110. The WinRM
+  Operational channel has no parent in the 4.14.9 ruleset, so this Sigma
+  rule does not match a WinRM event ID.
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_process:
+    Image|endswith: '\wsmprovhost.exe'
+  filter_agent_image:
+    Image|re: '(?i)^C:\\+Program Files \(x86\)\\+ossec-agent\\+wazuh-agent\.exe$'
+  filter_agent_parent:
+    ParentImage|re: '(?i)^C:\\+Program Files \(x86\)\\+ossec-agent\\+wazuh-agent\.exe$'
+  condition: selection_process and not filter_agent_image and not filter_agent_parent
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.006
+falsepositives:
+  - An administrator runs Enter-PSSession between lab VMs.
+  - Port 5985 is Wazuh rule 100521 and is not expressed in this process selection.

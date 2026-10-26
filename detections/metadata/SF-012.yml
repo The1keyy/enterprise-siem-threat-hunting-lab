@@ -1,0 +1,55 @@
+id: SF-012
+name: WinRM / PowerShell remoting
+description: >
+  Sysmon 1 for wsmprovhost.exe, and Sysmon 3 to destination port 5985.
+  The 4.14.9 ruleset has no WinRM Operational channel and no WinRM event
+  ID, so those IDs are not matched. A 4624 type 3 is SF-011, not this rule.
+severity: high
+mitre:
+  - T1021.006
+telemetry:
+  - windows_security
+  - sysmon
+wazuh_rule_ids:
+  - "100520"
+  - "100521"
+sigma_file: detections/sigma/SF-012.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "61603"
+  - "92110"
+required_telemetry: >
+  Sysmon Operational event 1 and event 3 on WS01 and DC01. Stock 92110
+  already alerts destination port 5985 at level 4. Step 12 must also
+  collect Microsoft-Windows-WinRM/Operational. No rule matches that
+  channel until a lab event shows the ID.
+false_positives: An administrator runs Enter-PSSession between lab VMs.
+tuning_notes: >
+  100520 is level 12, high, because the WinRM host process means a
+  remoting session started. That is above stock 92220, which is a
+  file-create rule at level 6, and it is not critical. Critical stays
+  with SF-008. 100521 is level 10, medium, one step above stock 92110,
+  so the SF-012 description wins. The agent executable path is excluded.
+  A custom agent install directory is not. Loopback destinations are
+  excluded on 100521. 0810 has no parentImage, so 100521 does not negate it.
+test_procedure: >
+  make logtest ID=SF-012 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-012.md. Not run.
+expected_event: Sysmon 1 on DC01 whose image ends in \wsmprovhost.exe.
+expected_alert: Description starts with SF-012. Rule 100520, level 12. MITRE T1021.006.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Total rules enabled: '8481'
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Started (pid: 701).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100500_lateral.xml.
+  GET /rules?filename=sentinelforge_100500_lateral.xml returned 100520 level 12
+  and 100521 level 10, both enabled.

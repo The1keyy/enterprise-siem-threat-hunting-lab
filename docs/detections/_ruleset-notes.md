@@ -218,3 +218,42 @@ docker exec wazuh-logtest sed -n '450,780p' /var/ossec/ruleset/rules/0580-win-se
 
 None. The SID or the event ID is the detection. A group name or an account name is not an exclusion.
 
+## SF-010, SF-011, and SF-012 — lateral movement
+
+Evidence commands:
+
+```bash
+docker exec wazuh-logtest sed -n '70,90p' /var/ossec/ruleset/rules/0580-win-security_rules.xml
+docker exec wazuh-logtest sed -n '1,120p' /var/ossec/ruleset/rules/0840-win_event_channel.xml
+docker exec wazuh-logtest sed -n '70,100p' /var/ossec/ruleset/rules/0955-WEF-baseline_rules.xml
+docker exec wazuh-logtest sed -n '90,120p' /var/ossec/ruleset/rules/0810-sysmon_id_3.xml
+docker exec wazuh-logtest grep -n 'win.system.channel' /var/ossec/ruleset/rules/0575-win-base_rules.xml
+docker exec wazuh-logtest grep -n '5145\|relativeTargetName\|Microsoft-Windows-WinRM' /var/ossec/ruleset/rules/*.xml || echo ZERO
+```
+
+The last command prints no 5145, no `relativeTargetName`, and no WinRM channel. `wsmprovhost.exe` appears on rule 92220 (Sysmon file create), not on event 1.
+
+### Chain
+
+| Rule | Level | What it matches |
+|---|---|---|
+| 60106 | 3 | `if_sid` 60103, event 528, 540, 673, 4624, or 4769. MITRE `T1078` |
+| 92651 | 0 | `if_sid` 60106, IPv4 `ipAddress`, not `127.0.0.1`. File `0840-win_event_channel.xml` |
+| 92653 | 3 | `if_sid` 92651, `logonType` pcre2 `10` with no anchors. MITRE `T1021.001` and `T1078.002` |
+| 92656 | 15 | `if_sid` 60106, `logonType` `^10$`, loopback `ipAddress` |
+| 67017 | 3 | `if_sid` 60103, eventID `5140` (no anchors), `shareName` not `IPC$` or `NetLogon`. MITRE `T1021.002` |
+| 61603 | 0 | Sysmon event 1 |
+| 92110 | 4 | `if_sid` 92101 or 61605, `destinationPort` `^5985$`. MITRE `T1021.006` |
+
+`logonType` is a `<field>` check (60118, 60200, 60232, 92653, 92656). `shareName` is a `<field>` check on 67017. `ipAddress` is a `<field>` check on 92651. `win.system.computer` is in the 4624 sample comment and is not a `<field>` check. `processName` is in that same comment and is not a `<field>` check.
+
+### How ours differ
+
+- SF-010 (100500) is 60106, event `^4624$`, logon type `^10$`, level 10. 100501 is level 12 for `targetUserName` `^sf-test-admin$`. 100502 is level 12 for computer DC01. Loopback RDP stays 92656.
+- SF-011 (100510) is 60103, event `^5140$|^5145$`, share ending in `\ADMIN$` or `\C$`, level 12. 100511 is IPC$ at level 4. 100512 is 4624 type 3 at level 5 and does not wait for the share event. Level 5 stays under 92652.
+- SF-012 (100520) is 61603 and image `\wsmprovhost.exe`, level 12. 100521 is 92110, level 10. No WinRM Operational event ID is matched.
+
+### Exclusions
+
+Machine accounts end with `$`. Source `10.10.10.1` is the lab host adapter. WS01 `10.10.10.20` is not excluded. The Wazuh agent path is on 100520 (`image` and `parentImage`) and on 100521 (`image` only). 4624 does not negate `processName`.
+

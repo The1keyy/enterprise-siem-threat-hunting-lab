@@ -1,0 +1,78 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# Process paths are labels. Nothing here starts a session.
+comment: SYNTHETIC TEST INPUT
+id: SF-012
+description: >
+  Sysmon 1 for wsmprovhost.exe is the high SF-012 case. Sysmon 3 to port
+  5985 is the medium case. powershell.exe is not the process rule. The
+  anchored Wazuh agent path must not match. Loopback port 5985 must not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"DC01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\wsmprovhost.exe","parentImage":"C:\\\\Windows\\\\System32\\\\svchost.exe","commandLine":"wsmprovhost.exe -Embedding"}}}'
+    expect:
+      fires: true
+      rule_id: 100520
+      level: 12
+      mitre:
+        - T1021.006
+  - name: positive_winrm_port
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"3","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\wsmprovhost.exe","protocol":"tcp","sourceIp":"10.10.10.20","destinationIp":"10.10.10.10","destinationPort":"5985"}}}'
+    expect:
+      fires: true
+      rule_id: 100521
+      level: 10
+      mitre:
+        - T1021.006
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","parentImage":"C:\\\\Windows\\\\System32\\\\svchost.exe","commandLine":"powershell.exe"}}}'
+    expect:
+      fires: false
+      rule_id: 100520
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\wsmprovhost.exe","parentImage":"C:\\\\Program Files (x86)\\\\ossec-agent\\\\wazuh-agent.exe","commandLine":"wsmprovhost.exe -Embedding"}}}'
+    expect:
+      fires: false
+      rule_id: 100520
+  - name: negative_agent_image
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"3","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Program Files (x86)\\\\ossec-agent\\\\wazuh-agent.exe","protocol":"tcp","sourceIp":"10.10.10.20","destinationIp":"10.10.10.10","destinationPort":"5985"}}}'
+    expect:
+      fires: false
+      rule_id: 100521
+  - name: negative_loopback
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"3","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\wsmprovhost.exe","protocol":"tcp","sourceIp":"10.10.10.20","destinationIp":"127.0.0.1","destinationPort":"5985"}}}'
+    expect:
+      fires: false
+      rule_id: 100521

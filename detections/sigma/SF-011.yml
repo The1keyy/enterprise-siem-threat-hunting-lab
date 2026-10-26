@@ -1,0 +1,31 @@
+title: SF-011 admin share access
+id: fc977744-bcb4-40ad-a970-a80a2765c5ab
+status: experimental
+description: >
+  Security 5140 or 5145 whose ShareName is ADMIN$ or C$. Wazuh 100510 is
+  that alert, level 12. IPC$ is Wazuh 100511, level 4, and is not this
+  selection. A 4624 logon type 3 is Wazuh 100512, level 5, and does not
+  have to occur in the same event. Same-IP correlation is Step 14.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID:
+      - 5140
+      - 5145
+    ShareName|endswith:
+      - '\ADMIN$'
+      - '\C$'
+  filter_machine:
+    SubjectUserName|endswith: '$'
+  filter_host_adapter:
+    IpAddress: '10.10.10.1'
+  condition: selection and not filter_machine and not filter_host_adapter
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.002
+falsepositives:
+  - An administrator maps \\DC01\C$ from a lab VM.
+  - IPC$ alone is normal domain traffic and is the low Wazuh rule, not this selection.

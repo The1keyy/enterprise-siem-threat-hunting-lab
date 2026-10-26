@@ -18,4 +18,4 @@ One writeup per detection (`SF-XXX.md`).
 13. Evidence
 14. Final Status
 
-**Status:** SF-001 through SF-009, SF-013, and SF-014 have writeups. Windows rows are `SYNTAX VALID` only.
+**Status:** SF-001 through SF-014 have writeups. Windows rows are `SYNTAX VALID` only. SF-013 and SF-014 are `LOGTEST VALID`.

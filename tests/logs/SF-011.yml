@@ -1,0 +1,104 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# Share names are labels. Nothing here connects to a host.
+comment: SYNTHETIC TEST INPUT
+id: SF-011
+description: >
+  A 5140 for \\*\C$ is the high SF-011 case. ADMIN$ on 5145 is the same
+  rule. IPC$ is the low rule. A type 3 logon is the separate low rule.
+  A machine account and source 10.10.10.1 are not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5140","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\C$","subjectUserName":"sf-test-user","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: true
+      rule_id: 100510
+      level: 12
+      mitre:
+        - T1021.002
+  - name: positive_admin_share
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5145","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\ADMIN$","relativeTargetName":"","subjectUserName":"sf-test-user","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: true
+      rule_id: 100510
+      level: 12
+      mitre:
+        - T1021.002
+  - name: positive_ipc
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5140","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\IPC$","subjectUserName":"sf-test-user","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: true
+      rule_id: 100511
+      level: 4
+      mitre:
+        - T1021.002
+  - name: positive_network_logon
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","logonType":"3","ipAddress":"10.10.10.20","workstationName":"WS01"}}}'
+    expect:
+      fires: true
+      rule_id: 100512
+      level: 5
+      mitre:
+        - T1021.002
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5140","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\IPC$","subjectUserName":"sf-test-user","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: false
+      rule_id: 100510
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5142","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\C$","subjectUserName":"sf-test-user","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: false
+      rule_id: 100510
+  - name: negative_machine
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5140","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\C$","subjectUserName":"WS01$","ipAddress":"10.10.10.20"}}}'
+    expect:
+      fires: false
+      rule_id: 100510
+  - name: negative_host_adapter
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"5140","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"shareName":"\\\\*\\\\C$","subjectUserName":"sf-test-user","ipAddress":"10.10.10.1"}}}'
+    expect:
+      fires: false
+      rule_id: 100510

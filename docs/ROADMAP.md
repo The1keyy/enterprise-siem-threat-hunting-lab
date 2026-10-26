@@ -1,6 +1,6 @@
 # Roadmap
 
-SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-009 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
+SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-012 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). SF-015 through SF-020 are not written yet. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
@@ -23,9 +23,9 @@ Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" m
 | SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**, `targetSid` `S-1-5-32-544`. Parent 60144. A removal is stock 60154. **VERIFY** against a lab event on WS01. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
 | SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** or **4756**, RID 512, 519, 518, or 516 on `targetSid`. Parents 60141 and 60151. **VERIFY** which event DC01 emits. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
 | SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720** only. Parent 60109 also matches 4722, which this rule does not use. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
-| SF-010 | Inbound RDP logon | T1021.001 | `windows_security` | Security **4624**, logon type **10**. **VERIFY** decoded field name (`win.eventdata.logonType` is a candidate). | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
-| SF-011 | SMB / admin-share remote logon | T1021.002 | `windows_security` | Security **4624**, logon type **3**. Share detail **5140** or **5145**. **VERIFY** which share event the audit policy produces. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
-| SF-012 | WinRM / PowerShell remoting | T1021.006 | `windows_security` | Security **4624** type **3**. WinRM Operational event IDs: **VERIFY**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). WinRM-specific ID is not assumed. | 4 |
+| SF-010 | Inbound RDP logon | T1021.001 | `windows_security` | Security **4624**, logon type **10**. Parents 60106, then 100500. Elevated rules 100501 (`sf-test-admin`) and 100502 (computer DC01). `logonType` is a field check. `SYNTAX VALID`. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
+| SF-011 | SMB / admin-share remote logon | T1021.002 | `windows_security` | **5140** or **5145** for ADMIN$ or C$ (100510, level 12). IPC$ is 100511, level 4. **4624** type **3** is 100512, level 5, and does not wait for the share. 5145 has no stock parent. `SYNTAX VALID`. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
+| SF-012 | WinRM / PowerShell remoting | T1021.006 | `windows_security`, `sysmon` | Sysmon **1** `wsmprovhost.exe` (100520) and Sysmon **3** port **5985** (100521, parent 92110). WinRM Operational has no parent in this ruleset. Event IDs stay **VERIFY**. `SYNTAX VALID`. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). WinRM-specific ID is not assumed. | 4 |
 
 Story order inside the MVP: `SF-001` and `SF-002`, then `SF-003`, then `SF-004`–`SF-006`, then `SF-007`–`SF-009`, then `SF-010`–`SF-012`.
 

@@ -1,0 +1,81 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The account names are labels. Nothing here opens a session.
+comment: SYNTHETIC TEST INPUT
+id: SF-010
+description: >
+  A 4624 logon type 10 for sf-test-user is the baseline. sf-test-admin and
+  a DC01 computer are the elevated rules. Type 2, a machine account, and
+  source 10.10.10.1 are not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","logonType":"10","ipAddress":"10.10.10.200","workstationName":"WS01"}}}'
+    expect:
+      fires: true
+      rule_id: 100500
+      level: 10
+      mitre:
+        - T1021.001
+  - name: positive_admin
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-admin","logonType":"10","ipAddress":"10.10.10.200","workstationName":"WS01"}}}'
+    expect:
+      fires: true
+      rule_id: 100501
+      level: 12
+      mitre:
+        - T1021.001
+  - name: positive_dc01
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","logonType":"10","ipAddress":"10.10.10.20","workstationName":"WS01"}}}'
+    expect:
+      fires: true
+      rule_id: 100502
+      level: 12
+      mitre:
+        - T1021.001
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","logonType":"2","ipAddress":"10.10.10.200","workstationName":"WS01"}}}'
+    expect:
+      fires: false
+      rule_id: 100500
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"WS01$","logonType":"10","ipAddress":"10.10.10.200","workstationName":"WS01"}}}'
+    expect:
+      fires: false
+      rule_id: 100500
+  - name: negative_host_adapter
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4624","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-admin","logonType":"10","ipAddress":"10.10.10.1","workstationName":"HOST"}}}'
+    expect:
+      fires: false
+      rule_id: 100500

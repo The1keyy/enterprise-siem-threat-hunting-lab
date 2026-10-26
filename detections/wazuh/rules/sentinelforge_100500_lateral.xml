@@ -1,0 +1,150 @@
+<!--
+  REQUIRES WINDOWS VALIDATION
+  Eventchannel JSON cannot be replayed in this logtest harness. Status stops
+  at SYNTAX VALID after analysisd loads this file. Not LAB VALIDATED.
+
+  Chain, wazuh/wazuh-manager:4.14.9, file 0580-win-security_rules.xml unless noted:
+    60000 -> 60001 Security -> 60103 audit success -> 60106 event 4624 (also 4769)
+    92651 if_sid 60106, IPv4 ipAddress, not 127.0.0.1, level 0
+      0840-win_event_channel.xml
+    92653 if_sid 92651, logonType pcre2 "10" with no anchors, level 3, T1021.001 and T1078.002
+    92656 if_sid 60106, logonType ^10$, loopback ipAddress, level 15
+    67017 if_sid 60103, eventID 5140, shareName not IPC$ or NetLogon, level 3, T1021.002
+      0955-WEF-baseline_rules.xml
+    5145 is not named anywhere in this ruleset. 100510 and 100511 add it on 60103.
+    relativeTargetName is not a field check. It is not used.
+    win.system.computer is in the 4624 sample comment above rule 60106. It is not
+    a <field> check. 100502 uses that sample key.
+
+  Sysmon:
+    60004 -> 61600 -> 61603 event 1, 61605 event 3
+    92110 if_sid 92101 or 61605, destinationPort ^5985$, level 4, T1021.006
+      0810-sysmon_id_3.xml
+    92220 matches wsmprovhost.exe on Sysmon file-create, not on event 1.
+    0575 has no Microsoft-Windows-WinRM/Operational channel. No rule names a
+    WinRM event ID. 100520 does not invent one.
+
+  4624 and 5140 are different events. This image has no frequency rule that also
+  contains a <field> check. 100512 does not wait for 100510. A same-IP join is
+  Step 14.
+
+  Exclusions are anchored. Script text is not an exclusion.
+  Machine accounts: targetUserName or subjectUserName ending in $.
+  Host adapter: ipAddress or sourceIp exactly 10.10.10.1. WS01 10.10.10.20 is
+  the planned simulation source and is not excluded.
+  Wazuh agent: full image or parentImage path, Sysmon rules only. 4624 processName
+  is only in a sample comment, so 100500 does not negate it.
+  0810 has no parentImage, so 100521 does not negate that field.
+  VERIFY: wazuh-agent.exe at C:\Program Files (x86)\ossec-agent, same note as SF-005.
+-->
+<group name="windows,">
+
+  <rule id="100500" level="10">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.logonType" type="pcre2">^10$</field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">\$$</field>
+    <field name="win.eventdata.ipAddress" type="pcre2" negate="yes">^10\.10\.10\.1$</field>
+    <description>SF-010: inbound RDP logon</description>
+    <mitre>
+      <id>T1021.001</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100501" level="12">
+    <!--
+      Lab admin account only. The name is anchored. Domain Admin membership
+      is not known here. Step 14 does that enrichment.
+    -->
+    <if_sid>100500</if_sid>
+    <field name="win.eventdata.targetUserName" type="pcre2">(?i)^sf-test-admin$</field>
+    <description>SF-010: RDP logon of lab admin account sf-test-admin</description>
+    <mitre>
+      <id>T1021.001</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100502" level="12">
+    <if_sid>100500</if_sid>
+    <field name="win.system.computer" type="pcre2">(?i)^DC01(\.sentinelforge\.lab)?$</field>
+    <description>SF-010: RDP logon to DC01</description>
+    <mitre>
+      <id>T1021.001</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100510" level="12">
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^5140$|^5145$</field>
+    <field name="win.eventdata.shareName" type="pcre2">(?i)(?:^|\\)(?:ADMIN|C)\$$</field>
+    <field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">\$$</field>
+    <field name="win.eventdata.ipAddress" type="pcre2" negate="yes">^10\.10\.10\.1$</field>
+    <description>SF-011: admin share accessed</description>
+    <mitre>
+      <id>T1021.002</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100511" level="4">
+    <!--
+      IPC$ is normal domain traffic. Level 4 is low (ADR 0004). It is context.
+      ADMIN$ and C$ stay on 100510.
+    -->
+    <if_sid>60103</if_sid>
+    <field name="win.system.eventID">^5140$|^5145$</field>
+    <field name="win.eventdata.shareName" type="pcre2">(?i)(?:^|\\)IPC\$$</field>
+    <field name="win.eventdata.subjectUserName" type="pcre2" negate="yes">\$$</field>
+    <field name="win.eventdata.ipAddress" type="pcre2" negate="yes">^10\.10\.10\.1$</field>
+    <description>SF-011: IPC$ share accessed</description>
+    <mitre>
+      <id>T1021.002</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100512" level="5">
+    <!--
+      Logon half of SF-011. Level 5 is low and is below stock 92652 (level 6),
+      so an NTLM remote logon is not relabeled. It does not require a 5140.
+    -->
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4624$</field>
+    <field name="win.eventdata.logonType" type="pcre2">^3$</field>
+    <field name="win.eventdata.targetUserName" type="pcre2" negate="yes">\$$</field>
+    <field name="win.eventdata.ipAddress" type="pcre2" negate="yes">^10\.10\.10\.1$</field>
+    <description>SF-011: network logon type 3</description>
+    <mitre>
+      <id>T1021.002</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100520" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\wsmprovhost\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
+    <field name="win.eventdata.parentImage" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
+    <description>SF-012: WinRM host process started</description>
+    <mitre>
+      <id>T1021.006</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+  <rule id="100521" level="10">
+    <if_sid>92110</if_sid>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
+    <field name="win.eventdata.sourceIp" type="pcre2" negate="yes">^10\.10\.10\.1$</field>
+    <field name="win.eventdata.destinationIp" type="pcre2" negate="yes">(?i)^(?:-|127\.0\.0\.1|::1|0:0:0:0:0:0:0:1)$</field>
+    <description>SF-012: connection to WinRM port 5985</description>
+    <mitre>
+      <id>T1021.006</id>
+    </mitre>
+    <group>sentinelforge,lateral,</group>
+  </rule>
+
+</group>

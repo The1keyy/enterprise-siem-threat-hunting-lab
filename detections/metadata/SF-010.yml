@@ -1,0 +1,52 @@
+id: SF-010
+name: Inbound RDP logon
+description: >
+  Security 4624 with logon type 10. The baseline is any such logon.
+  The elevated rules are the lab account sf-test-admin, or a logon whose
+  computer is DC01. A machine account and the host adapter are excluded.
+severity: high
+mitre:
+  - T1021.001
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100500"
+  - "100501"
+  - "100502"
+sigma_file: detections/sigma/SF-010.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60106"
+required_telemetry: >
+  Audit Logon, Success, on WS01 and DC01. That policy writes 4624.
+  Logon type 10 is RemoteInteractive.
+false_positives: An administrator opens an RDP session to a lab VM.
+tuning_notes: >
+  Level 10 is medium (ADR 0004) and is above stock 92653 (level 3).
+  100501 and 100502 are level 12, high. The library row is high because
+  those two are the privileged-account and DC01 behavior. Loopback RDP
+  stays stock 92656 at level 15. The privileged account is exactly
+  sf-test-admin. Group membership is Step 14. There is no content exclusion.
+test_procedure: >
+  make logtest ID=SF-010 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-010.md. Not run.
+expected_event: Security 4624 on WS01 or DC01 with logonType 10.
+expected_alert: >
+  Description starts with SF-010. Rule 100500 level 10, or 100501 / 100502
+  level 12. MITRE T1021.001.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Total rules enabled: '8481'
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Started (pid: 701).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100500_lateral.xml.
+  GET /rules?filename=sentinelforge_100500_lateral.xml returned 100500 level 10,
+  100501 level 12, and 100502 level 12, all enabled.

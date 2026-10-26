@@ -1,0 +1,52 @@
+id: SF-011
+name: SMB / admin-share remote logon
+description: >
+  Security 5140 or 5145 for ADMIN$ or C$ is the high alert. IPC$ is a
+  separate low alert. A 4624 logon type 3 is a separate low alert and
+  does not wait for the share event. MITRE is T1021.002 only.
+severity: high
+mitre:
+  - T1021.002
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100510"
+  - "100511"
+  - "100512"
+sigma_file: detections/sigma/SF-011.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60103"
+  - "60106"
+required_telemetry: >
+  Audit Logon, Success, for 4624 type 3. Audit File Share, Success, for
+  5140. Audit Detailed File Share, Success, for 5145. On DC01 and WS01.
+false_positives: An administrator maps an admin share from a lab VM.
+tuning_notes: >
+  100510 is level 12, high, for ADMIN$ or C$. 100511 is level 4, low, for
+  IPC$, because IPC$ is normal domain traffic. 100512 is level 5, low, for
+  every type 3 logon, and it stays below stock 92652 so NTLM is not
+  relabeled. The library row is high because 100510 is the admin-share
+  behavior. A same-IP join of 4624 and 5140 is Step 14. 5145 has no stock
+  parent. relativeTargetName is not matched.
+test_procedure: >
+  make logtest ID=SF-011 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-011.md. Not run.
+expected_event: Security 5140 or 5145 for \\*\C$ or \\*\ADMIN$ on DC01.
+expected_alert: Description starts with SF-011. Rule 100510, level 12. MITRE T1021.002.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Total rules enabled: '8481'
+  2026/10/26 18:13:09 wazuh-analysisd: INFO: Started (pid: 701).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100500_lateral.xml.
+  GET /rules?filename=sentinelforge_100500_lateral.xml returned 100510 level 12,
+  100511 level 4, and 100512 level 5, all enabled.

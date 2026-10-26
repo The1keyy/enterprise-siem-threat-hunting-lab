@@ -322,7 +322,7 @@
     {
       "id": "SF-010",
       "name": "Inbound RDP logon",
-      "description": "Security 4624, logon type 10. VERIFY the decoded field name. win.eventdata.logonType is a candidate.",
+      "description": "Security 4624 with logon type 10. The baseline is any such logon. The elevated rules are the lab account sf-test-admin, or a logon whose computer is DC01. A machine account and the host adapter are excluded.\n",
       "severity": "high",
       "mitre": [
         {
@@ -334,28 +334,32 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100500",
+        "100501",
+        "100502"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4624 logon type 10",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-010. Not written yet.",
+      "falsePositives": "An administrator opens an RDP session to a lab VM.",
+      "tuningNotes": "Level 10 is medium (ADR 0004) and is above stock 92653 (level 3). 100501 and 100502 are level 12, high. The library row is high because those two are the privileged-account and DC01 behavior. Loopback RDP stays stock 92656 at level 15. The privileged account is exactly sf-test-admin. Group membership is Step 14. There is no content exclusion.\n",
+      "testProcedure": "make logtest ID=SF-010 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-010.md. Not run.\n",
+      "expectedEvent": "Security 4624 on WS01 or DC01 with logonType 10.",
+      "expectedAlert": "Description starts with SF-010. Rule 100500 level 10, or 100501 / 100502 level 12. MITRE T1021.001.\n",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100500\" level=\"10\">\n    <if_sid>60106</if_sid>\n    <field name=\"win.system.eventID\">^4624$</field>\n    <field name=\"win.eventdata.logonType\" type=\"pcre2\">^10$</field>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <field name=\"win.eventdata.ipAddress\" type=\"pcre2\" negate=\"yes\">^10\\.10\\.10\\.1$</field>\n    <description>SF-010: inbound RDP logon</description>\n    <mitre>\n      <id>T1021.001</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>\n\n<rule id=\"100501\" level=\"12\">\n    <!--\n      Lab admin account only. The name is anchored. Domain Admin membership\n      is not known here. Step 14 does that enrichment.\n    -->\n    <if_sid>100500</if_sid>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\">(?i)^sf-test-admin$</field>\n    <description>SF-010: RDP logon of lab admin account sf-test-admin</description>\n    <mitre>\n      <id>T1021.001</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>\n\n<rule id=\"100502\" level=\"12\">\n    <if_sid>100500</if_sid>\n    <field name=\"win.system.computer\" type=\"pcre2\">(?i)^DC01(\\.sentinelforge\\.lab)?$</field>\n    <description>SF-010: RDP logon to DC01</description>\n    <mitre>\n      <id>T1021.001</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-010 inbound RDP logon\nid: e9f20af5-bf45-4be4-b806-656c25dfb679\nstatus: experimental\ndescription: >\n  Security 4624 with LogonType 10. Wazuh 100500 is level 10. Wazuh 100501\n  is level 12 when TargetUserName is exactly sf-test-admin. Wazuh 100502\n  is level 12 when the computer is DC01. Loopback RDP stays stock rule 92656.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4624\n    LogonType: 10\n  filter_machine:\n    TargetUserName|endswith: '$'\n  filter_host_adapter:\n    IpAddress: '10.10.10.1'\n  condition: selection and not filter_machine and not filter_host_adapter\nlevel: high\ntags:\n  - attack.lateral_movement\n  - attack.t1021.001\nfalsepositives:\n  - An administrator opens a real RDP session to WS01 or DC01.\n  - The Sigma level is the elevated Wazuh rule. A type-10 logon that is not sf-test-admin and not DC01 is Wazuh level 10.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-011",
       "name": "SMB / admin-share remote logon",
-      "description": "Security 4624, logon type 3. Share detail 5140 or 5145. VERIFY which share event the audit policy produces.",
+      "description": "Security 5140 or 5145 for ADMIN$ or C$ is the high alert. IPC$ is a separate low alert. A 4624 logon type 3 is a separate low alert and does not wait for the share event. MITRE is T1021.002 only.\n",
       "severity": "high",
       "mitre": [
         {
@@ -367,28 +371,32 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100510",
+        "100511",
+        "100512"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4624 logon type 3",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-011. Not written yet.",
+      "falsePositives": "An administrator maps an admin share from a lab VM.",
+      "tuningNotes": "100510 is level 12, high, for ADMIN$ or C$. 100511 is level 4, low, for IPC$, because IPC$ is normal domain traffic. 100512 is level 5, low, for every type 3 logon, and it stays below stock 92652 so NTLM is not relabeled. The library row is high because 100510 is the admin-share behavior. A same-IP join of 4624 and 5140 is Step 14. 5145 has no stock parent. relativeTargetName is not matched.\n",
+      "testProcedure": "make logtest ID=SF-011 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-011.md. Not run.\n",
+      "expectedEvent": "Security 5140 or 5145 for \\\\*\\C$ or \\\\*\\ADMIN$ on DC01.",
+      "expectedAlert": "Description starts with SF-011. Rule 100510, level 12. MITRE T1021.002.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100510\" level=\"12\">\n    <if_sid>60103</if_sid>\n    <field name=\"win.system.eventID\">^5140$|^5145$</field>\n    <field name=\"win.eventdata.shareName\" type=\"pcre2\">(?i)(?:^|\\\\)(?:ADMIN|C)\\$$</field>\n    <field name=\"win.eventdata.subjectUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <field name=\"win.eventdata.ipAddress\" type=\"pcre2\" negate=\"yes\">^10\\.10\\.10\\.1$</field>\n    <description>SF-011: admin share accessed</description>\n    <mitre>\n      <id>T1021.002</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>\n\n<rule id=\"100511\" level=\"4\">\n    <!--\n      IPC$ is normal domain traffic. Level 4 is low (ADR 0004). It is context.\n      ADMIN$ and C$ stay on 100510.\n    -->\n    <if_sid>60103</if_sid>\n    <field name=\"win.system.eventID\">^5140$|^5145$</field>\n    <field name=\"win.eventdata.shareName\" type=\"pcre2\">(?i)(?:^|\\\\)IPC\\$$</field>\n    <field name=\"win.eventdata.subjectUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <field name=\"win.eventdata.ipAddress\" type=\"pcre2\" negate=\"yes\">^10\\.10\\.10\\.1$</field>\n    <description>SF-011: IPC$ share accessed</description>\n    <mitre>\n      <id>T1021.002</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>\n\n<rule id=\"100512\" level=\"5\">\n    <!--\n      Logon half of SF-011. Level 5 is low and is below stock 92652 (level 6),\n      so an NTLM remote logon is not relabeled. It does not require a 5140.\n    -->\n    <if_sid>60106</if_sid>\n    <field name=\"win.system.eventID\">^4624$</field>\n    <field name=\"win.eventdata.logonType\" type=\"pcre2\">^3$</field>\n    <field name=\"win.eventdata.targetUserName\" type=\"pcre2\" negate=\"yes\">\\$$</field>\n    <field name=\"win.eventdata.ipAddress\" type=\"pcre2\" negate=\"yes\">^10\\.10\\.10\\.1$</field>\n    <description>SF-011: network logon type 3</description>\n    <mitre>\n      <id>T1021.002</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-011 admin share access\nid: fc977744-bcb4-40ad-a970-a80a2765c5ab\nstatus: experimental\ndescription: >\n  Security 5140 or 5145 whose ShareName is ADMIN$ or C$. Wazuh 100510 is\n  that alert, level 12. IPC$ is Wazuh 100511, level 4, and is not this\n  selection. A 4624 logon type 3 is Wazuh 100512, level 5, and does not\n  have to occur in the same event. Same-IP correlation is Step 14.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID:\n      - 5140\n      - 5145\n    ShareName|endswith:\n      - '\\ADMIN$'\n      - '\\C$'\n  filter_machine:\n    SubjectUserName|endswith: '$'\n  filter_host_adapter:\n    IpAddress: '10.10.10.1'\n  condition: selection and not filter_machine and not filter_host_adapter\nlevel: high\ntags:\n  - attack.lateral_movement\n  - attack.t1021.002\nfalsepositives:\n  - An administrator maps \\\\DC01\\C$ from a lab VM.\n  - IPC$ alone is normal domain traffic and is the low Wazuh rule, not this selection.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-012",
       "name": "WinRM / PowerShell remoting",
-      "description": "Security 4624 type 3. WinRM Operational event IDs are VERIFY and are not assumed.",
+      "description": "Sysmon 1 for wsmprovhost.exe, and Sysmon 3 to destination port 5985. The 4.14.9 ruleset has no WinRM Operational channel and no WinRM event ID, so those IDs are not matched. A 4624 type 3 is SF-011, not this rule.\n",
       "severity": "high",
       "mitre": [
         {
@@ -398,23 +406,27 @@
         }
       ],
       "telemetry": [
-        "windows_security"
+        "windows_security",
+        "sysmon"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100520",
+        "100521"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4624 logon type 3",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-012. Not written yet.",
+      "falsePositives": "An administrator runs Enter-PSSession between lab VMs.",
+      "tuningNotes": "100520 is level 12, high, because the WinRM host process means a remoting session started. That is above stock 92220, which is a file-create rule at level 6, and it is not critical. Critical stays with SF-008. 100521 is level 10, medium, one step above stock 92110, so the SF-012 description wins. The agent executable path is excluded. A custom agent install directory is not. Loopback destinations are excluded on 100521. 0810 has no parentImage, so 100521 does not negate it.\n",
+      "testProcedure": "make logtest ID=SF-012 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-012.md. Not run.\n",
+      "expectedEvent": "Sysmon 1 on DC01 whose image ends in \\wsmprovhost.exe.",
+      "expectedAlert": "Description starts with SF-012. Rule 100520, level 12. MITRE T1021.006.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100520\" level=\"12\">\n    <if_sid>61603</if_sid>\n    <field name=\"win.eventdata.image\" type=\"pcre2\">(?i)\\\\wsmprovhost\\.exe$</field>\n    <field name=\"win.eventdata.image\" type=\"pcre2\" negate=\"yes\">(?i)^C:\\\\{1,2}Program Files \\(x86\\)\\\\{1,2}ossec-agent\\\\{1,2}wazuh-agent\\.exe$</field>\n    <field name=\"win.eventdata.parentImage\" type=\"pcre2\" negate=\"yes\">(?i)^C:\\\\{1,2}Program Files \\(x86\\)\\\\{1,2}ossec-agent\\\\{1,2}wazuh-agent\\.exe$</field>\n    <description>SF-012: WinRM host process started</description>\n    <mitre>\n      <id>T1021.006</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>\n\n<rule id=\"100521\" level=\"10\">\n    <if_sid>92110</if_sid>\n    <field name=\"win.eventdata.image\" type=\"pcre2\" negate=\"yes\">(?i)^C:\\\\{1,2}Program Files \\(x86\\)\\\\{1,2}ossec-agent\\\\{1,2}wazuh-agent\\.exe$</field>\n    <field name=\"win.eventdata.sourceIp\" type=\"pcre2\" negate=\"yes\">^10\\.10\\.10\\.1$</field>\n    <field name=\"win.eventdata.destinationIp\" type=\"pcre2\" negate=\"yes\">(?i)^(?:-|127\\.0\\.0\\.1|::1|0:0:0:0:0:0:0:1)$</field>\n    <description>SF-012: connection to WinRM port 5985</description>\n    <mitre>\n      <id>T1021.006</id>\n    </mitre>\n    <group>sentinelforge,lateral,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-012 WinRM host process or port 5985\nid: 7ba4677c-7bbe-4b7a-9b7d-90a3b5a7a197\nstatus: experimental\ndescription: >\n  Sysmon process creation of wsmprovhost.exe, or a Sysmon network connection\n  to destination port 5985. Wazuh 100520 is the process, level 12. Wazuh\n  100521 is the port, level 10, and chains on stock 92110. The WinRM\n  Operational channel has no parent in the 4.14.9 ruleset, so this Sigma\n  rule does not match a WinRM event ID.\nlogsource:\n  product: windows\n  category: process_creation\ndetection:\n  selection_process:\n    Image|endswith: '\\wsmprovhost.exe'\n  filter_agent_image:\n    Image|re: '(?i)^C:\\\\+Program Files \\(x86\\)\\\\+ossec-agent\\\\+wazuh-agent\\.exe$'\n  filter_agent_parent:\n    ParentImage|re: '(?i)^C:\\\\+Program Files \\(x86\\)\\\\+ossec-agent\\\\+wazuh-agent\\.exe$'\n  condition: selection_process and not filter_agent_image and not filter_agent_parent\nlevel: high\ntags:\n  - attack.lateral_movement\n  - attack.t1021.006\nfalsepositives:\n  - An administrator runs Enter-PSSession between lab VMs.\n  - Port 5985 is Wazuh rule 100521 and is not expressed in this process selection.\n",
       "tuningHistory": [],
       "demo": true
     },

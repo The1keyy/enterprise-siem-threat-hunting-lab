@@ -1,0 +1,26 @@
+title: SF-010 inbound RDP logon
+id: e9f20af5-bf45-4be4-b806-656c25dfb679
+status: experimental
+description: >
+  Security 4624 with LogonType 10. Wazuh 100500 is level 10. Wazuh 100501
+  is level 12 when TargetUserName is exactly sf-test-admin. Wazuh 100502
+  is level 12 when the computer is DC01. Loopback RDP stays stock rule 92656.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4624
+    LogonType: 10
+  filter_machine:
+    TargetUserName|endswith: '$'
+  filter_host_adapter:
+    IpAddress: '10.10.10.1'
+  condition: selection and not filter_machine and not filter_host_adapter
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.001
+falsepositives:
+  - An administrator opens a real RDP session to WS01 or DC01.
+  - The Sigma level is the elevated Wazuh rule. A type-10 logon that is not sf-test-admin and not DC01 is Wazuh level 10.
