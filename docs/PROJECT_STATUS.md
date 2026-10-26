@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 11A adds the detection validator and CI workflows. Step 11B is not started. The Actions result is filled in after the first run.
+**Next:** Step 11B is not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -28,7 +28,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
-| 11 | Detection-as-code CI | 11A in progress (validator, sigma check, detections.yml, app.yml). 11B not started |
+| 11 | Detection-as-code CI | 11A done. 11B not started |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
@@ -46,7 +46,7 @@ Real counts only. Update these as work actually happens.
 | Saved hunts | 0 |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | Workflows added. First Actions run was not finished when this file was written |
+| CI | Green on 2026-10-26. `detections` run 40379538889 succeeded (validate, 21s). `app` run 40379538866 succeeded (backend 24s, frontend 28s). Both runs warned that `actions/checkout@v4` and the setup actions still target Node 20, and that `ubuntu-latest` moves to Ubuntu 26. |
 
 | ID | Status | Evidence |
 |---|---|---|
