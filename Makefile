@@ -1,4 +1,6 @@
-.PHONY: dev-backend dev-frontend test lint up logtest-up logtest-down logtest logtest-clean
+.PHONY: dev-backend dev-frontend test lint validate up logtest-up logtest-down logtest logtest-clean
+
+PYTHON = backend/.venv/bin/python
 
 LOGTEST_COMPOSE = docker compose --env-file scripts/validation/logtest/.env -f scripts/validation/logtest/docker-compose.yml
 
@@ -15,6 +17,11 @@ test:
 lint:
 	cd backend && .venv/bin/ruff check .
 	cd frontend && npm run lint
+
+validate:
+	$(PYTHON) scripts/validation/validate_detections.py
+	$(PYTHON) scripts/validation/sigma_check.py
+	$(PYTHON) -m pytest tests/detections
 
 up:
 	docker compose up --build

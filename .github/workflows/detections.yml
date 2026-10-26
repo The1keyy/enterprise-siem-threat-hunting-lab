@@ -1,0 +1,55 @@
+name: detections
+
+on:
+  push:
+    paths:
+      - "detections/**"
+      - "tests/**"
+      - "hunting/**"
+      - "scripts/validation/**"
+      - ".yamllint"
+      - ".github/workflows/detections.yml"
+  pull_request:
+    paths:
+      - "detections/**"
+      - "tests/**"
+      - "hunting/**"
+      - "scripts/validation/**"
+      - ".yamllint"
+      - ".github/workflows/detections.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: detections-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/validation/requirements.txt
+
+      - name: Install detection tools
+        run: python -m pip install -r scripts/validation/requirements.txt
+
+      - name: yamllint
+        run: yamllint detections tests hunting scripts/validation .github/workflows
+
+      - name: Validate detections
+        run: python scripts/validation/validate_detections.py
+
+      - name: Detection pytest
+        run: python -m pytest tests/detections
+
+      - name: Sigma check and convert
+        run: python scripts/validation/sigma_check.py

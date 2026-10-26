@@ -1,0 +1,10 @@
+# Detection CI pins. sigma-cli 3.1.0 requires pySigma>=1.3,<2, so pySigma stays on 1.5.1.
+# pySigma 2.0.1 does not install next to this sigma-cli.
+# pySigma-backend-opensearch 2.0.3 needs pysigma-backend-elasticsearch>=2.
+PyYAML==6.0.3
+pytest==9.1.1
+yamllint==1.38.0
+sigma-cli==3.1.0
+pySigma==1.5.1
+pySigma-backend-opensearch==2.0.3
+pysigma-backend-elasticsearch==2.1.1
