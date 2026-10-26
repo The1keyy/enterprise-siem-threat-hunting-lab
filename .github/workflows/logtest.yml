@@ -60,16 +60,7 @@ jobs:
         run: docker logs wazuh-logtest || true
 
       - name: Analysisd load check
-        run: |
-          set -euo pipefail
-          docker exec wazuh-logtest test -f /var/ossec/logs/ossec.log
-          docker exec wazuh-logtest grep -iE 'error|warning|sentinelforge' /var/ossec/logs/ossec.log > /tmp/sf-load.txt || true
-          cat /tmp/sf-load.txt
-          if grep -i sentinelforge /tmp/sf-load.txt | grep -E 'ERROR:'; then
-            echo "analysisd ERROR mentions a sentinelforge file"
-            exit 1
-          fi
-          echo "No ERROR lines mention sentinelforge files."
+        run: backend/.venv/bin/python scripts/validation/run_logtest.py --check-load
 
       - name: Run logtest
         run: make logtest

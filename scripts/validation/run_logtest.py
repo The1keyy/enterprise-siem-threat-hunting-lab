@@ -15,9 +15,11 @@ import json
 import re
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import yaml
 
@@ -27,6 +29,7 @@ META_DIR = REPO / "detections" / "metadata"
 RESULT_DIR = REPO / "tests" / "results"
 COMPOSE_FILE = REPO / "scripts" / "validation" / "logtest" / "docker-compose.yml"
 ENV_FILE = REPO / "scripts" / "validation" / "logtest" / ".env"
+RULE_DIR = REPO / "detections" / "wazuh" / "rules"
 CONTAINER = "wazuh-logtest"
 UP_COMMAND = (
     "docker compose --env-file scripts/validation/logtest/.env "
@@ -43,8 +46,16 @@ def main() -> int:
     args = _parse_args()
     if not _container_healthy():
         return 1
+    if not _analysisd_running():
+        return 1
+    if not _sentinelforge_log_clean():
+        return 1
     user, password = _api_credentials()
     token = _authenticate(user, password)
+    if not _loaded_rule_counts(token):
+        return 1
+    if args.check_load:
+        return 0
     files = _case_files(args.id)
     sf_files = [path for path in files if path.stem.startswith("SF-")]
     if not sf_files and (args.update_status or args.mark_needs_tuning or args.id is None):
@@ -94,6 +105,11 @@ def main() -> int:
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run SentinelForge wazuh-logtest cases.")
     parser.add_argument("--id", help="Run one tests/logs/<ID>.yml file, for example SF-001.")
+    parser.add_argument(
+        "--check-load",
+        action="store_true",
+        help="Check analysisd, ossec.log, and loaded rule counts, then exit.",
+    )
     parser.add_argument("--verbose", action="store_true", help="Print the decoder and rule chain.")
     parser.add_argument(
         "--update-status",
@@ -124,6 +140,126 @@ def _container_healthy() -> bool:
         print("or: make logtest-up")
         return False
     return True
+
+
+def _analysisd_running() -> bool:
+    completed = subprocess.run(
+        ["docker", "exec", CONTAINER, "/var/ossec/bin/wazuh-control", "status"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    # wazuh-control exits non-zero when optional daemons are stopped. The
+    # analysisd line is the check. "is not running" does not contain this text.
+    if "wazuh-analysisd is running" not in completed.stdout:
+        detail = completed.stdout.strip() or completed.stderr.strip() or "no status"
+        print(f"wazuh-analysisd is not running ({detail}).")
+        return False
+    print("wazuh-analysisd is running")
+    return True
+
+
+def _sentinelforge_log_clean() -> bool:
+    """Same ERROR check as the logtest workflow: a sentinelforge line with ERROR: fails."""
+
+    completed = subprocess.run(
+        [
+            "docker",
+            "exec",
+            CONTAINER,
+            "grep",
+            "-iE",
+            "error|warning|sentinelforge",
+            "/var/ossec/logs/ossec.log",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode not in (0, 1):
+        print(completed.stderr.strip() or "could not read /var/ossec/logs/ossec.log")
+        return False
+    if completed.stdout:
+        print(completed.stdout, end="" if completed.stdout.endswith("\n") else "\n")
+    bad = [
+        line
+        for line in completed.stdout.splitlines()
+        if "sentinelforge" in line.lower() and "ERROR:" in line
+    ]
+    if bad:
+        print("analysisd ERROR mentions a sentinelforge file")
+        return False
+    print("No ERROR lines mention sentinelforge files.")
+    return True
+
+
+def _xml_rule_ids(path: Path) -> list[str]:
+    # Wazuh rule files have several top-level <group> elements.
+    text = path.read_text(encoding="utf-8")
+    root = ET.fromstring(f"<sentinelforge-root>{text}</sentinelforge-root>")
+    return [rule_id for rule in root.iter("rule") if (rule_id := rule.get("id"))]
+
+
+def _loaded_rule_counts(token: str) -> bool:
+    """Compare <rule id> counts with GET /rules?filename= for each rules file.
+
+    VERIFY (4.14.9): filename is the rules-file basename, limit/offset page the
+    list, and total_affected_items is the loaded count.
+    """
+
+    paths = sorted(RULE_DIR.glob("sentinelforge_*.xml"))
+    if not paths:
+        print(f"No rules in {RULE_DIR.relative_to(REPO)}")
+        return False
+    xml_total = 0
+    api_total = 0
+    ok = True
+    for path in paths:
+        try:
+            xml_ids = _xml_rule_ids(path)
+            api_count = _api_rule_count(token, path.name)
+        except (ET.ParseError, RuntimeError) as exc:
+            print(f"{path.name}: {exc}")
+            return False
+        xml_total += len(xml_ids)
+        api_total += api_count
+        print(f"{path.name}  xml={len(xml_ids)}  api={api_count}")
+        if len(xml_ids) != api_count:
+            ok = False
+    print(f"loaded {xml_total} = {api_total}")
+    if not ok or xml_total != api_total:
+        print("loaded rule count does not match the XML")
+        return False
+    return True
+
+
+def _api_rule_count(token: str, filename: str) -> int:
+    offset = 0
+    limit = 500
+    seen = 0
+    total: int | None = None
+    while True:
+        # VERIFY (4.14.9): GET /rules?filename=<basename>&limit=&offset=
+        path = f"/rules?filename={quote(filename)}&limit={limit}&offset={offset}"
+        body = _curl("GET", path, bearer=token)
+        if body.get("error") not in (0, None):
+            raise RuntimeError(f"GET {path} error={body.get('error')} {body.get('message')}")
+        data = body.get("data")
+        if not isinstance(data, dict) or not isinstance(data.get("affected_items"), list):
+            raise RuntimeError(f"GET {path} did not return data.affected_items")
+        items = data["affected_items"]
+        if total is None:
+            reported = data.get("total_affected_items")
+            if not isinstance(reported, int):
+                raise RuntimeError(f"GET {path} did not return total_affected_items")
+            total = reported
+        seen += len(items)
+        if seen >= total or len(items) < limit:
+            break
+        offset += limit
+    if seen != total:
+        raise RuntimeError(f"{filename}: API listed {seen} rules but total_affected_items is {total}")
+    return total
 
 
 def _api_credentials() -> tuple[str, str]:

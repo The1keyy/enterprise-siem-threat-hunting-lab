@@ -38,5 +38,7 @@ logtest-down:
 logtest-clean:
 	$(LOGTEST_COMPOSE) down -v --remove-orphans
 
+# Checks analysisd, ossec.log ERROR lines, and XML rule counts against
+# GET /rules?filename= before it runs cases.
 logtest:
 	backend/.venv/bin/python scripts/validation/run_logtest.py $(if $(ID),--id $(ID),)

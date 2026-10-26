@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 12 is not started.
+**Next:** Step 11.1 compares XML rule counts with `GET /rules?filename=`. Local run on 2026-10-26 printed `loaded 23 = 23`. The logtest Actions run for that commit is not observed yet. Step 12A is not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -28,7 +28,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
-| 11 | Detection-as-code CI | 11A and 11B done. Step 12 not started |
+| 11 | Detection-as-code CI | 11A and 11B done. 11.1 load-count check added; its Actions run is not observed yet |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
