@@ -1,0 +1,26 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# VERIFY (4.14.9): location "EventChannel" is the logtest location used here.
+# A real agent location string still REQUIRES WINDOWS VALIDATION.
+comment: SYNTHETIC TEST INPUT
+id: CANARY-002
+description: >
+  Built-in Windows Security 4625. The ruleset file 0580-win-security_rules.xml
+  in this image defines 60122 for event 4625, but only after decoder
+  windows_eventchannel. This synthetic event did not reach that decoder.
+cases:
+  - name: security-4625
+    logtest_limited: true
+    limited_reason: >
+      On wazuh/wazuh-manager:4.14.9 (linux/arm64), PUT /logtest with
+      log_format eventchannel and location EventChannel decoded this JSON as
+      decoder "json", rule 1002 ("Unknown problem somewhere in the system."),
+      alert false. Rule 60000 requires decoded_as windows_eventchannel, so
+      rule 60122 did not fire. REQUIRES WINDOWS VALIDATION / logtest-limited.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4625","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_FAILURE","message":"An account failed to log on. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-alice","ipAddress":"10.10.10.20","logonType":"3"}}}'
+    expect:
+      fires: true
+      # Ruleset id for 4625 after windows_eventchannel. Not observed firing.
+      rule_id: 60122
+      level: 5

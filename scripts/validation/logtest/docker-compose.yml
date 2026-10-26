@@ -1,0 +1,35 @@
+# Local wazuh-logtest only. No indexer and no dashboard.
+# Image arch: linux/arm64 was published for wazuh/wazuh-manager:4.14.9 and started
+# on this Apple Silicon Mac without platform: linux/amd64.
+# If a future host cannot start the native image, set:
+#   platform: linux/amd64
+# and record that in scripts/validation/logtest/README.md.
+# Filebeat inside the image will log that it cannot reach an indexer. That is
+# expected here and does not affect analysisd or wazuh-logtest.
+
+name: sentinelforge-logtest
+
+services:
+  wazuh-logtest:
+    image: wazuh/wazuh-manager:4.14.9
+    container_name: wazuh-logtest
+    environment:
+      API_USERNAME: ${WAZUH_LOGTEST_API_USER}
+      API_PASSWORD: ${WAZUH_LOGTEST_API_PASSWORD}
+    ports:
+      - "127.0.0.1:55000:55000"
+    volumes:
+      - ../../../detections/wazuh/rules:/var/ossec/etc/rules/sentinelforge:ro
+      - ../../../detections/wazuh/decoders:/var/ossec/etc/decoders/sentinelforge:ro
+      - ./ossec-override/ruleset.xml:/opt/sentinelforge/ruleset.xml:ro
+      - ./ossec-override/apply-ruleset.sh:/entrypoint-scripts/99-sentinelforge.sh:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/var/ossec/bin/wazuh-control status | grep -q 'wazuh-analysisd is running'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 40s

@@ -13,7 +13,7 @@ detections/
   wazuh/decoders/     custom decoders if needed
   sigma/              one .yml per detection
   metadata/           one .yml per detection (the source of truth for the library page)
-tests/logs/           sample log lines per detection, used with wazuh-logtest
+tests/logs/           one tests/logs/<ID>.yml per detection, used with wazuh-logtest
 tests/detections/     python tests for metadata, IDs, MITRE format
 hunting/              one .yml per saved hunt
 ```
@@ -58,9 +58,18 @@ Required fields:
   version supports them; otherwise do it in the backend.
 - Windows event field names (e.g. `win.eventdata.*`) must be marked `REQUIRES WINDOWS VALIDATION`.
 
-## Sample logs
-- Sample log lines in `tests/logs/` must be labeled as synthetic test input.
+## Logtest cases (`tests/logs/<ID>.yml`)
+- Replace plain `.log` files. One YAML file per detection, plus canaries.
+- The file is labeled `comment: SYNTHETIC TEST INPUT`.
+- Fields: `id`, `description`, and `cases`. Each case has `name`, `log_format`
+  (`syslog`, `json`, or `eventchannel`), `location` (`VERIFY` for eventchannel),
+  `event` or `events` (one session when `events` is a list), and `expect`
+  (`fires`, `rule_id`, `level`, optional `mitre`).
+- A negative case sets `fires: false` for that `rule_id`. Another rule may fire.
+- Every detection must eventually have at least one positive and one negative case.
 - A detection reaches `LOGTEST VALID` only after `wazuh-logtest` output is actually captured.
+- If eventchannel cannot fire the Windows rule, set `logtest_limited: true` and
+  `limited_reason`. That is `REQUIRES WINDOWS VALIDATION / logtest-limited`, not a pass.
 
 ## Sigma
 - Use the standard Sigma format with logsource, detection, condition, and level.

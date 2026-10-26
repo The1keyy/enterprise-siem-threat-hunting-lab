@@ -1,0 +1,6 @@
+<!-- SentinelForge logtest override.
+     Inserted inside <ruleset> before analysisd starts.
+     VERIFY (4.14.9): rule_dir and decoder_dir paths are relative to /var/ossec.
+     This file does not replace or edit the built-in ruleset XML. -->
+<rule_dir>etc/rules/sentinelforge</rule_dir>
+<decoder_dir>etc/decoders/sentinelforge</decoder_dir>

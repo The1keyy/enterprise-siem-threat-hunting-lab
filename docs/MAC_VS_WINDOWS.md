@@ -6,6 +6,8 @@ All implementation through Step 14 happens on the Mac. The Windows PC is the hyp
 
 The Wazuh manager API client and indexer client are built and mock-tested on the Mac (Step 8). Live behavior against WAZUH01 **REQUIRES LAB VALIDATION**. The mocks are labeled synthetic and are not lab alerts.
 
+Step 9 runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aarch64`) with no Rosetta platform flag. `make logtest` passed CANARY-001 on built-in sshd rule 5710. CANARY-002, a synthetic Windows 4625 event, did not reach decoder `windows_eventchannel` (observed decoder `json`, rule 1002). That case is `REQUIRES WINDOWS VALIDATION / logtest-limited`. Logtest does not replace the WAZUH01 install.
+
 | Component | Build on Mac? | Test on Mac? | How it is tested on Mac | Needs Windows/lab validation? |
 |---|---|---|---|---|
 | Architecture, roadmap, ADRs | Yes | Yes | Read-through against `docs/VERSIONS.md` and the core rules | No, except the network and VM plan when the lab is built |

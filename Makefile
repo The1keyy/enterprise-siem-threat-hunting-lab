@@ -1,4 +1,6 @@
-.PHONY: dev-backend dev-frontend test lint up
+.PHONY: dev-backend dev-frontend test lint up logtest-up logtest-down logtest
+
+LOGTEST_COMPOSE = docker compose --env-file scripts/validation/logtest/.env -f scripts/validation/logtest/docker-compose.yml
 
 dev-backend:
 	cd backend && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
@@ -16,3 +18,12 @@ lint:
 
 up:
 	docker compose up --build
+
+logtest-up:
+	$(LOGTEST_COMPOSE) up -d
+
+logtest-down:
+	$(LOGTEST_COMPOSE) down
+
+logtest:
+	backend/.venv/bin/python scripts/validation/run_logtest.py $(if $(ID),--id $(ID),)
