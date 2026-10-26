@@ -4,8 +4,9 @@
 # If a future host cannot start the native image, set:
 #   platform: linux/amd64
 # and record that in scripts/validation/logtest/README.md.
-# Filebeat inside the image will log that it cannot reach an indexer. That is
-# expected here and does not affect analysisd or wazuh-logtest.
+# Filebeat is removed before s6 scans /etc/services.d. See apply-ruleset.sh.
+# 1-config-filebeat only rewrites filebeat.yml. A down file was not enough:
+# s6-supervise filebeat still showed up in ps.
 
 name: sentinelforge-logtest
 
@@ -18,6 +19,17 @@ services:
       API_PASSWORD: ${WAZUH_LOGTEST_API_PASSWORD}
     ports:
       - "127.0.0.1:55000:55000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # No named volumes. Alert and archive files are the pieces that grow during
+    # a run; a size-capped tmpfs drops them when the container stops.
+    # The image declares no VOLUME, so `compose down -v` leaves only the image.
+    tmpfs:
+      - /var/ossec/logs/alerts:size=32m,mode=0750,uid=999,gid=999
+      - /var/ossec/logs/archives:size=32m,mode=0770,uid=999,gid=999
     volumes:
       - ../../../detections/wazuh/rules:/var/ossec/etc/rules/sentinelforge:ro
       - ../../../detections/wazuh/decoders:/var/ossec/etc/decoders/sentinelforge:ro

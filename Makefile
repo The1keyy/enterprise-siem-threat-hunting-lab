@@ -1,4 +1,4 @@
-.PHONY: dev-backend dev-frontend test lint up logtest-up logtest-down logtest
+.PHONY: dev-backend dev-frontend test lint up logtest-up logtest-down logtest logtest-clean
 
 LOGTEST_COMPOSE = docker compose --env-file scripts/validation/logtest/.env -f scripts/validation/logtest/docker-compose.yml
 
@@ -23,7 +23,11 @@ logtest-up:
 	$(LOGTEST_COMPOSE) up -d
 
 logtest-down:
-	$(LOGTEST_COMPOSE) down
+	$(LOGTEST_COMPOSE) down -v --remove-orphans
+
+# Same project only. Does not prune images or other compose projects.
+logtest-clean:
+	$(LOGTEST_COMPOSE) down -v --remove-orphans
 
 logtest:
 	backend/.venv/bin/python scripts/validation/run_logtest.py $(if $(ID),--id $(ID),)

@@ -5,6 +5,13 @@
 # Built-in files under /var/ossec/ruleset are not modified.
 # VERIFY (4.14.9): the ruleset block and </ruleset> still exist in the image config.
 set -eu
+# init-stage2 runs cont-init.d (this script, via 2-manager) before it scans
+# /etc/services.d. A "down" file keeps s6-supervise filebeat in the process list.
+# Removing the service directory before that scan means Filebeat is not started.
+if [ -d /etc/services.d/filebeat ]; then
+  rm -rf /etc/services.d/filebeat
+  echo "sentinelforge: removed /etc/services.d/filebeat"
+fi
 CONF=/var/ossec/etc/ossec.conf
 SNIPPET=/opt/sentinelforge/ruleset.xml
 if [ ! -f "$CONF" ]; then

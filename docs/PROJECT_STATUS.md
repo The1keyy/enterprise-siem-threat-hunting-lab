@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 9 Done.** Local wazuh-logtest runs the Wazuh 4.14.9 manager on this Mac. Canary results are below. No detections are `LOGTEST VALID`.
-**Next:** Step 10 not started.
+**Step 9.1 Done.** Logtest container no longer runs Filebeat, and it does not keep alert data on a volume. Windows eventchannel events still cannot be replayed here.
+**Next:** Step 10 not started. Windows detections cannot become `LOGTEST VALID` from this harness. They stay logtest-limited until the lab. Linux-style syslog cases can still reach `LOGTEST VALID`.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -25,7 +25,7 @@
 | 7A | FastAPI backend core (demo) | Done |
 | 7B | Connect the frontend, plus Docker | Done |
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
-| 9 | Local wazuh-logtest in Docker | Done |
+| 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Not started |
 | 11 | Detection-as-code CI | Not started |
 | 12 | Lab configs + scripts | Not started |
@@ -70,8 +70,8 @@ Real counts only. Update these as work actually happens.
 - `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode calls the Wazuh manager API and indexer. Responses set `"demo": false`. If Wazuh is unreachable the route returns 503 and does not serve fixtures. Incidents stay in SQLite. There is no live Wazuh in this environment, so nothing here is LAB VALIDATED.
 - Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
 - With `VITE_DATA_MODE=live` the console calls the API with credentials and redirects to `/login` on 401. `DATA_MODE=demo` on the API still returns `"demo": true`, so the DEMO banner and pill stay up. Incident status, notes, promoted hunts, and dry-run actions are stored in SQLite. Local fixture mode (`VITE_DATA_MODE=demo`) does not call the API.
-- Root `Makefile` targets: `dev-backend`, `dev-frontend`, `test`, `lint`, `up`, `logtest-up`, `logtest-down`, `logtest`. `docker compose up --build` runs the API and a static console. Plain `uvicorn` and `npm run dev` still work.
-- `make logtest-up` starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. Filebeat logs DNS failures for `wazuh.indexer` because there is no indexer. Analysisd still reached `is running`.
+- Root `Makefile` targets: `dev-backend`, `dev-frontend`, `test`, `lint`, `up`, `logtest-up`, `logtest-down`, `logtest`, `logtest-clean`. `docker compose up --build` runs the API and a static console. Plain `uvicorn` and `npm run dev` still work.
+- `make logtest-up` starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. That script deletes `/etc/services.d/filebeat` before s6 starts services, so Filebeat is not running. Alert and archive directories are 32m tmpfs. There are no named volumes. `make logtest-down` and `make logtest-clean` remove this container and its volumes only. Analysisd still reached `is running`.
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
 - No lab scripts yet. Step 10 (MVP detections) is not started.
@@ -140,7 +140,7 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 ## Needs Windows validation
 Step 8 is mock-tested on the Mac. The clients do not talk to a real manager here. Live behavior **REQUIRES LAB VALIDATION**. Dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows in demo mode are not live checks.
 
-Step 9 logtest does not prove Windows field names. CANARY-002 stayed logtest-limited. Windows Event IDs still need a lab agent.
+Step 9 logtest does not prove Windows field names. CANARY-002 stayed logtest-limited after a second eventchannel replay (decoder `json`, rule 1002, alert false). Windows eventchannel events can't be faithfully replayed in logtest. Step 10 must not mark those detections `LOGTEST VALID` from this harness. They are validated in the lab. Windows Event IDs still need a lab agent.
 
 Still documented, not built:
 
