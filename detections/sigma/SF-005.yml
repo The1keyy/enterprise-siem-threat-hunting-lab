@@ -3,8 +3,10 @@ id: e3cdcfa3-a1a3-4432-862d-1dc909866a93
 status: experimental
 description: >
   Sysmon process creation for powershell.exe or pwsh.exe with -enc,
-  -EncodedCommand, or -e followed by a base64 token. The token check lives
-  in Wazuh rule 100210. Security 4688 is not this rule.
+  -EncodedCommand, or -e followed by whitespace and a base64 token.
+  The 20-character minimum, and the requirement that -e is not a prefix of
+  -ExecutionPolicy or -ep, live in Wazuh rule 100210. Security 4688 is not
+  this rule. A marker in the command line is not an exclusion.
 logsource:
   product: windows
   category: process_creation
@@ -18,14 +20,15 @@ detection:
       - '-enc'
       - '-EncodedCommand'
       - '-e '
-  filter_agent:
-    CommandLine|contains:
-      - 'ossec-agent'
-      - 'sentinelforge-setup'
-  condition: selection_image and selection_flag and not filter_agent
+  filter_agent_image:
+    Image|re: '(?i)^C:\\+Program Files \(x86\)\\+ossec-agent\\+wazuh-agent\.exe$'
+  filter_agent_parent:
+    ParentImage|re: '(?i)^C:\\+Program Files \(x86\)\\+ossec-agent\\+wazuh-agent\.exe$'
+  condition: selection_image and selection_flag and not filter_agent_image and not filter_agent_parent
 level: high
 tags:
   - attack.execution
   - attack.t1059.001
 falsepositives:
   - A signed admin tool launches PowerShell with an encoded command.
+  - The -e  half of this selection is broader than rule 100210, which also requires 20 base64 characters.

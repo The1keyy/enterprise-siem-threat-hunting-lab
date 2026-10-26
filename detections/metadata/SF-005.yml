@@ -2,8 +2,9 @@ id: SF-005
 name: Encoded PowerShell process
 description: >
   Sysmon event 1 for powershell.exe or pwsh.exe whose command line has
-  -EncodedCommand, -enc, or -e followed by a base64 token of at least 8
-  characters. Security 4688 is not this rule.
+  -EncodedCommand, -enc, or -e, then whitespace, then a base64 token of at
+  least 20 characters. -e Bypass, -ExecutionPolicy, and -ep do not match.
+  Security 4688 is not this rule.
 severity: high
 mitre:
   - T1059.001
@@ -22,16 +23,17 @@ required_telemetry: >
   Sysmon operational event 1 on WS01, with CommandLine. Audit process
   creation (4688) is a separate logging choice. Rule 67027 matches 4688 and
   does not read commandLine, so this detection does not use 4688.
-false_positives: A management tool starts PowerShell with an encoded command. The token U1lOVEhFVElD in the lab reference is the word SYNTHETIC.
+false_positives: A management tool starts PowerShell with an encoded command. The token U1lOVEhFVElDIFRFU1QgSU5QVVQ= in the lab reference is the words SYNTHETIC TEST INPUT.
 tuning_notes: >
   Level 13 is high (ADR 0004), one above stock 92057 (level 12) so this
   description wins when both match. 92057 requires a powershell.exe parent
   and a powershell.exe command line, and its flag list does not include
   pwsh.exe. This image has no pwsh rule. This rule matches powershell.exe
-  or pwsh.exe and requires the flag plus a base64 token. MITRE is T1059.001
-  only. 92071 also tags T1047 and only after WMI. Exclusions are ossec-agent
-  and sentinelforge-setup in the command line, image, or parent image.
-  No other exclusion.
+  or pwsh.exe and requires the flag plus a base64 token of at least 20
+  characters. MITRE is T1059.001 only. 92071 also tags T1047 and only after
+  WMI. The only exclusion is image or parentImage equal to
+  C:\Program Files (x86)\ossec-agent\wazuh-agent.exe. VERIFY that executable
+  name on a 4.14.9 install. Command-line text is not an exclusion.
 test_procedure: >
   make logtest ID=SF-005 reports LIMITED and does not call logtest.
   Analysisd loaded the XML with no rule error. Lab procedure is in
@@ -44,8 +46,8 @@ lab_validation:
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |
-  2026/10/26 16:12:49 wazuh-analysisd: INFO: Total rules enabled: '8465'
-  2026/10/26 16:12:49 wazuh-analysisd: INFO: Started (pid: 639).
+  2026/10/26 17:32:21 wazuh-analysisd: INFO: Total rules enabled: '8465'
+  2026/10/26 17:32:21 wazuh-analysisd: INFO: Started (pid: 673).
   No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
   lines (no indexer). No ossec.log line names sentinelforge_100200_powershell.xml.
   GET /rules?filename=sentinelforge_100200_powershell.xml returned 100210 level 13

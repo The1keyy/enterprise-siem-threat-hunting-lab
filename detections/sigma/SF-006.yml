@@ -19,14 +19,11 @@ detection:
       - 'DownloadFile'
       - 'Invoke-WebRequest'
       - 'Start-BitsTransfer'
-  filter_agent:
-    ScriptBlockText|contains:
-      - 'ossec-agent'
-      - 'sentinelforge-setup'
-  condition: selection and not filter_agent
+  condition: selection
 level: high
 tags:
   - attack.command_and_control
   - attack.t1105
 falsepositives:
   - An admin script downloads a lab file with Invoke-WebRequest.
+  - Lab setup scripts still match. There is no 4104 path exclusion.

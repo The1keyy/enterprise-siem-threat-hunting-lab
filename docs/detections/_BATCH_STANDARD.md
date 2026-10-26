@@ -21,6 +21,7 @@ A fact confirmed by grep or by a logtest response is not `VERIFY`.
    - `<mitre><id>` exactly as the roadmap.
    - `<group>sentinelforge,<category>,</group>`
    - Level per ADR 0004.
+   - Exclusions must use anchored paths/IDs/SIDs, never attacker-controlled content.
    - Comment block: SF id, objective, parents and source file, status. Windows rules also say `REQUIRES WINDOWS VALIDATION`.
 2. `detections/sigma/SF-XXX.yml`, logically equivalent. If Sigma cannot express the threshold, say that the threshold lives in the Wazuh rule.
 3. `detections/metadata/SF-XXX.yml`

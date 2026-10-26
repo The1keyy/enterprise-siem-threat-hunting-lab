@@ -20,11 +20,7 @@ detection:
       - 'amsiInitFailed'
       - 'AmsiScanBuffer'
       - '-nop'
-  filter_agent:
-    ScriptBlockText|contains:
-      - 'ossec-agent'
-      - 'sentinelforge-setup'
-  condition: selection and not filter_agent
+  condition: selection
 level: high
 tags:
   - attack.execution
@@ -32,3 +28,4 @@ tags:
 falsepositives:
   - An admin script calls Invoke-Expression.
   - The -nop half of this selection is broader than the Wazuh rule, which also requires -w hidden.
+  - Lab setup scripts still match. The 4.14.9 PowerShell rules have no script-file path field, so this rule does not exclude by path.

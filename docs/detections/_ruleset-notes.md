@@ -164,10 +164,19 @@ docker exec wazuh-logtest grep -n 'eventID">4688\|id="67027"' /var/ossec/ruleset
 ### How ours differ
 
 - SF-004 (100200) is 91802 plus eventID `^4104$`, level 12, MITRE `T1059.001`. It adds spelled `Invoke-Expression`, `Invoke-Mimikatz`, `AmsiUtils`, `amsiInitFailed`, `AmsiScanBuffer`, and `-nop -w hidden`. It does not include the SF-006 cradle strings. Stock `IEX` stays available at level 4, and stock `FromBase64String` at level 10, until this higher rule matches.
-- SF-005 (100210) is 61603, level 13, MITRE `T1059.001` only. Image is powershell.exe or pwsh.exe. The command line needs `-EncodedCommand`, `-enc`, or `-e`, then a base64 token of at least 8 characters. 92057 does not list pwsh and requires a powershell parent. 67027 is why 4688 is not used.
+- SF-005 (100210) is 61603, level 13, MITRE `T1059.001` only. Image is powershell.exe or pwsh.exe. The command line needs `-EncodedCommand`, `-enc`, or `-e`, then whitespace, then a base64 token of at least 20 characters. `-e` does not match `-ExecutionPolicy` or `-ep`, because those have no whitespace after `-e`. 92057 does not list pwsh and requires a powershell parent. 67027 is why 4688 is not used.
 - SF-006 (100220) is 4104 with the five cradle strings, level 12, MITRE `T1105`. Nothing in the stock ruleset matches those strings. 100221 is 61605, powershell.exe or pwsh.exe, tcp, level 10, and it skips loopback `destinationIp`. 92101 is the level 0 powershell.exe version of that connection and does not include pwsh.
 
 ### Exclusions
 
-`ossec-agent` and `sentinelforge-setup` are negated, case-insensitive, on the field that rule already has: `scriptBlockText` for 4104, and `commandLine`, `image`, or `parentImage` for Sysmon 1. 100221 can only see the image path. Event 3 rules in this image do not use `parentImage`. No `Path` field is used, because `0915-win-powershell_rules.xml` never references one. No other string is excluded.
+Content markers were removed. A string inside `scriptBlockText` or `commandLine` is attacker-controlled.
+
+```bash
+docker exec wazuh-logtest grep -R -n "win.eventdata.path" /var/ossec/ruleset/rules
+docker exec wazuh-logtest grep -n "parentImage" /var/ossec/ruleset/rules/0810-sysmon_id_3.xml
+```
+
+`win.eventdata.path` appears only in `0600-win-wdefender_rules.xml` description strings. It is not a `<field>` check, and `0915-win-powershell_rules.xml` has zero hits. 100200 and 100220 therefore have no exclusion. Accept lab noise; tune after a lab baseline.
+
+100210 negates `image` and `parentImage` only when the whole value is the Wazuh agent executable. The 4.14.9 Windows agent page says the default directory is `C:\Program Files (x86)\ossec-agent` (MSI `wazuh-agent-4.14.9-1.msi`). VERIFY: `wazuh-agent.exe` is the image in 4.14.1 and 4.14.3 crash reports at that path, not a checked 4.14.9 install on WS01. Rule 92019 writes Windows separators as four backslashes. This exclusion accepts one or two. A custom install directory is not excluded. 100221 uses the same image anchor. `0810-sysmon_id_3.xml` has no `parentImage`, so 100221 does not negate that field.
 

@@ -21,11 +21,24 @@
   only mentions DownloadString does not match 100200. A block that contains
   both sets can match both rules.
 
-  Exclusions, and nothing else:
-    script text, command line, image, or parent image containing
-    ossec-agent or sentinelforge-setup.
-  4104 Path is not referenced in this ruleset, so the exclusion is text in
-  the fields above. Setup scripts must contain the marker sentinelforge-setup.
+  Exclusions are anchored paths, never script text or command-line text.
+  Pasting sentinelforge-setup or ossec-agent into a script must still alert.
+
+  4104: grep of the 4.14.9 ruleset found win.eventdata.path only in
+  0600-win-wdefender_rules.xml descriptions. 0915-win-powershell_rules.xml
+  never names a script file path. 100200 and 100220 have no exclusion.
+  Accept lab noise; tune after a lab baseline. Do not negate a field this
+  ruleset does not use on 4104. A missing field can suppress the rule.
+
+  Sysmon 1 (100210): image and parentImage must not be the Wazuh agent
+  executable. The 4.14.9 Windows MSI doc says the default directory is
+  C:\Program Files (x86)\ossec-agent. VERIFY: wazuh-agent.exe is the process
+  name in 4.14.1 and 4.14.3 crash reports at that path. It is not confirmed
+  on a 4.14.9 lab install. A custom install directory is not excluded.
+  Rule 92019 writes a Windows path with four backslashes per separator.
+  This pattern accepts one or two so either decoded form matches.
+  Sysmon 3 (100221): same image exclusion only. 0810-sysmon_id_3.xml does
+  not use parentImage. Negating an absent parentImage could drop the alert.
 -->
 <group name="windows,">
 
@@ -33,7 +46,6 @@
     <if_sid>91802</if_sid>
     <field name="win.system.eventID">^4104$</field>
     <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(\bIEX\b|Invoke-Expression|FromBase64String|Invoke-Mimikatz|AmsiUtils|amsiInitFailed|AmsiScanBuffer|-nop\w*\s+-w(?:indowstyle)?\s+hidden)</field>
-    <field name="win.eventdata.scriptBlockText" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
     <description>SF-004: suspicious PowerShell script block</description>
     <mitre>
       <id>T1059.001</id>
@@ -44,10 +56,9 @@
   <rule id="100210" level="13">
     <if_sid>61603</if_sid>
     <field name="win.eventdata.image" type="pcre2">(?i)\\(?:powershell|pwsh)\.exe</field>
-    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:-EncodedCommand|-enc|-e)\s+[A-Za-z0-9+/=]{8,}</field>
-    <field name="win.eventdata.commandLine" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
-    <field name="win.eventdata.parentImage" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:-EncodedCommand|-enc|-e)\s+[A-Za-z0-9+/=]{20,}</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
+    <field name="win.eventdata.parentImage" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
     <description>SF-005: encoded PowerShell process</description>
     <mitre>
       <id>T1059.001</id>
@@ -59,7 +70,6 @@
     <if_sid>91802</if_sid>
     <field name="win.system.eventID">^4104$</field>
     <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(Net\.WebClient|DownloadString|DownloadFile|Invoke-WebRequest|Start-BitsTransfer)</field>
-    <field name="win.eventdata.scriptBlockText" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
     <description>SF-006: PowerShell download cradle in a script block</description>
     <mitre>
       <id>T1105</id>
@@ -70,7 +80,7 @@
   <rule id="100221" level="10">
     <if_sid>61605</if_sid>
     <field name="win.eventdata.image" type="pcre2">(?i)\\(?:powershell|pwsh)\.exe</field>
-    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)^C:\\{1,2}Program Files \(x86\)\\{1,2}ossec-agent\\{1,2}wazuh-agent\.exe$</field>
     <field name="win.eventdata.protocol">^tcp$</field>
     <field name="win.eventdata.destinationIp" type="pcre2" negate="yes">(?i)^(?:-|127\.0\.0\.1|::1|0:0:0:0:0:0:0:1)$</field>
     <description>SF-006: PowerShell network connection</description>

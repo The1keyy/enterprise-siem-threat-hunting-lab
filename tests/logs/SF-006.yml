@@ -7,7 +7,8 @@ id: SF-006
 description: >
   A 4104 block that names DownloadString is rule 100220. Sysmon 3 from
   powershell.exe to 10.10.10.200 is rule 100221. IEX alone is SF-004.
-  Loopback is not a 100221 destination.
+  Loopback is not a 100221 destination. A script block that also contains
+  sentinelforge-setup must still match 100220.
 cases:
   - name: positive
     mode: lab_reference
@@ -66,3 +67,16 @@ cases:
     expect:
       fires: false
       rule_id: 100221
+  - name: evasion_marker_in_content
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT sentinelforge-setup DownloadString example.invalid","ScriptBlockId":"88888888-8888-8888-8888-888888888888"}}}'
+    expect:
+      fires: true
+      rule_id: 100220
+      level: 12
+      mitre:
+        - T1105

@@ -36,11 +36,12 @@ tuning_notes: >
   Net.WebClient, Invoke-WebRequest, or Start-BitsTransfer. Stock 92101 is
   level 0 for powershell.exe TCP and does not include pwsh.exe. 100221 adds
   pwsh.exe and skips destinationIp -, 127.0.0.1, ::1, and the expanded
-  loopback address. Script-text exclusions are ossec-agent and
-  sentinelforge-setup. The network rule also skips an image path containing
-  those strings. Event 3 in this ruleset has no parentImage check, so a
-  connection whose parent is the Wazuh agent is not excluded. No other
-  exclusion. IEX and Invoke-Expression are not in 100220.
+  loopback address. 100220 has no exclusion: script text is attacker-controlled
+  and this ruleset has no 4104 script-file path. Accept lab noise; tune after
+  a lab baseline. 100221 also skips an image equal to the Wazuh agent
+  executable. Event 3 in this ruleset has no parentImage check, so a
+  connection whose parent is the Wazuh agent is not excluded. IEX and
+  Invoke-Expression are not in 100220.
 test_procedure: >
   make logtest ID=SF-006 reports LIMITED and does not call logtest.
   Analysisd loaded the XML with no rule error. Lab procedure is in
@@ -57,8 +58,8 @@ lab_validation:
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |
-  2026/10/26 16:12:49 wazuh-analysisd: INFO: Total rules enabled: '8465'
-  2026/10/26 16:12:49 wazuh-analysisd: INFO: Started (pid: 639).
+  2026/10/26 17:32:21 wazuh-analysisd: INFO: Total rules enabled: '8465'
+  2026/10/26 17:32:21 wazuh-analysisd: INFO: Started (pid: 673).
   No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
   lines (no indexer). No ossec.log line names sentinelforge_100200_powershell.xml.
   GET /rules?filename=sentinelforge_100200_powershell.xml returned 100220 level 12
