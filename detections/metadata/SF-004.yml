@@ -1,0 +1,51 @@
+id: SF-004
+name: Suspicious PowerShell script block
+description: >
+  PowerShell Operational 4104 whose script text contains IEX, Invoke-Expression,
+  FromBase64String, Invoke-Mimikatz, an AMSI indicator, or -nop -w hidden.
+  Pure download-cradle text is SF-006, not this rule.
+severity: high
+mitre:
+  - T1059.001
+telemetry:
+  - powershell
+wazuh_rule_ids:
+  - "100200"
+sigma_file: detections/sigma/SF-004.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "91802"
+required_telemetry: >
+  PowerShell Script Block Logging (event 4104) on WS01, channel
+  Microsoft-Windows-PowerShell/Operational. The planned simulation is WS01
+  only. The rule matches whichever agent sends 4104.
+false_positives: An administrator script uses Invoke-Expression or FromBase64String. Stock rule 91837 already treats bare IEX as level 4.
+tuning_notes: >
+  Level 12 is high (ADR 0004). Stock 91837 matches IEX at level 4 and the
+  misspelled Invoke-Expresion. Stock 91809 matches FromBase64String at level
+  10 with MITRE T1140. This rule adds Invoke-Expression, Invoke-Mimikatz,
+  AmsiUtils, amsiInitFailed, AmsiScanBuffer, and -nop -w hidden, and it does
+  not include Net.WebClient, DownloadString, DownloadFile, Invoke-WebRequest,
+  or Start-BitsTransfer. Exclusions are the strings ossec-agent and
+  sentinelforge-setup inside scriptBlockText. No other exclusion.
+test_procedure: >
+  make logtest ID=SF-004 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-004.md. Not run.
+expected_event: Script block 4104 on WS01 containing one SF-004 string and neither exclusion marker.
+expected_alert: Description starts with SF-004. Rule 100200, level 12. MITRE T1059.001.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 16:12:49 wazuh-analysisd: INFO: Total rules enabled: '8465'
+  2026/10/26 16:12:49 wazuh-analysisd: INFO: Started (pid: 639).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100200_powershell.xml.
+  GET /rules?filename=sentinelforge_100200_powershell.xml returned 100200 level 12
+  enabled.

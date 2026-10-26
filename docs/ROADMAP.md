@@ -1,6 +1,6 @@
 # Roadmap
 
-SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001, SF-002, and SF-003 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
+SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-006 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
@@ -17,9 +17,9 @@ Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" m
 | SF-001 | Repeated failed logons | T1110.001 | `windows_security` | Security **4625**. Field `win.eventdata.targetUserName` is in the 4.14.9 ruleset. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 1 |
 | SF-002 | Password spray | T1110.003 | `windows_security` | Security **4625** from one source IP. `different_field` is absent, so distinct users are Step 14. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). **VERIFY** that a Windows agent honors `frequency` / `timeframe` the same way logtest did for sshd. | 1 |
 | SF-003 | Successful logon after failures | T1078 | `windows_security` | Security **4624** after the SF-001 burst, same account and source IP. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Same frequency **VERIFY** on a Windows agent. | 1 |
-| SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Logging must be enabled first. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
-| SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** (`CommandLine`). Security **4688** only if command-line auditing is on. **VERIFY** 4688 setup. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
-| SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** plus Sysmon **3** when a connection is logged. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Sysmon 3 fields: **REQUIRES WINDOWS VALIDATION**. | 2 |
+| SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Parent 91802. Logging must be enabled first. Cradle strings are SF-006. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
+| SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** `commandLine` for powershell.exe or pwsh.exe. Rule 67027 matches **4688** and does not read commandLine, so this rule does not use 4688. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
+| SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** cradle text, plus Sysmon **3** `destinationIp` when PowerShell connects. The two rules do not wait for each other. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
 | SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**. **VERIFY** against a lab event on WS01. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
 | SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** for a global group such as Domain Admins. **4756** is universal. **VERIFY** which event DC01 emits. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
 | SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |

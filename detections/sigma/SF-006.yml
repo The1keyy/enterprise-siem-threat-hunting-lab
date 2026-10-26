@@ -1,0 +1,32 @@
+title: SF-006 PowerShell download cradle
+id: f594ec69-8249-4619-a09a-37ad5bf0af85
+status: experimental
+description: >
+  PowerShell Operational 4104 cradle text. The Sysmon event 3 half, a
+  powershell.exe or pwsh.exe TCP connection, lives in Wazuh rule 100221.
+  This selection does not include Invoke-Expression or IEX. Those belong
+  to SF-004.
+logsource:
+  product: windows
+  category: ps_script
+  definition: Script Block Logging, event 4104
+detection:
+  selection:
+    EventID: 4104
+    ScriptBlockText|contains:
+      - 'Net.WebClient'
+      - 'DownloadString'
+      - 'DownloadFile'
+      - 'Invoke-WebRequest'
+      - 'Start-BitsTransfer'
+  filter_agent:
+    ScriptBlockText|contains:
+      - 'ossec-agent'
+      - 'sentinelforge-setup'
+  condition: selection and not filter_agent
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1105
+falsepositives:
+  - An admin script downloads a lab file with Invoke-WebRequest.

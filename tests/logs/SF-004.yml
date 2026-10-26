@@ -1,0 +1,56 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The script text is keywords only. It is not a command to run.
+comment: SYNTHETIC TEST INPUT
+id: SF-004
+description: >
+  A 4104 block naming Invoke-Expression is the intended SF-004 case.
+  A block that only names DownloadString is SF-006 and must not match
+  100200. A plain Write-Output must not match. The marker
+  sentinelforge-setup must not match.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT Invoke-Expression","ScriptBlockId":"11111111-1111-1111-1111-111111111111"}}}'
+    expect:
+      fires: true
+      rule_id: 100200
+      level: 12
+      mitre:
+        - T1059.001
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT DownloadString example.invalid","ScriptBlockId":"22222222-2222-2222-2222-222222222222"}}}'
+    expect:
+      fires: false
+      rule_id: 100200
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT Write-Output hello","ScriptBlockId":"33333333-3333-3333-3333-333333333333"}}}'
+    expect:
+      fires: false
+      rule_id: 100200
+  - name: negative_setup_script
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT sentinelforge-setup Invoke-Expression","ScriptBlockId":"44444444-4444-4444-4444-444444444444"}}}'
+    expect:
+      fires: false
+      rule_id: 100200

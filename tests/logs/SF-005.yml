@@ -1,0 +1,55 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# U1lOVEhFVElD is base64 for the word SYNTHETIC. It is not a payload.
+comment: SYNTHETIC TEST INPUT
+id: SF-005
+description: >
+  Sysmon 1 for powershell.exe with -enc and a base64 token is the intended
+  SF-005 case. A short -e argument is not. A normal powershell command is not.
+  ossec-agent in the command line is not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","commandLine":"powershell.exe -enc U1lOVEhFVElD","parentImage":"C:\\\\Windows\\\\explorer.exe"}}}'
+    expect:
+      fires: true
+      rule_id: 100210
+      level: 13
+      mitre:
+        - T1059.001
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","commandLine":"powershell.exe -e hi","parentImage":"C:\\\\Windows\\\\explorer.exe"}}}'
+    expect:
+      fires: false
+      rule_id: 100210
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","commandLine":"powershell.exe -Command Write-Output hello","parentImage":"C:\\\\Windows\\\\explorer.exe"}}}'
+    expect:
+      fires: false
+      rule_id: 100210
+  - name: negative_agent_parent
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"1","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","commandLine":"powershell.exe -enc U1lOVEhFVElD","parentImage":"C:\\\\Program Files (x86)\\\\ossec-agent\\\\wazuh-agent.exe"}}}'
+    expect:
+      fires: false
+      rule_id: 100210

@@ -1,0 +1,31 @@
+title: SF-005 encoded PowerShell process
+id: e3cdcfa3-a1a3-4432-862d-1dc909866a93
+status: experimental
+description: >
+  Sysmon process creation for powershell.exe or pwsh.exe with -enc,
+  -EncodedCommand, or -e followed by a base64 token. The token check lives
+  in Wazuh rule 100210. Security 4688 is not this rule.
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection_image:
+    Image|endswith:
+      - '\powershell.exe'
+      - '\pwsh.exe'
+  selection_flag:
+    CommandLine|contains:
+      - '-enc'
+      - '-EncodedCommand'
+      - '-e '
+  filter_agent:
+    CommandLine|contains:
+      - 'ossec-agent'
+      - 'sentinelforge-setup'
+  condition: selection_image and selection_flag and not filter_agent
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+falsepositives:
+  - A signed admin tool launches PowerShell with an encoded command.

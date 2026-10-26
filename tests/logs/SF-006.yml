@@ -1,0 +1,68 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The script text names a keyword. It does not fetch a URL.
+comment: SYNTHETIC TEST INPUT
+id: SF-006
+description: >
+  A 4104 block that names DownloadString is rule 100220. Sysmon 3 from
+  powershell.exe to 10.10.10.200 is rule 100221. IEX alone is SF-004.
+  Loopback is not a 100221 destination.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT DownloadString example.invalid","ScriptBlockId":"55555555-5555-5555-5555-555555555555"}}}'
+    expect:
+      fires: true
+      rule_id: 100220
+      level: 12
+      mitre:
+        - T1105
+  - name: positive_sysmon_connection
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"3","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","protocol":"tcp","destinationIp":"10.10.10.200","destinationPort":"443"}}}'
+    expect:
+      fires: true
+      rule_id: 100221
+      level: 10
+      mitre:
+        - T1105
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT Invoke-Expression","ScriptBlockId":"66666666-6666-6666-6666-666666666666"}}}'
+    expect:
+      fires: false
+      rule_id: 100220
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-PowerShell","eventID":"4104","channel":"Microsoft-Windows-PowerShell/Operational","computer":"WS01.sentinelforge.lab","severityValue":"WARNING","message":"SYNTHETIC TEST INPUT"},"eventdata":{"scriptBlockText":"SYNTHETIC TEST INPUT Write-Output hello","ScriptBlockId":"77777777-7777-7777-7777-777777777777"}}}'
+    expect:
+      fires: false
+      rule_id: 100220
+  - name: negative_loopback
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Sysmon","eventID":"3","channel":"Microsoft-Windows-Sysmon/Operational","computer":"WS01.sentinelforge.lab","severityValue":"INFORMATION","message":"SYNTHETIC TEST INPUT"},"eventdata":{"image":"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe","protocol":"tcp","destinationIp":"127.0.0.1","destinationPort":"443"}}}'
+    expect:
+      fires: false
+      rule_id: 100221

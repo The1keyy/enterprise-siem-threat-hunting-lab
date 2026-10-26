@@ -1,0 +1,65 @@
+id: SF-006
+name: PowerShell download cradle
+description: >
+  PowerShell 4104 text that names Net.WebClient, DownloadString, DownloadFile,
+  Invoke-WebRequest, or Start-BitsTransfer, plus a Sysmon event 3 TCP
+  connection from powershell.exe or pwsh.exe to a non-loopback address.
+severity: high
+mitre:
+  - T1105
+telemetry:
+  - powershell
+  - sysmon
+wazuh_rule_ids:
+  - "100220"
+  - "100221"
+sigma_file: detections/sigma/SF-006.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "91802"
+  - "61605"
+required_telemetry: >
+  PowerShell Script Block Logging (4104) and Sysmon operational event 3 on
+  WS01. The two alerts are separate. A later step can join them. The planned
+  simulation is WS01 only.
+false_positives: >
+  An admin script names Invoke-WebRequest. PowerShell talking to a lab host
+  over TCP also matches rule 100221, including updates and remoting that are
+  not a cradle. Loopback is excluded.
+tuning_notes: >
+  Rule 100220 is level 12 (high). Rule 100221 is level 10 (medium). The
+  library severity is high because the cradle text is the named behavior.
+  No built-in rule in this image matches DownloadString, DownloadFile,
+  Net.WebClient, Invoke-WebRequest, or Start-BitsTransfer. Stock 92101 is
+  level 0 for powershell.exe TCP and does not include pwsh.exe. 100221 adds
+  pwsh.exe and skips destinationIp -, 127.0.0.1, ::1, and the expanded
+  loopback address. Script-text exclusions are ossec-agent and
+  sentinelforge-setup. The network rule also skips an image path containing
+  those strings. Event 3 in this ruleset has no parentImage check, so a
+  connection whose parent is the Wazuh agent is not excluded. No other
+  exclusion. IEX and Invoke-Expression are not in 100220.
+test_procedure: >
+  make logtest ID=SF-006 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-006.md. Not run.
+expected_event: >
+  A 4104 script block naming DownloadString, or Sysmon 3 for powershell.exe
+  to 10.10.10.200 over TCP.
+expected_alert: >
+  Description starts with SF-006. Rule 100220 level 12 or rule 100221 level
+  10. MITRE T1105.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 16:12:49 wazuh-analysisd: INFO: Total rules enabled: '8465'
+  2026/10/26 16:12:49 wazuh-analysisd: INFO: Started (pid: 639).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100200_powershell.xml.
+  GET /rules?filename=sentinelforge_100200_powershell.xml returned 100220 level 12
+  and 100221 level 10, both enabled.

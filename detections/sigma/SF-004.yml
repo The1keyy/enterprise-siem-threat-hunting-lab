@@ -1,0 +1,34 @@
+title: SF-004 suspicious PowerShell script block
+id: 529d34e3-8ab8-484e-87cc-5a7a328d38b2
+status: experimental
+description: >
+  PowerShell Operational 4104. Download-cradle strings are not in this
+  selection. Those belong to SF-006. Wazuh rule 100200 is the alert.
+logsource:
+  product: windows
+  category: ps_script
+  definition: Script Block Logging, event 4104
+detection:
+  selection:
+    EventID: 4104
+    ScriptBlockText|contains:
+      - 'IEX'
+      - 'Invoke-Expression'
+      - 'FromBase64String'
+      - 'Invoke-Mimikatz'
+      - 'AmsiUtils'
+      - 'amsiInitFailed'
+      - 'AmsiScanBuffer'
+      - '-nop'
+  filter_agent:
+    ScriptBlockText|contains:
+      - 'ossec-agent'
+      - 'sentinelforge-setup'
+  condition: selection and not filter_agent
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+falsepositives:
+  - An admin script calls Invoke-Expression.
+  - The -nop half of this selection is broader than the Wazuh rule, which also requires -w hidden.

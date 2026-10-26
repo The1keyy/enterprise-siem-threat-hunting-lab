@@ -130,3 +130,44 @@ A `<field>` exclusion on a frequency rule is also unused in this image. The excl
 
 4624 and 4625 are written on the computer that handled the logon. Domain account logons aimed at DC01 are on DC01. Local account logons are on WS01. A domain account logon to WS01 is a WS01 event. Grep of `0580-win-security_rules.xml` found no 4771 and no 4776. Those are not parents of these rules.
 
+## SF-004, SF-005, and SF-006 — PowerShell and Sysmon
+
+Evidence commands:
+
+```bash
+docker exec wazuh-logtest grep -n -E 'id="9180[129]"|id="91837"|scriptBlockText' /var/ossec/ruleset/rules/0915-win-powershell_rules.xml
+docker exec wazuh-logtest grep -n -E 'id="60004"|id="6160[035]"' /var/ossec/ruleset/rules/0575-win-base_rules.xml /var/ossec/ruleset/rules/0595-win-sysmon_rules.xml
+docker exec wazuh-logtest grep -n -E 'id="92057"|id="92071"|id="92101"|EncodedCommand|pwsh' /var/ossec/ruleset/rules/0800-sysmon_id_1.xml /var/ossec/ruleset/rules/0810-sysmon_id_3.xml
+docker exec wazuh-logtest grep -n 'eventID">4688\|id="67027"' /var/ossec/ruleset/rules/0955-WEF-baseline_rules.xml
+```
+
+`(?i)` is inside `type="pcre2"` on 42 of the script-block checks in `0915-win-powershell_rules.xml`, and on the Sysmon command-line rules below. `pwsh` has zero matches in `0800-sysmon_id_1.xml` and `0810-sysmon_id_3.xml`. A ruleset-wide search found no `DownloadString`, `DownloadFile`, `WebClient`, `Invoke-WebRequest`, `BitsTransfer`, `Invoke-Mimikatz`, or `AmsiUtils`.
+
+### Chain
+
+| Rule | Level | File | What it matches |
+|---|---|---|---|
+| 91801 | 0 | `0915-win-powershell_rules.xml` | `if_sid` 60000 or 60010, channel `Microsoft-Windows-PowerShell/Operational` |
+| 91802 | 0 | same | `if_sid` 91801, `win.eventdata.ScriptBlockId` `.+` |
+| 91809 | 10 | same | `if_sid` 91802, `scriptBlockText` `(?i)FromBase64String`. MITRE `T1140` |
+| 91837 | 4 | same | `if_sid` 91802, `scriptBlockText` `(?i)(Get-Content.+\-Stream\|IEX\|Invoke-Expresion)`. MITRE `T1059.001` |
+| 60004 | 0 | `0575-win-base_rules.xml` | `if_sid` 60000, channel `Microsoft-Windows-Sysmon/Operational` |
+| 61603 | 0 | `0595-win-sysmon_rules.xml` | `if_sid` 61600, eventID `^1$`. Group `sysmon_event1` |
+| 61605 | 0 | same | `if_sid` 61600, eventID `^3$`. Group `sysmon_event3` |
+| 92057 | 12 | `0800-sysmon_id_1.xml` | `if_group` `sysmon_event1`, parent image powershell.exe, command line powershell.exe plus an encoded-command flag. MITRE `T1059.001` |
+| 92071 | 12 | same | Encoded command only after WMI rule 92070. MITRE `T1047` and `T1059.001` |
+| 92101 | 0 | `0810-sysmon_id_3.xml` | `if_group` `sysmon_event3`, image powershell.exe, protocol tcp. MITRE `T1095` |
+| 67027 | 3 | `0955-WEF-baseline_rules.xml` | `if_sid` 60103, eventID 4688, "A process was created." No commandLine check |
+
+91802 does not check event ID 4104. Rule 61603's description uses `win.eventdata.description`. The encoded-command rules in `0800-sysmon_id_1.xml` use `win.eventdata.commandLine`, `image`, and `parentImage`. Rule 61605's description names `destinationIp` and `image`.
+
+### How ours differ
+
+- SF-004 (100200) is 91802 plus eventID `^4104$`, level 12, MITRE `T1059.001`. It adds spelled `Invoke-Expression`, `Invoke-Mimikatz`, `AmsiUtils`, `amsiInitFailed`, `AmsiScanBuffer`, and `-nop -w hidden`. It does not include the SF-006 cradle strings. Stock `IEX` stays available at level 4, and stock `FromBase64String` at level 10, until this higher rule matches.
+- SF-005 (100210) is 61603, level 13, MITRE `T1059.001` only. Image is powershell.exe or pwsh.exe. The command line needs `-EncodedCommand`, `-enc`, or `-e`, then a base64 token of at least 8 characters. 92057 does not list pwsh and requires a powershell parent. 67027 is why 4688 is not used.
+- SF-006 (100220) is 4104 with the five cradle strings, level 12, MITRE `T1105`. Nothing in the stock ruleset matches those strings. 100221 is 61605, powershell.exe or pwsh.exe, tcp, level 10, and it skips loopback `destinationIp`. 92101 is the level 0 powershell.exe version of that connection and does not include pwsh.
+
+### Exclusions
+
+`ossec-agent` and `sentinelforge-setup` are negated, case-insensitive, on the field that rule already has: `scriptBlockText` for 4104, and `commandLine`, `image`, or `parentImage` for Sysmon 1. 100221 can only see the image path. Event 3 rules in this image do not use `parentImage`. No `Path` field is used, because `0915-win-powershell_rules.xml` never references one. No other string is excluded.
+

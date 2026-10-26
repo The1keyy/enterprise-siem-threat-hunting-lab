@@ -1,0 +1,83 @@
+<!--
+  REQUIRES WINDOWS VALIDATION
+  Eventchannel JSON cannot be replayed in this logtest harness. Status stops
+  at SYNTAX VALID after analysisd loads this file. Not LAB VALIDATED.
+
+  PowerShell chain, wazuh/wazuh-manager:4.14.9:
+    60000 -> 91801 channel Microsoft-Windows-PowerShell/Operational
+    -> 91802 ScriptBlockId present
+    /var/ossec/ruleset/rules/0915-win-powershell_rules.xml
+  That file never checks eventID 4104. These rules add ^4104$.
+
+  Sysmon chain:
+    60000 -> 60004 channel Microsoft-Windows-Sysmon/Operational
+    -> 61600 informational -> 61603 event 1, 61605 event 3
+    /var/ossec/ruleset/rules/0595-win-sysmon_rules.xml
+  Fields used here are in the 4.14.9 rules: scriptBlockText, commandLine,
+  image, parentImage, destinationIp. Matching is type pcre2 with (?i),
+  which 0915 and 0800 already use.
+
+  Boundary: SF-004 does not contain the SF-006 cradle strings. A block that
+  only mentions DownloadString does not match 100200. A block that contains
+  both sets can match both rules.
+
+  Exclusions, and nothing else:
+    script text, command line, image, or parent image containing
+    ossec-agent or sentinelforge-setup.
+  4104 Path is not referenced in this ruleset, so the exclusion is text in
+  the fields above. Setup scripts must contain the marker sentinelforge-setup.
+-->
+<group name="windows,">
+
+  <rule id="100200" level="12">
+    <if_sid>91802</if_sid>
+    <field name="win.system.eventID">^4104$</field>
+    <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(\bIEX\b|Invoke-Expression|FromBase64String|Invoke-Mimikatz|AmsiUtils|amsiInitFailed|AmsiScanBuffer|-nop\w*\s+-w(?:indowstyle)?\s+hidden)</field>
+    <field name="win.eventdata.scriptBlockText" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <description>SF-004: suspicious PowerShell script block</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>sentinelforge,powershell,</group>
+  </rule>
+
+  <rule id="100210" level="13">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(?:powershell|pwsh)\.exe</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:-EncodedCommand|-enc|-e)\s+[A-Za-z0-9+/=]{8,}</field>
+    <field name="win.eventdata.commandLine" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <field name="win.eventdata.parentImage" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <description>SF-005: encoded PowerShell process</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>sentinelforge,powershell,</group>
+  </rule>
+
+  <rule id="100220" level="12">
+    <if_sid>91802</if_sid>
+    <field name="win.system.eventID">^4104$</field>
+    <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(Net\.WebClient|DownloadString|DownloadFile|Invoke-WebRequest|Start-BitsTransfer)</field>
+    <field name="win.eventdata.scriptBlockText" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <description>SF-006: PowerShell download cradle in a script block</description>
+    <mitre>
+      <id>T1105</id>
+    </mitre>
+    <group>sentinelforge,powershell,</group>
+  </rule>
+
+  <rule id="100221" level="10">
+    <if_sid>61605</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(?:powershell|pwsh)\.exe</field>
+    <field name="win.eventdata.image" type="pcre2" negate="yes">(?i)ossec-agent|sentinelforge-setup</field>
+    <field name="win.eventdata.protocol">^tcp$</field>
+    <field name="win.eventdata.destinationIp" type="pcre2" negate="yes">(?i)^(?:-|127\.0\.0\.1|::1|0:0:0:0:0:0:0:1)$</field>
+    <description>SF-006: PowerShell network connection</description>
+    <mitre>
+      <id>T1105</id>
+    </mitre>
+    <group>sentinelforge,powershell,</group>
+  </rule>
+
+</group>

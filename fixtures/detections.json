@@ -109,8 +109,8 @@
     {
       "id": "SF-004",
       "name": "Suspicious PowerShell script block",
-      "description": "PowerShell Operational 4104. Script block logging must be enabled first.",
-      "severity": "critical",
+      "description": "PowerShell Operational 4104 whose script text contains IEX, Invoke-Expression, FromBase64String, Invoke-Mimikatz, an AMSI indicator, or -nop -w hidden. Pure download-cradle text is SF-006, not this rule.\n",
+      "severity": "high",
       "mitre": [
         {
           "id": "T1059.001",
@@ -121,29 +121,31 @@
       "telemetry": [
         "powershell"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100200"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "PowerShell Operational 4104",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-004. Not written yet.",
+      "falsePositives": "An administrator script uses Invoke-Expression or FromBase64String. Stock rule 91837 already treats bare IEX as level 4.",
+      "tuningNotes": "Level 12 is high (ADR 0004). Stock 91837 matches IEX at level 4 and the misspelled Invoke-Expresion. Stock 91809 matches FromBase64String at level 10 with MITRE T1140. This rule adds Invoke-Expression, Invoke-Mimikatz, AmsiUtils, amsiInitFailed, AmsiScanBuffer, and -nop -w hidden, and it does not include Net.WebClient, DownloadString, DownloadFile, Invoke-WebRequest, or Start-BitsTransfer. Exclusions are the strings ossec-agent and sentinelforge-setup inside scriptBlockText. No other exclusion.\n",
+      "testProcedure": "make logtest ID=SF-004 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-004.md. Not run.\n",
+      "expectedEvent": "Script block 4104 on WS01 containing one SF-004 string and neither exclusion marker.",
+      "expectedAlert": "Description starts with SF-004. Rule 100200, level 12. MITRE T1059.001.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100200\" level=\"12\">\n    <if_sid>91802</if_sid>\n    <field name=\"win.system.eventID\">^4104$</field>\n    <field name=\"win.eventdata.scriptBlockText\" type=\"pcre2\">(?i)(\\bIEX\\b|Invoke-Expression|FromBase64String|Invoke-Mimikatz|AmsiUtils|amsiInitFailed|AmsiScanBuffer|-nop\\w*\\s+-w(?:indowstyle)?\\s+hidden)</field>\n    <field name=\"win.eventdata.scriptBlockText\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <description>SF-004: suspicious PowerShell script block</description>\n    <mitre>\n      <id>T1059.001</id>\n    </mitre>\n    <group>sentinelforge,powershell,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-004 suspicious PowerShell script block\nid: 529d34e3-8ab8-484e-87cc-5a7a328d38b2\nstatus: experimental\ndescription: >\n  PowerShell Operational 4104. Download-cradle strings are not in this\n  selection. Those belong to SF-006. Wazuh rule 100200 is the alert.\nlogsource:\n  product: windows\n  category: ps_script\n  definition: Script Block Logging, event 4104\ndetection:\n  selection:\n    EventID: 4104\n    ScriptBlockText|contains:\n      - 'IEX'\n      - 'Invoke-Expression'\n      - 'FromBase64String'\n      - 'Invoke-Mimikatz'\n      - 'AmsiUtils'\n      - 'amsiInitFailed'\n      - 'AmsiScanBuffer'\n      - '-nop'\n  filter_agent:\n    ScriptBlockText|contains:\n      - 'ossec-agent'\n      - 'sentinelforge-setup'\n  condition: selection and not filter_agent\nlevel: high\ntags:\n  - attack.execution\n  - attack.t1059.001\nfalsepositives:\n  - An admin script calls Invoke-Expression.\n  - The -nop half of this selection is broader than the Wazuh rule, which also requires -w hidden.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-005",
       "name": "Encoded PowerShell process",
-      "description": "Sysmon 1 CommandLine. Security 4688 only if command-line auditing is on. VERIFY 4688 setup.",
-      "severity": "critical",
+      "description": "Sysmon event 1 for powershell.exe or pwsh.exe whose command line has -EncodedCommand, -enc, or -e followed by a base64 token of at least 8 characters. Security 4688 is not this rule.\n",
+      "severity": "high",
       "mitre": [
         {
           "id": "T1059.001",
@@ -154,28 +156,30 @@
       "telemetry": [
         "sysmon"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100210"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Sysmon 1",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-005. Not written yet.",
+      "falsePositives": "A management tool starts PowerShell with an encoded command. The token U1lOVEhFVElD in the lab reference is the word SYNTHETIC.",
+      "tuningNotes": "Level 13 is high (ADR 0004), one above stock 92057 (level 12) so this description wins when both match. 92057 requires a powershell.exe parent and a powershell.exe command line, and its flag list does not include pwsh.exe. This image has no pwsh rule. This rule matches powershell.exe or pwsh.exe and requires the flag plus a base64 token. MITRE is T1059.001 only. 92071 also tags T1047 and only after WMI. Exclusions are ossec-agent and sentinelforge-setup in the command line, image, or parent image. No other exclusion.\n",
+      "testProcedure": "make logtest ID=SF-005 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-005.md. Not run.\n",
+      "expectedEvent": "Sysmon 1 on WS01 for powershell.exe or pwsh.exe with -enc or -EncodedCommand and a base64 token.",
+      "expectedAlert": "Description starts with SF-005. Rule 100210, level 13. MITRE T1059.001 only.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100210\" level=\"13\">\n    <if_sid>61603</if_sid>\n    <field name=\"win.eventdata.image\" type=\"pcre2\">(?i)\\\\(?:powershell|pwsh)\\.exe</field>\n    <field name=\"win.eventdata.commandLine\" type=\"pcre2\">(?i)(?:-EncodedCommand|-enc|-e)\\s+[A-Za-z0-9+/=]{8,}</field>\n    <field name=\"win.eventdata.commandLine\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <field name=\"win.eventdata.image\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <field name=\"win.eventdata.parentImage\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <description>SF-005: encoded PowerShell process</description>\n    <mitre>\n      <id>T1059.001</id>\n    </mitre>\n    <group>sentinelforge,powershell,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-005 encoded PowerShell process\nid: e3cdcfa3-a1a3-4432-862d-1dc909866a93\nstatus: experimental\ndescription: >\n  Sysmon process creation for powershell.exe or pwsh.exe with -enc,\n  -EncodedCommand, or -e followed by a base64 token. The token check lives\n  in Wazuh rule 100210. Security 4688 is not this rule.\nlogsource:\n  product: windows\n  category: process_creation\ndetection:\n  selection_image:\n    Image|endswith:\n      - '\\powershell.exe'\n      - '\\pwsh.exe'\n  selection_flag:\n    CommandLine|contains:\n      - '-enc'\n      - '-EncodedCommand'\n      - '-e '\n  filter_agent:\n    CommandLine|contains:\n      - 'ossec-agent'\n      - 'sentinelforge-setup'\n  condition: selection_image and selection_flag and not filter_agent\nlevel: high\ntags:\n  - attack.execution\n  - attack.t1059.001\nfalsepositives:\n  - A signed admin tool launches PowerShell with an encoded command.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-006",
       "name": "PowerShell download cradle",
-      "description": "4104 plus Sysmon 3 when a connection is logged. Sysmon 3 fields require Windows validation.",
+      "description": "PowerShell 4104 text that names Net.WebClient, DownloadString, DownloadFile, Invoke-WebRequest, or Start-BitsTransfer, plus a Sysmon event 3 TCP connection from powershell.exe or pwsh.exe to a non-loopback address.\n",
       "severity": "high",
       "mitre": [
         {
@@ -188,21 +192,24 @@
         "powershell",
         "sysmon"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100220",
+        "100221"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "PowerShell Operational 4104 and Sysmon 3",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-006. Not written yet.",
+      "falsePositives": "An admin script names Invoke-WebRequest. PowerShell talking to a lab host over TCP also matches rule 100221, including updates and remoting that are not a cradle. Loopback is excluded.\n",
+      "tuningNotes": "Rule 100220 is level 12 (high). Rule 100221 is level 10 (medium). The library severity is high because the cradle text is the named behavior. No built-in rule in this image matches DownloadString, DownloadFile, Net.WebClient, Invoke-WebRequest, or Start-BitsTransfer. Stock 92101 is level 0 for powershell.exe TCP and does not include pwsh.exe. 100221 adds pwsh.exe and skips destinationIp -, 127.0.0.1, ::1, and the expanded loopback address. Script-text exclusions are ossec-agent and sentinelforge-setup. The network rule also skips an image path containing those strings. Event 3 in this ruleset has no parentImage check, so a connection whose parent is the Wazuh agent is not excluded. No other exclusion. IEX and Invoke-Expression are not in 100220.\n",
+      "testProcedure": "make logtest ID=SF-006 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-006.md. Not run.\n",
+      "expectedEvent": "A 4104 script block naming DownloadString, or Sysmon 3 for powershell.exe to 10.10.10.200 over TCP.\n",
+      "expectedAlert": "Description starts with SF-006. Rule 100220 level 12 or rule 100221 level 10. MITRE T1105.\n",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100220\" level=\"12\">\n    <if_sid>91802</if_sid>\n    <field name=\"win.system.eventID\">^4104$</field>\n    <field name=\"win.eventdata.scriptBlockText\" type=\"pcre2\">(?i)(Net\\.WebClient|DownloadString|DownloadFile|Invoke-WebRequest|Start-BitsTransfer)</field>\n    <field name=\"win.eventdata.scriptBlockText\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <description>SF-006: PowerShell download cradle in a script block</description>\n    <mitre>\n      <id>T1105</id>\n    </mitre>\n    <group>sentinelforge,powershell,</group>\n  </rule>\n\n<rule id=\"100221\" level=\"10\">\n    <if_sid>61605</if_sid>\n    <field name=\"win.eventdata.image\" type=\"pcre2\">(?i)\\\\(?:powershell|pwsh)\\.exe</field>\n    <field name=\"win.eventdata.image\" type=\"pcre2\" negate=\"yes\">(?i)ossec-agent|sentinelforge-setup</field>\n    <field name=\"win.eventdata.protocol\">^tcp$</field>\n    <field name=\"win.eventdata.destinationIp\" type=\"pcre2\" negate=\"yes\">(?i)^(?:-|127\\.0\\.0\\.1|::1|0:0:0:0:0:0:0:1)$</field>\n    <description>SF-006: PowerShell network connection</description>\n    <mitre>\n      <id>T1105</id>\n    </mitre>\n    <group>sentinelforge,powershell,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-006 PowerShell download cradle\nid: f594ec69-8249-4619-a09a-37ad5bf0af85\nstatus: experimental\ndescription: >\n  PowerShell Operational 4104 cradle text. The Sysmon event 3 half, a\n  powershell.exe or pwsh.exe TCP connection, lives in Wazuh rule 100221.\n  This selection does not include Invoke-Expression or IEX. Those belong\n  to SF-004.\nlogsource:\n  product: windows\n  category: ps_script\n  definition: Script Block Logging, event 4104\ndetection:\n  selection:\n    EventID: 4104\n    ScriptBlockText|contains:\n      - 'Net.WebClient'\n      - 'DownloadString'\n      - 'DownloadFile'\n      - 'Invoke-WebRequest'\n      - 'Start-BitsTransfer'\n  filter_agent:\n    ScriptBlockText|contains:\n      - 'ossec-agent'\n      - 'sentinelforge-setup'\n  condition: selection and not filter_agent\nlevel: high\ntags:\n  - attack.command_and_control\n  - attack.t1105\nfalsepositives:\n  - An admin script downloads a lab file with Invoke-WebRequest.\n",
       "tuningHistory": [],
       "demo": true
     },
