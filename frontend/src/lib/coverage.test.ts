@@ -14,13 +14,18 @@ describe('ATT&CK coverage', () => {
     expect(coverageSummary(withOneLabHit).labValidated).toBe(1)
   })
 
-  it('keeps every detection at NOT TESTED', () => {
+  it('keeps lab counts empty and marks only the logtested rules', () => {
     expect(detectionFixtures).toHaveLength(20)
     for (const detection of detectionFixtures) {
-      expect(detection.status).toBe('NOT TESTED')
       expect(detection.observedResult).toBe('NOT YET VALIDATED')
       expect(detection.lastTriggered).toBeNull()
       expect(detection.alertCount).toBeNull()
+      expect(detection.status).not.toBe('LAB VALIDATED')
+      if (detection.id === 'SF-013' || detection.id === 'SF-014') {
+        expect(detection.status).toBe('LOGTEST VALID')
+      } else {
+        expect(detection.status).toBe('NOT TESTED')
+      }
     }
   })
 })

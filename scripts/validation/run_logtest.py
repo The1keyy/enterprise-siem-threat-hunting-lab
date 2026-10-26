@@ -174,6 +174,22 @@ def _case_files(only_id: str | None) -> list[Path]:
 
 def _run_case(case_id: str, case: dict[str, Any], auth_token: str, *, verbose: bool) -> dict[str, Any]:
     name = str(case.get("name") or "unnamed")
+    if case.get("mode") == "lab_reference":
+        reason = str(
+            case.get("limited_reason")
+            or "REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed."
+        )
+        print(f"{case_id} {name}: REQUIRES WINDOWS VALIDATION / logtest-limited")
+        print(reason)
+        return {
+            "id": case_id,
+            "name": name,
+            "status": "LIMITED",
+            "expected": case.get("expect"),
+            "actual": None,
+            "reason": reason,
+            "raw": [],
+        }
     limited = bool(case.get("logtest_limited"))
     limited_reason = str(case.get("limited_reason") or "logtest-limited")
     events = _events(case)

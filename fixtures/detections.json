@@ -1,5 +1,5 @@
 {
-  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "_notice": "DEMO DATA \u2014 synthetic, not real telemetry. Detection definitions loaded from detections/ are real repo content. lastTriggered and alertCount are not lab measurements.",
   "detections": [
     {
       "id": "SF-001",
@@ -401,7 +401,7 @@
     {
       "id": "SF-013",
       "name": "Linux SSH failure burst",
-      "description": "sshd failed-password lines. VERIFY the Ubuntu 24.04 auth log path.",
+      "description": "Repeated sshd authentication failures from one source IP inside 120 seconds.",
       "severity": "medium",
       "mitre": [
         {
@@ -413,29 +413,32 @@
       "telemetry": [
         "linux_auth"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100701",
+        "100702"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "LOGTEST VALID",
       "windowsValidationRequired": false,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "sshd failed password",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-013. Not written yet.",
+      "falsePositives": "A person mistypes a password six times from one host. Several people behind one NAT address look like one source.",
+      "tuningNotes": "frequency 6 and timeframe 120. Stock rules 5712 and 5763 use frequency 8. Raise the frequency if lab users regularly mistype this often.",
+      "testProcedure": "make logtest ID=SF-013. Six synthetic failures from 10.10.10.200 must fire. Five must not.",
+      "expectedEvent": "sshd Failed password or invalid user from one source IP, six times in 120 seconds.",
+      "expectedAlert": "Description starts with SF-013. Rule 100701 or 100702, level 10.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100701\" level=\"10\" frequency=\"6\" timeframe=\"120\" ignore=\"60\">\n    <if_matched_sid>5710</if_matched_sid>\n    <same_source_ip />\n    <description>SF-013: sshd invalid-user failure burst from one source IP</description>\n    <mitre>\n      <id>T1110.001</id>\n    </mitre>\n    <group>sentinelforge,linux,</group>\n  </rule>\n\n<rule id=\"100702\" level=\"10\" frequency=\"6\" timeframe=\"120\" ignore=\"60\">\n    <!-- 5760 is the alert id for \"Failed password\" (if_sid 5716). 5716 itself is not the fired id. -->\n    <if_matched_sid>5760</if_matched_sid>\n    <same_source_ip />\n    <description>SF-013: sshd authentication-failure burst from one source IP</description>\n    <mitre>\n      <id>T1110.001</id>\n    </mitre>\n    <group>sentinelforge,linux,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-013 sshd failure burst from one source IP\nid: 7c1a0e2b-4d55-4a1e-9f30-0b6c2a8e13d1\nstatus: experimental\ndescription: >\n  sshd authentication failure. The six-event, 120 second, same-source threshold\n  lives in Wazuh rules 100701 and 100702. This selection is the single-event\n  equivalent.\nlogsource:\n  product: linux\n  service: sshd\ndetection:\n  selection:\n    - 'invalid user'\n    - 'Failed password'\n  condition: selection\nlevel: medium\ntags:\n  - attack.credential_access\n  - attack.t1110.001\nfalsepositives:\n  - A user mistypes a password.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-014",
       "name": "Linux SSH success after failures",
-      "description": "sshd accepted-password line.",
-      "severity": "medium",
+      "description": "sshd authentication success from a source IP that just produced an SF-013 failure burst.",
+      "severity": "high",
       "mitre": [
         {
           "id": "T1078",
@@ -446,21 +449,24 @@
       "telemetry": [
         "linux_auth"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100710",
+        "100711"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "LOGTEST VALID",
       "windowsValidationRequired": false,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "sshd accepted password",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-014. Not written yet.",
+      "falsePositives": "A person mistypes a password six times and then succeeds. That is the detection. Shared jump hosts make it noisier.",
+      "tuningNotes": "Fires only after SF-013 (100701 or 100702) in the same 120 second window and from the same source IP. Level 12.",
+      "testProcedure": "make logtest ID=SF-014. Six failures then Accepted password from 10.10.10.200 must fire. Five failures then a success must not.",
+      "expectedEvent": "sshd Accepted password from the same source IP after six failures inside 120 seconds.",
+      "expectedAlert": "Description starts with SF-014. Rule 100710 or 100711, level 12. MITRE T1078 only.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100710\" level=\"12\" frequency=\"2\" timeframe=\"120\">\n    <if_sid>5715</if_sid>\n    <if_matched_sid>100701</if_matched_sid>\n    <same_source_ip />\n    <description>SF-014: sshd success after invalid-user failures from the same source IP</description>\n    <mitre>\n      <id>T1078</id>\n    </mitre>\n    <group>sentinelforge,linux,</group>\n  </rule>\n\n<rule id=\"100711\" level=\"12\" frequency=\"2\" timeframe=\"120\">\n    <if_sid>5715</if_sid>\n    <if_matched_sid>100702</if_matched_sid>\n    <same_source_ip />\n    <description>SF-014: sshd success after authentication failures from the same source IP</description>\n    <mitre>\n      <id>T1078</id>\n    </mitre>\n    <group>sentinelforge,linux,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-014 sshd success after a failure burst\nid: 2f9b6c44-8a17-4c3e-b5d0-11e7a4c014e2\nstatus: experimental\ndescription: >\n  sshd authentication success. The requirement that SF-013 already fired from\n  the same source IP inside 120 seconds lives in Wazuh rules 100710 and 100711.\n  This selection is the success line only.\nlogsource:\n  product: linux\n  service: sshd\ndetection:\n  selection:\n    - 'Accepted password'\n    - 'Accepted publickey'\n  condition: selection\nlevel: high\ntags:\n  - attack.initial_access\n  - attack.t1078\nfalsepositives:\n  - A normal login with no recent failures. The Wazuh rule does not alert on that line alone.\n",
       "tuningHistory": [],
       "demo": true
     },

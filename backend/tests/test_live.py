@@ -66,9 +66,11 @@ def test_live_mode_returns_503_when_wazuh_is_down(tmp_path: Path) -> None:
         assert incidents.status_code == 200
         assert incidents.json() == []
 
+        # Metadata exists, so the list asks the indexer for alert counts.
+        # Wazuh is down, so this is 503 and not the fixture library.
         detections = client.get("/api/detections")
-        assert detections.status_code == 200
-        assert detections.json() == []
+        assert detections.status_code == 503
+        assert "unreachable" in detections.json()["detail"]
 
         for path in ("/api/overview", "/api/sources", "/api/system/health", "/api/entities/hosts"):
             denied = client.get(path)

@@ -1,0 +1,32 @@
+id: SF-014
+name: Linux SSH success after failures
+description: sshd authentication success from a source IP that just produced an SF-013 failure burst.
+severity: high
+mitre:
+  - T1078
+telemetry:
+  - linux_auth
+wazuh_rule_ids:
+  - "100710"
+  - "100711"
+sigma_file: detections/sigma/SF-014.yml
+version: "1"
+status: LOGTEST VALID
+windows_validation_required: false
+logtest_mode: full
+parent_rules:
+  - "5715"
+  - "100701"
+  - "100702"
+required_telemetry: sshd Accepted and Failed lines in syslog. Logtest location /var/log/auth.log. The Ubuntu 24.04 agent path is still VERIFY.
+false_positives: A person mistypes a password six times and then succeeds. That is the detection. Shared jump hosts make it noisier.
+tuning_notes: Fires only after SF-013 (100701 or 100702) in the same 120 second window and from the same source IP. Level 12.
+test_procedure: make logtest ID=SF-014. Six failures then Accepted password from 10.10.10.200 must fire. Five failures then a success must not.
+expected_event: sshd Accepted password from the same source IP after six failures inside 120 seconds.
+expected_alert: Description starts with SF-014. Rule 100710 or 100711, level 12. MITRE T1078 only.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+logtest_date: 2026-10-26
+logtest_result: logtest-20261026T134325Z.json

@@ -1,0 +1,21 @@
+title: SF-014 sshd success after a failure burst
+id: 2f9b6c44-8a17-4c3e-b5d0-11e7a4c014e2
+status: experimental
+description: >
+  sshd authentication success. The requirement that SF-013 already fired from
+  the same source IP inside 120 seconds lives in Wazuh rules 100710 and 100711.
+  This selection is the success line only.
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    - 'Accepted password'
+    - 'Accepted publickey'
+  condition: selection
+level: high
+tags:
+  - attack.initial_access
+  - attack.t1078
+falsepositives:
+  - A normal login with no recent failures. The Wazuh rule does not alert on that line alone.

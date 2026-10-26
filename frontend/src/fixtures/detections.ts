@@ -1,5 +1,6 @@
 // DEMO DATA — synthetic fixtures for UI development. Not real telemetry.
-// Detection metadata lives in /fixtures/detections.json. Every status is NOT TESTED.
+// Detection metadata lives in /fixtures/detections.json.
+// Written rules carry their real status. Unwritten rows stay NOT TESTED.
 import raw from '../../../fixtures/detections.json'
 import type { Detection } from '../types/detection.ts'
 

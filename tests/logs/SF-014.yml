@@ -1,0 +1,59 @@
+# SYNTHETIC TEST INPUT — not lab telemetry.
+comment: SYNTHETIC TEST INPUT
+id: SF-014
+description: Accepted password after an SF-013 burst from the same IP fires SF-014. Fewer failures do not.
+cases:
+  - name: positive
+    log_format: syslog
+    location: /var/log/auth.log
+    events:
+      - "Oct 26 12:04:01 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53001 ssh2"
+      - "Oct 26 12:04:02 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53002 ssh2"
+      - "Oct 26 12:04:03 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53003 ssh2"
+      - "Oct 26 12:04:04 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53004 ssh2"
+      - "Oct 26 12:04:05 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53005 ssh2"
+      - "Oct 26 12:04:06 ubu01 sshd[2301]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53006 ssh2"
+      - "Oct 26 12:04:07 ubu01 sshd[2301]: Accepted password for sf-test-alice from 10.10.10.200 port 53007 ssh2"
+    expect:
+      fires: true
+      rule_id: 100710
+      level: 12
+      mitre:
+        - T1078
+  - name: positive_known_user
+    log_format: syslog
+    location: /var/log/auth.log
+    events:
+      - "Oct 26 12:05:01 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53101 ssh2"
+      - "Oct 26 12:05:02 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53102 ssh2"
+      - "Oct 26 12:05:03 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53103 ssh2"
+      - "Oct 26 12:05:04 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53104 ssh2"
+      - "Oct 26 12:05:05 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53105 ssh2"
+      - "Oct 26 12:05:06 ubu01 sshd[2302]: Failed password for sf-test-bob from 10.10.10.200 port 53106 ssh2"
+      - "Oct 26 12:05:07 ubu01 sshd[2302]: Accepted password for sf-test-bob from 10.10.10.200 port 53107 ssh2"
+    expect:
+      fires: true
+      rule_id: 100711
+      level: 12
+      mitre:
+        - T1078
+  - name: negative_below_threshold
+    log_format: syslog
+    location: /var/log/auth.log
+    events:
+      - "Oct 26 12:06:01 ubu01 sshd[2303]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53201 ssh2"
+      - "Oct 26 12:06:02 ubu01 sshd[2303]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53202 ssh2"
+      - "Oct 26 12:06:03 ubu01 sshd[2303]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53203 ssh2"
+      - "Oct 26 12:06:04 ubu01 sshd[2303]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53204 ssh2"
+      - "Oct 26 12:06:05 ubu01 sshd[2303]: Failed password for invalid user sf-test-alice from 10.10.10.200 port 53205 ssh2"
+      - "Oct 26 12:06:06 ubu01 sshd[2303]: Accepted password for sf-test-alice from 10.10.10.200 port 53206 ssh2"
+    expect:
+      fires: false
+      rule_id: 100710
+  - name: negative_benign
+    log_format: syslog
+    location: /var/log/auth.log
+    event: "Oct 26 12:07:01 ubu01 sshd[2304]: Accepted password for sf-test-carol from 10.10.10.30 port 22 ssh2"
+    expect:
+      fires: false
+      rule_id: 100710

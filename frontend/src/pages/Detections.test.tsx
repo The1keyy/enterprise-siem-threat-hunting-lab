@@ -9,7 +9,7 @@ describe('detections library', () => {
     resetDemoCatalog()
   })
 
-  it('shows NOT TESTED on every detection row', async () => {
+  it('shows NOT TESTED on unwritten rows and LOGTEST VALID on SF-013 and SF-014', async () => {
     render(
       <MemoryRouter>
         <DetectionsPage />
@@ -20,8 +20,7 @@ describe('detections library', () => {
     const body = screen.getByRole('table').querySelector('tbody')
     expect(body).not.toBeNull()
     expect(body).toHaveTextContent('NOT TESTED')
-    expect(body?.textContent ?? '').not.toMatch(
-      /SYNTAX VALID|LOGTEST VALID|LAB VALIDATED|NEEDS TUNING/,
-    )
+    expect(body).toHaveTextContent('LOGTEST VALID')
+    expect(body?.textContent ?? '').not.toMatch(/LAB VALIDATED|NEEDS TUNING/)
   })
 })

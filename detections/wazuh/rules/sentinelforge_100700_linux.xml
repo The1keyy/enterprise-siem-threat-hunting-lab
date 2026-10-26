@@ -1,0 +1,64 @@
+<!--
+  SF-013 Linux SSH failure burst. T1110.001.
+  Objective: one source IP, repeated sshd authentication failures, 120 second window.
+  Parents: 5710 (invalid user) and 5716 (authentication failed) in
+  /var/ossec/ruleset/rules/0095-sshd_rules.xml (Wazuh 4.14.9).
+  Stock bursts 5712, 5720, and 5763 use frequency 8. This file uses frequency 6
+  and timeframe 120 so a shorter lab burst is visible, and it sets T1110.001.
+  Level 10 is medium (ADR 0004).
+  Status: set by logtest. Not LAB VALIDATED.
+
+  SF-014 Linux SSH success after failures. T1078 only.
+  Objective: sshd authentication success (5715) from the same source IP after
+  SF-013 has fired. The Nth failure is alerted as 100701 or 100702, so it is
+  not still 5710 or 5760. if_matched_sid points at those SF-013 rules.
+  if_sid + if_matched_sid is the shape of built-in rule 2509.
+  Level 12 is high (ADR 0004): a success after a burst is a session, not noise.
+  The stock success rule 5715 is level 3 and does not require prior failures.
+-->
+<group name="syslog,sshd,">
+
+  <rule id="100701" level="10" frequency="6" timeframe="120" ignore="60">
+    <if_matched_sid>5710</if_matched_sid>
+    <same_source_ip />
+    <description>SF-013: sshd invalid-user failure burst from one source IP</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>sentinelforge,linux,</group>
+  </rule>
+
+  <rule id="100702" level="10" frequency="6" timeframe="120" ignore="60">
+    <!-- 5760 is the alert id for "Failed password" (if_sid 5716). 5716 itself is not the fired id. -->
+    <if_matched_sid>5760</if_matched_sid>
+    <same_source_ip />
+    <description>SF-013: sshd authentication-failure burst from one source IP</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>sentinelforge,linux,</group>
+  </rule>
+
+  <rule id="100710" level="12" frequency="2" timeframe="120">
+    <if_sid>5715</if_sid>
+    <if_matched_sid>100701</if_matched_sid>
+    <same_source_ip />
+    <description>SF-014: sshd success after invalid-user failures from the same source IP</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>sentinelforge,linux,</group>
+  </rule>
+
+  <rule id="100711" level="12" frequency="2" timeframe="120">
+    <if_sid>5715</if_sid>
+    <if_matched_sid>100702</if_matched_sid>
+    <same_source_ip />
+    <description>SF-014: sshd success after authentication failures from the same source IP</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>sentinelforge,linux,</group>
+  </rule>
+
+</group>

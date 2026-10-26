@@ -1,0 +1,21 @@
+title: SF-013 sshd failure burst from one source IP
+id: 7c1a0e2b-4d55-4a1e-9f30-0b6c2a8e13d1
+status: experimental
+description: >
+  sshd authentication failure. The six-event, 120 second, same-source threshold
+  lives in Wazuh rules 100701 and 100702. This selection is the single-event
+  equivalent.
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    - 'invalid user'
+    - 'Failed password'
+  condition: selection
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110.001
+falsepositives:
+  - A user mistypes a password.

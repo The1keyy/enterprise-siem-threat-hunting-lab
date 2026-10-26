@@ -1,6 +1,6 @@
 # Roadmap
 
-Planning only. Detection count in the repo is still zero. Nothing here is `LOGTEST VALID` or `LAB VALIDATED`.
+SF-013 and SF-014 are written and `LOGTEST VALID` on synthetic sshd lines. The other rows are not written yet. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
@@ -8,24 +8,24 @@ The MVP set is one Windows attack story:
 
 About 12 detections are MVP (`SF-001`–`SF-012`). `SF-013`–`SF-020` are stretch. Stretch work does not block the story.
 
-Every Windows row is **REQUIRES WINDOWS VALIDATION**. A "yes" in the Mac column means `wazuh-logtest` can evaluate a synthetic sample on the Mac. It does not mean the guest emits that event.
+Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" means `wazuh-logtest` can evaluate that synthetic sample. "Limited" means the eventchannel path cannot be replayed (Step 9.1), so the Mac status stops at `SYNTAX VALID`. Neither value means the guest already emits the event.
 
 ## MVP detections — the story
 
-| ID | Name | MITRE | Telemetry | Event IDs or log | Tier | LOGTEST on Mac? |
-|---|---|---|---|---|---|---|
-| SF-001 | Repeated failed logons | T1110.001 | `windows_security` | Security **4625**. **VERIFY** Wazuh field names. | MVP | Yes |
-| SF-002 | Password spray | T1110.003 | `windows_security` | Security **4625** across many accounts from one source. | MVP | Yes. **VERIFY** that logtest honors `frequency` / `timeframe` the same way the manager does. |
-| SF-003 | Successful logon after failures | T1078 | `windows_security` | Security **4624** after **4625**. | MVP | Yes. Same frequency **VERIFY**. |
-| SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Logging must be enabled first. | MVP | Yes, with a synthetic 4104 line. |
-| SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** (`CommandLine`). Security **4688** only if command-line auditing is on. **VERIFY** 4688 setup. | MVP | Yes, with a synthetic process-create line. |
-| SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** plus Sysmon **3** when a connection is logged. | MVP | Yes for the script-block text. Sysmon 3 fields: **REQUIRES WINDOWS VALIDATION**. |
-| SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**. **VERIFY** against a lab event on WS01. | MVP | Yes |
-| SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** for a global group such as Domain Admins. **4756** is universal. **VERIFY** which event DC01 emits. | MVP | Yes |
-| SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720**. | MVP | Yes |
-| SF-010 | Inbound RDP logon | T1021.001 | `windows_security` | Security **4624**, logon type **10**. **VERIFY** decoded field name (`win.eventdata.logonType` is a candidate). | MVP | Yes |
-| SF-011 | SMB / admin-share remote logon | T1021.002 | `windows_security` | Security **4624**, logon type **3**. Share detail **5140** or **5145**. **VERIFY** which share event the audit policy produces. | MVP | Yes |
-| SF-012 | WinRM / PowerShell remoting | T1021.006 | `windows_security` | Security **4624** type **3**. WinRM Operational event IDs: **VERIFY**. | MVP | Yes for 4624. WinRM-specific ID is not assumed. |
+| ID | Name | MITRE | Telemetry | Event IDs or log | Tier | LOGTEST on Mac? | Step 10 batch |
+|---|---|---|---|---|---|---|---|
+| SF-001 | Repeated failed logons | T1110.001 | `windows_security` | Security **4625**. **VERIFY** Wazuh field names. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 1 |
+| SF-002 | Password spray | T1110.003 | `windows_security` | Security **4625** across many accounts from one source. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). **VERIFY** that logtest honors `frequency` / `timeframe` the same way the manager does. | 1 |
+| SF-003 | Successful logon after failures | T1078 | `windows_security` | Security **4624** after **4625**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Same frequency **VERIFY**. | 1 |
+| SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Logging must be enabled first. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
+| SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** (`CommandLine`). Security **4688** only if command-line auditing is on. **VERIFY** 4688 setup. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
+| SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** plus Sysmon **3** when a connection is logged. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). Sysmon 3 fields: **REQUIRES WINDOWS VALIDATION**. | 2 |
+| SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**. **VERIFY** against a lab event on WS01. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** for a global group such as Domain Admins. **4756** is universal. **VERIFY** which event DC01 emits. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-010 | Inbound RDP logon | T1021.001 | `windows_security` | Security **4624**, logon type **10**. **VERIFY** decoded field name (`win.eventdata.logonType` is a candidate). | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
+| SF-011 | SMB / admin-share remote logon | T1021.002 | `windows_security` | Security **4624**, logon type **3**. Share detail **5140** or **5145**. **VERIFY** which share event the audit policy produces. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
+| SF-012 | WinRM / PowerShell remoting | T1021.006 | `windows_security` | Security **4624** type **3**. WinRM Operational event IDs: **VERIFY**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). WinRM-specific ID is not assumed. | 4 |
 
 Story order inside the MVP: `SF-001` and `SF-002`, then `SF-003`, then `SF-004`–`SF-006`, then `SF-007`–`SF-009`, then `SF-010`–`SF-012`.
 
@@ -33,16 +33,16 @@ Story order inside the MVP: `SF-001` and `SF-002`, then `SF-003`, then `SF-004`�
 
 ## Stretch detections
 
-| ID | Name | MITRE | Telemetry | Event IDs or log | Tier | LOGTEST on Mac? |
-|---|---|---|---|---|---|---|
-| SF-013 | Linux SSH failure burst | T1110.001 | `linux_auth` | `sshd` failed-password lines in auth log or journal. **VERIFY** Ubuntu 24.04 path. | Stretch | Yes |
-| SF-014 | Linux SSH success after failures | T1078 | `linux_auth` | `sshd` accepted-password line. | Stretch | Yes |
-| SF-015 | Suspicious Linux command execution | T1059.004 | `auditd` | auditd `EXECVE` / `SYSCALL`. **VERIFY** key names. | Stretch | Yes |
-| SF-016 | LSASS memory access | T1003.001 | `sysmon` | Sysmon **10**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Yes, with a synthetic process-access line. |
-| SF-017 | Scheduled task created | T1053.005 | `windows_security` | Security **4698**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Yes |
-| SF-018 | Security log cleared | T1070.001 | `windows_security` | Security **1102**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Yes |
-| SF-019 | New service installed | T1543.003 | `windows_security` | System **7045**. **VERIFY** channel and Wazuh decoder. **REQUIRES WINDOWS VALIDATION**. | Stretch | Yes |
-| SF-020 | Suricata alert on lab traffic | T1071 | `suricata` | eve.json alert record. **VERIFY** schema for the Suricata version that gets installed. | Stretch | Yes, with a synthetic eve line. The sensor itself needs SURI01. |
+| ID | Name | MITRE | Telemetry | Event IDs or log | Tier | LOGTEST on Mac? | Step 10 batch |
+|---|---|---|---|---|---|---|---|
+| SF-013 | Linux SSH failure burst | T1110.001 | `linux_auth` | `sshd` failed-password lines in auth log or journal. **VERIFY** Ubuntu 24.04 path. | Stretch | Yes | 0 |
+| SF-014 | Linux SSH success after failures | T1078 | `linux_auth` | `sshd` accepted-password line. | Stretch | Yes | 0 |
+| SF-015 | Suspicious Linux command execution | T1059.004 | `auditd` | auditd `EXECVE` / `SYSCALL`. **VERIFY** key names. | Stretch | Yes | later |
+| SF-016 | LSASS memory access | T1003.001 | `sysmon` | Sysmon **10**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
+| SF-017 | Scheduled task created | T1053.005 | `windows_security` | Security **4698**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
+| SF-018 | Security log cleared | T1070.001 | `windows_security` | Security **1102**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
+| SF-019 | New service installed | T1543.003 | `windows_security` | System **7045**. **VERIFY** channel and Wazuh decoder. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
+| SF-020 | Suricata alert on lab traffic | T1071 | `suricata` | eve.json alert record. **VERIFY** schema for the Suricata version that gets installed. | Stretch | Yes, with a synthetic eve line. The sensor itself needs SURI01. | later |
 
 `SF-013`–`SF-015` need the Ubuntu guest, not the Windows host. `SF-016`–`SF-019` are **REQUIRES WINDOWS VALIDATION**. `SF-020` needs SURI01, which stays powered off until then.
 

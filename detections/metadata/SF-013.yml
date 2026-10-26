@@ -1,0 +1,31 @@
+id: SF-013
+name: Linux SSH failure burst
+description: Repeated sshd authentication failures from one source IP inside 120 seconds.
+severity: medium
+mitre:
+  - T1110.001
+telemetry:
+  - linux_auth
+wazuh_rule_ids:
+  - "100701"
+  - "100702"
+sigma_file: detections/sigma/SF-013.yml
+version: "1"
+status: LOGTEST VALID
+windows_validation_required: false
+logtest_mode: full
+parent_rules:
+  - "5710"
+  - "5760"
+required_telemetry: sshd lines in syslog. Logtest location /var/log/auth.log. The Ubuntu 24.04 agent path (auth.log vs journal) is still VERIFY.
+false_positives: A person mistypes a password six times from one host. Several people behind one NAT address look like one source.
+tuning_notes: frequency 6 and timeframe 120. Stock rules 5712 and 5763 use frequency 8. Raise the frequency if lab users regularly mistype this often.
+test_procedure: make logtest ID=SF-013. Six synthetic failures from 10.10.10.200 must fire. Five must not.
+expected_event: sshd Failed password or invalid user from one source IP, six times in 120 seconds.
+expected_alert: Description starts with SF-013. Rule 100701 or 100702, level 10.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+logtest_date: 2026-10-26
+logtest_result: logtest-20261026T134325Z.json
