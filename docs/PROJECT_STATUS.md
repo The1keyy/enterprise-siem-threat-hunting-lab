@@ -5,7 +5,7 @@
 
 ## Current step
 **Step 10 batch 3 Done.** SF-007, SF-008, and SF-009 are `SYNTAX VALID`. Analysisd loaded rules 100300, 100310, 100311, and 100320 from `sentinelforge_100300_accounts.xml`. Their logtest cases are `LIMITED`. SF-001 through SF-006 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
-**Next:** Step 10 batch 4 (SF-010, SF-011, SF-012) not started.
+**Next:** Step 10 batch 3.1 caps Vitest at 2 forks workers. Batch 4 is not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -26,7 +26,7 @@
 | 7B | Connect the frontend, plus Docker | Done |
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
-| 10 | MVP detections | Batch 0 done (SF-013, SF-014). Batch 1 done (SF-001, SF-002, SF-003, `SYNTAX VALID`). Batch 2 done (SF-004, SF-005, SF-006, `SYNTAX VALID`). Batch 2.1 removed content exclusions. Batch 3 done (SF-007, SF-008, SF-009, `SYNTAX VALID`). Batch 4 not started |
+| 10 | MVP detections | Batch 0 done (SF-013, SF-014). Batch 1 done (SF-001, SF-002, SF-003, `SYNTAX VALID`). Batch 2 done (SF-004, SF-005, SF-006, `SYNTAX VALID`). Batch 2.1 removed content exclusions. Batch 3 done (SF-007, SF-008, SF-009, `SYNTAX VALID`). Batch 3.1 caps Vitest `maxWorkers` at 2. Batch 4 not started |
 | 11 | Detection-as-code CI | Not started |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
