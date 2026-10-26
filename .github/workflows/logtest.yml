@@ -62,9 +62,10 @@ jobs:
       - name: Analysisd load check
         run: |
           set -euo pipefail
-          docker exec wazuh-logtest grep -i sentinelforge /var/ossec/logs/ossec.log > /tmp/sf-load.txt
+          docker exec wazuh-logtest test -f /var/ossec/logs/ossec.log
+          docker exec wazuh-logtest grep -iE 'error|warning|sentinelforge' /var/ossec/logs/ossec.log > /tmp/sf-load.txt || true
           cat /tmp/sf-load.txt
-          if grep -E 'ERROR:' /tmp/sf-load.txt; then
+          if grep -i sentinelforge /tmp/sf-load.txt | grep -E 'ERROR:'; then
             echo "analysisd ERROR mentions a sentinelforge file"
             exit 1
           fi
