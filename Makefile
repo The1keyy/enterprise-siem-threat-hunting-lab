@@ -21,7 +21,7 @@ lint:
 validate:
 	$(PYTHON) scripts/validation/validate_detections.py
 	$(PYTHON) scripts/validation/sigma_check.py
-	$(PYTHON) -m pytest tests/detections
+	$(PYTHON) -m pytest tests/detections tests/configs
 
 up:
 	docker compose up --build

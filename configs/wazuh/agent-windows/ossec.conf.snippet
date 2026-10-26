@@ -1,0 +1,72 @@
+<!-- REQUIRES WINDOWS VALIDATION
+     Run on: both (DC01 and WS01)
+     Status: SYNTAX VALID after the Mac XML parse. Not a lab result.
+     Merge this inside the agent ossec.conf. Do not leave the stock Security
+     block in place beside it. -->
+<ossec_config>
+  <client>
+    <server>
+      <!-- Replace the placeholder with 10.10.10.40 before the agent starts.
+           CDATA keeps the angle brackets and stays well-formed XML. -->
+      <address><![CDATA[<WAZUH_MANAGER_IP>]]></address>
+      <!-- VERIFY (4.14.9): port 1514 and tcp match src/win32/ossec.conf at tag v4.14.9. -->
+      <port>1514</port>
+      <protocol>tcp</protocol>
+    </server>
+  </client>
+
+  <!-- Matrix check, docs/TELEMETRY_MATRIX.md Security rows.
+       Kept: 4624 (SF-003, SF-010, SF-011), 4625 (SF-001, SF-002),
+       4720 (SF-009), 4728 and 4756 (SF-008), 4732 (SF-007),
+       5140 and 5145 (SF-011).
+       4688 is not an SF alert. The matrix command-line section still needs it
+       forwarded, because Step 12A turns on Process Creation command lines.
+       Stock src/win32/ossec.conf at tag v4.14.9 uses
+       Event/System[EventID != 5145 and EventID != 5156 and ...].
+       That drops 5145. This allow-list replaces that block.
+       5156, 5447, 4656, 4658, 4663, 4660, 4670, 4690, 4703, 4907, 5152, and
+       5157 stay out. They are not in the matrix.
+       only-future-events yes: the Security log is raised to 1 GB, and a first
+       start should not ship the backlog. VERIFY the agent honors this query. -->
+  <localfile>
+    <location>Security</location>
+    <log_format>eventchannel</log_format>
+    <only-future-events>yes</only-future-events>
+    <query>Event/System[EventID=4624 or EventID=4625 or EventID=4688 or EventID=4720 or EventID=4728 or EventID=4732 or EventID=4756 or EventID=5140 or EventID=5145]</query>
+  </localfile>
+
+  <!-- No matrix event ID. channels.md still requires the channel. An allow-list
+       would invent IDs, so there is no query. Delete the stock System block
+       when merging or the agent will collect it twice. -->
+  <localfile>
+    <location>System</location>
+    <log_format>eventchannel</log_format>
+    <only-future-events>yes</only-future-events>
+  </localfile>
+
+  <!-- Matrix IDs are Sysmon 1 and 3. No query: the pinned sysmon-modular config
+       also logs other event IDs, and a filter would drop them. The Sysmon
+       config is the noise control. -->
+  <localfile>
+    <location>Microsoft-Windows-Sysmon/Operational</location>
+    <log_format>eventchannel</log_format>
+    <only-future-events>yes</only-future-events>
+  </localfile>
+
+  <!-- SF-004 and SF-006 list 4104 only. 4103 from Module Logging with ModuleNames
+       * is not in the matrix and would flood WAZUH01, so it stays on the host. -->
+  <localfile>
+    <location>Microsoft-Windows-PowerShell/Operational</location>
+    <log_format>eventchannel</log_format>
+    <only-future-events>yes</only-future-events>
+    <query>Event/System[EventID=4104]</query>
+  </localfile>
+
+  <!-- SF-012 collects this channel. No event ID is invented, so there is no query.
+       Enable the channel first. See configs/windows/channels.md. -->
+  <localfile>
+    <location>Microsoft-Windows-WinRM/Operational</location>
+    <log_format>eventchannel</log_format>
+    <only-future-events>yes</only-future-events>
+  </localfile>
+</ossec_config>

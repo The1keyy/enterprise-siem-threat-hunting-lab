@@ -59,7 +59,7 @@ Logtest: six invalid-user failures then `Accepted password` from the same IP end
 
 ### Collection path
 
-Logtest used `log_format: syslog` and `location: /var/log/auth.log`. The decoder matched the line text. Which file or journal the Ubuntu 24.04 agent reads is not in this ruleset. That path stays **VERIFY** until UBU01 is checked.
+Logtest used `log_format: syslog` and `location: /var/log/auth.log`. The decoder matched the line text. The agent snippet reads that same file. 12C installs rsyslog so Ubuntu 24.04 writes it. The file is still **VERIFY** on UBU01 until that script has been run and the file is observed.
 
 ## SF-001, SF-002, and SF-003 — Windows 4625 / 4624
 

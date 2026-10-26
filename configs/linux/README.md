@@ -1,9 +1,8 @@
 # configs/linux/
 
-Linux telemetry config for UBU01:
-- auditd rules
-- auth/syslog notes
+> Run on: UBU01
+> Status: NOT TESTED. The audit rules have not been loaded.
 
-Target: Ubuntu Server 24.04 LTS.
+Audit rules live in `auditd/`. rsyslog, so `/var/log/auth.log` exists for SF-013 and SF-014, is installed by the Step 12C UBU01 script. This folder does not start that script.
 
-**Status:** Empty (Step 12).
+The agent reads the files from `configs/wazuh/agent-linux/`.

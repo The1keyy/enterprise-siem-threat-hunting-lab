@@ -1,0 +1,18 @@
+<!-- Run on: WAZUH01
+     Status: SYNTAX VALID after the Mac XML parse. Not applied on a manager.
+     Source: documentation.wazuh.com 4.14, User manual, Manager, Event logging,
+     section "Enabling archiving". That page sets logall and logall_json.
+     This snippet sets logall_json only. logall writes a second plaintext
+     archives.log and is left off to save disk on the 100 GB VM.
+     VERIFY (4.14.9) the element still lives inside global on the installed file. -->
+<ossec_config>
+  <global>
+    <logall_json>yes</logall_json>
+  </global>
+  <!-- Custom rules are copied to /var/ossec/etc/rules/ by scripts/bash/deploy_rules.sh.
+       There are no custom decoders. A stock 4.x manager ossec.conf loads that
+       directory with rule_dir etc/rules and decoder_dir etc/decoders.
+       VERIFY (4.14.9) those two lines exist before adding them again. A second
+       copy can load the same file twice. Do not add a ruleset block here until
+       that check fails. -->
+</ossec_config>

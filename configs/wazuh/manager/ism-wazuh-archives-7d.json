@@ -1,0 +1,35 @@
+{
+  "policy": {
+    "description": "SentinelForge planning policy. Delete wazuh-archives indices 7 days after creation. Not applied on a cluster. VERIFY the _plugins/_ism API on the 4.14.9 indexer.",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "7d"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": ["wazuh-archives-*"],
+        "priority": 100
+      }
+    ]
+  }
+}

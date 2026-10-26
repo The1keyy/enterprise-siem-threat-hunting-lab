@@ -10,4 +10,10 @@ Step-by-step procedures for building and operating the lab:
 
 Each step ends with a verification check.
 
-**Status:** Empty (Steps 8, 15–17).
+| Runbook | Status |
+|---|---|
+| `wazuh-readonly-users.md` | Written in Step 8. REQUIRES LAB VALIDATION |
+| `wazuh-archives.md` | Written in Step 8. The 12B procedure is `03-wazuh-config.md` |
+| `03-wazuh-config.md` | NOT TESTED. Manager snippet, archives, ISM, rule deploy, read-only users |
+
+VM build and AD setup are later steps.

@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 12B writes the Wazuh agent `localfile` entries from `docs/TELEMETRY_MATRIX.md`. 12B is not started. Step 12A configs are SYNTAX VALID on the Mac only. Nothing is installed on a Windows host.
+**Next:** Step 12C writes the lab setup scripts. 12C is not started. Step 12B snippets are SYNTAX VALID on the Mac only. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -29,7 +29,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
-| 12 | Lab configs + scripts | 12A written. Audit policy, PowerShell logging, and Sysmon configs are SYNTAX VALID. 12B and 12C are not started |
+| 12 | Lab configs + scripts | 12A and 12B written. Agent, manager, archives, and rule-deploy files are SYNTAX VALID on the Mac, except auditd rules which are NOT TESTED. 12C is not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |
@@ -46,7 +46,7 @@ Real counts only. Update these as work actually happens.
 | Saved hunts | 0 |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. |
+| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. The 12B Actions run is not in this table until that push finishes. |
 
 | ID | Status | Evidence |
 |---|---|---|
@@ -68,7 +68,7 @@ Real counts only. Update these as work actually happens.
 
 ## Step 12 needs
 
-Step 12A writes the Windows side of this list. The matrix is `docs/TELEMETRY_MATRIX.md`. Nothing here is installed on a Windows host. 12B (agent `localfile`) and 12C (Linux) are not started. Process Creation is in the audit script only so Security 4688 can include a command line. Special Logon, Other Object Access Events, and Security System Extension are not in the matrix and are not set. `schtasks.exe` and `sc.exe` are in the Sysmon include and no current rule alerts on them. The System channel is in `configs/windows/channels.md` for 12B and no current rule reads it.
+Step 12A writes the Windows logging side. Step 12B writes the agent and manager snippets from `docs/TELEMETRY_MATRIX.md` and `configs/windows/channels.md`. Nothing is installed. 12C is not started. Process Creation is in the audit script only so Security 4688 can include a command line, and the Windows agent query forwards 4688. Special Logon, Other Object Access Events, and Security System Extension are not in the matrix and are not set. `schtasks.exe` and `sc.exe` are in the Sysmon include and no current rule alerts on them. The System channel is collected with no XPath because no event ID is listed. The stock 4.14.9 Security query excludes 5145; the snippet's allow-list keeps it.
 
 Windows channels:
 
@@ -130,7 +130,8 @@ Not Windows:
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
 - Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 11.1 compares each `sentinelforge_*.xml` rule count with `GET /rules?filename=`.
-- Step 12A adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `pytest tests/configs` passed (4). `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION. 12B is not started.
+- Step 12A adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION.
+- Step 12B adds `configs/wazuh/` snippets, `configs/linux/auditd/sentinelforge.rules` (NOT TESTED, no auditctl on the Mac), `scripts/bash/deploy_rules.sh` (shellcheck clean, not run), and `docs/runbooks/03-wazuh-config.md`. `pytest tests/configs` passed (12). Ubuntu 24.04 auth logs stay on `/var/log/auth.log` via rsyslog in 12C, not journald. That file is still not observed on UBU01. `logall_json`, the Filebeat archives key, the ISM API, `rule_dir etc/rules`, the `wazuh` owner, and the API CA path stay **VERIFY** on WAZUH01. 12C is not started.
 
 ## VERIFY in Step 17 (Wazuh 4.14.9)
 
@@ -156,7 +157,7 @@ These are coded as the expected 4.14 shape and are not confirmed on a running ma
 - `rule.mitre.id` and `rule.mitre.tactic`
 - `GET /_cluster/health` and `GET /_nodes/stats/fs` (`total_in_bytes`, `available_in_bytes`)
 - Built-in rule levels top out at 15 (ADR 0004)
-- `logall_json` and the Filebeat archives module path, plus archives retention
+- `logall_json` is in `configs/wazuh/manager/ossec.conf.snippet` from the 4.14 event-logging page. Confirm the element on the installed manager. Filebeat `archives.enabled` and `PUT _plugins/_ism/policies/` are **VERIFY** on that host. The 7-day and 30-day JSON files are planning policies, not applied.
 - Indexer read-only role limited to the two index patterns
 - Path of `root-ca.pem` on the all-in-one
 - The Wazuh dashboard is not queried; its health status stays null until a later check

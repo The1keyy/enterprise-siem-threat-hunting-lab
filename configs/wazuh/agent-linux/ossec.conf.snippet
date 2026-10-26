@@ -1,0 +1,35 @@
+<!-- Run on: UBU01
+     Status: SYNTAX VALID after the Mac XML parse. Not observed on UBU01.
+     SF-013 and SF-014 logtest cases are syslog lines from /var/log/auth.log.
+     Ubuntu 24.04 often keeps those lines in the journal instead. 12C installs
+     rsyslog and checks that auth.log is being written, so this agent reads the
+     same file the cases used. journald is the rejected alternative. See the
+     agent-linux README. -->
+<ossec_config>
+  <client>
+    <server>
+      <address><![CDATA[<WAZUH_MANAGER_IP>]]></address>
+      <!-- VERIFY (4.14.9): port 1514 and tcp, same as the Windows agent template. -->
+      <port>1514</port>
+      <protocol>tcp</protocol>
+    </server>
+  </client>
+
+  <!-- SF-013 and SF-014. log_format syslog matches the logtest cases. -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+
+  <!-- Not an SF row. 12B collects it so a host syslog line is available next to auth.log. -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+
+  <!-- auditd format chains records that share an audit ID. Rules: configs/linux/auditd/sentinelforge.rules. -->
+  <localfile>
+    <log_format>audit</log_format>
+    <location>/var/log/audit/audit.log</location>
+  </localfile>
+</ossec_config>

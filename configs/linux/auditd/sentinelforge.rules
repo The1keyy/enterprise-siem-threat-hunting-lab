@@ -1,0 +1,25 @@
+# Run on: UBU01
+# Status: NOT TESTED. The Mac has no auditctl, so this is not SYNTAX VALID.
+# Load path VERIFY: /etc/audit/rules.d/sentinelforge.rules then augenrules --load.
+# Do not set enabled=2. That locks the rules until reboot.
+# A watch on a missing directory fails the load. VERIFY /etc/ssh/sshd_config.d exists.
+# execve for auid>=1000 is the noisy rule. It skips unset auid (4294967295), which
+# drops most service activity. It still records interactive and sudo commands.
+
+# execve by a logged-in user. Both architectures. Key sentinelforge_execve.
+-a always,exit -F arch=b64 -S execve -F auid>=1000 -F auid!=4294967295 -k sentinelforge_execve
+-a always,exit -F arch=b32 -S execve -F auid>=1000 -F auid!=4294967295 -k sentinelforge_execve
+
+# sudoers writes and attribute changes. Not reads.
+-w /etc/sudoers -p wa -k sentinelforge_sudoers
+-w /etc/sudoers.d/ -p wa -k sentinelforge_sudoers
+
+# Identity file writes. Not reads, so shadow reads do not flood the disk.
+-w /etc/passwd -p wa -k sentinelforge_identity
+-w /etc/group -p wa -k sentinelforge_identity
+-w /etc/shadow -p wa -k sentinelforge_identity
+-w /etc/gshadow -p wa -k sentinelforge_identity
+
+# SSH server config writes.
+-w /etc/ssh/sshd_config -p wa -k sentinelforge_ssh
+-w /etc/ssh/sshd_config.d/ -p wa -k sentinelforge_ssh

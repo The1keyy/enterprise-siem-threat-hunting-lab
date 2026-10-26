@@ -2,7 +2,7 @@
 
 > REQUIRES WINDOWS VALIDATION
 > Run on: both
-> Status: SYNTAX VALID as documentation. The agent config is Step 12B, which is not started.
+> Status: SYNTAX VALID as documentation. The agent entries are `configs/wazuh/agent-windows/ossec.conf.snippet`.
 
 `docs/TELEMETRY_MATRIX.md` is the source. 12B collects exactly these channels.
 
