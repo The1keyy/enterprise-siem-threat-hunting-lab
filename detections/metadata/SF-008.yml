@@ -1,0 +1,63 @@
+id: SF-008
+name: User added to a privileged domain group
+description: >
+  Security 4728 or 4756 adding a member to Domain Admins (RID 512),
+  Enterprise Admins (RID 519), Schema Admins (RID 518), or Domain
+  Controllers (RID 516). The match is targetSid. The group name is not
+  the match.
+severity: critical
+mitre:
+  - T1098
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100310"
+  - "100311"
+sigma_file: detections/sigma/SF-008.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60141"
+  - "60151"
+required_telemetry: >
+  Audit Security Group Management, Success, on DC01. Global groups such
+  as Domain Admins write 4728. Universal groups such as Enterprise Admins
+  write 4756. VERIFY which of those two DC01 emits for each group. The
+  rule accepts both.
+false_positives: >
+  A domain administrator adds a lab account to Domain Admins or Enterprise
+  Admins during a test. Schema Admins and Domain Controllers adds are the
+  same detection at level 13.
+tuning_notes: >
+  Rule 100310 is level 15, critical (ADR 0004). Stock 60159 (RID 512) and
+  60167 (RID 519) are level 12, cover add and remove, and use MITRE T1484.
+  Adding a member to Domain Admins or Enterprise Admins is domain or forest
+  admin, so this rule is critical and one step above those stock rules.
+  Rule 100311 is level 13, high, for Schema Admins (518) and Domain
+  Controllers (516). Stock scores those adds and removals at 12. The
+  library severity is critical because 100310 is the Domain Admins and
+  Enterprise Admins behavior. There is no name exclusion.
+test_procedure: >
+  make logtest ID=SF-008 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-008.md. Not run.
+expected_event: >
+  Security 4728 or 4756 on DC01 whose targetSid ends in -512 or -519, or
+  the level-13 pair -518 or -516.
+expected_alert: >
+  Description starts with SF-008. Rule 100310 level 15 or rule 100311
+  level 13. MITRE T1098.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 17:50:52 wazuh-analysisd: INFO: Total rules enabled: '8471'
+  2026/10/26 17:50:52 wazuh-analysisd: INFO: Started (pid: 667).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100300_accounts.xml.
+  GET /rules?filename=sentinelforge_100300_accounts.xml returned 100310 level 15
+  and 100311 level 13, both enabled.

@@ -1,6 +1,6 @@
 # Roadmap
 
-SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-006 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
+SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-009 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). The other rows are not written yet. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
@@ -20,9 +20,9 @@ Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" m
 | SF-004 | Suspicious PowerShell script block | T1059.001 | `powershell` | PowerShell Operational **4104**. Parent 91802. Logging must be enabled first. Cradle strings are SF-006. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
 | SF-005 | Encoded PowerShell process | T1059.001 | `sysmon` | Sysmon **1** `commandLine` for powershell.exe or pwsh.exe. Rule 67027 matches **4688** and does not read commandLine, so this rule does not use 4688. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
 | SF-006 | PowerShell download cradle | T1105 | `powershell`, `sysmon` | **4104** cradle text, plus Sysmon **3** `destinationIp` when PowerShell connects. The two rules do not wait for each other. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 2 |
-| SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**. **VERIFY** against a lab event on WS01. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
-| SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** for a global group such as Domain Admins. **4756** is universal. **VERIFY** which event DC01 emits. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
-| SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-007 | User added to local Administrators | T1098 | `windows_security` | Security **4732**, `targetSid` `S-1-5-32-544`. Parent 60144. A removal is stock 60154. **VERIFY** against a lab event on WS01. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-008 | User added to a privileged domain group | T1098 | `windows_security` | Security **4728** or **4756**, RID 512, 519, 518, or 516 on `targetSid`. Parents 60141 and 60151. **VERIFY** which event DC01 emits. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
+| SF-009 | New local or domain user | T1136.001 | `windows_security` | Security **4720** only. Parent 60109 also matches 4722, which this rule does not use. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 3 |
 | SF-010 | Inbound RDP logon | T1021.001 | `windows_security` | Security **4624**, logon type **10**. **VERIFY** decoded field name (`win.eventdata.logonType` is a candidate). | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
 | SF-011 | SMB / admin-share remote logon | T1021.002 | `windows_security` | Security **4624**, logon type **3**. Share detail **5140** or **5145**. **VERIFY** which share event the audit policy produces. | MVP | Limited (eventchannel can't be replayed, see Step 9.1) | 4 |
 | SF-012 | WinRM / PowerShell remoting | T1021.006 | `windows_security` | Security **4624** type **3**. WinRM Operational event IDs: **VERIFY**. | MVP | Limited (eventchannel can't be replayed, see Step 9.1). WinRM-specific ID is not assumed. | 4 |

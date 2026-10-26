@@ -216,7 +216,7 @@
     {
       "id": "SF-007",
       "name": "User added to local Administrators",
-      "description": "Security 4732. VERIFY against a lab event on WS01.",
+      "description": "Security 4732 adding a member to the local Administrators group, matched by SID S-1-5-32-544. A removal is not this rule. The group name is not the match.\n",
       "severity": "high",
       "mitre": [
         {
@@ -228,28 +228,30 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100300"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4732",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-007. Not written yet.",
+      "falsePositives": "An administrator adds a lab account to local Administrators on WS01.",
+      "tuningNotes": "Level 13 is high (ADR 0004). Stock 60154 is level 12, targetSid S-1-5-32-544, if_sid 60144 and 60145, so it also matches a removal, and its MITRE id is T1484. This rule is 4732 only and T1098. Level 13 is above 60154 so an add is labeled SF-007. There is no exclusion. A group display name is not used.\n",
+      "testProcedure": "make logtest ID=SF-007 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-007.md. Not run.\n",
+      "expectedEvent": "Security 4732 on WS01 with targetSid S-1-5-32-544.",
+      "expectedAlert": "Description starts with SF-007. Rule 100300, level 13. MITRE T1098.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100300\" level=\"13\">\n    <if_sid>60144</if_sid>\n    <field name=\"win.system.eventID\">^4732$</field>\n    <field name=\"win.eventdata.targetSid\">^S-1-5-32-544$</field>\n    <description>SF-007: member added to local Administrators</description>\n    <mitre>\n      <id>T1098</id>\n    </mitre>\n    <group>sentinelforge,accounts,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-007 member added to local Administrators\nid: e67f775f-368d-4e30-b0c1-19711fb581ac\nstatus: experimental\ndescription: >\n  Security 4732 whose TargetSid is the built-in Administrators group\n  S-1-5-32-544. The group name is not the match. Wazuh rule 100300 is\n  the alert. A removal (4733) is not this rule.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4732\n    TargetSid: 'S-1-5-32-544'\n  condition: selection\nlevel: high\ntags:\n  - attack.persistence\n  - attack.t1098\nfalsepositives:\n  - An administrator adds a lab account to the local Administrators group on WS01.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-008",
       "name": "User added to a privileged domain group",
-      "description": "Security 4728 for a global group such as Domain Admins. 4756 is universal. VERIFY which event DC01 emits.",
+      "description": "Security 4728 or 4756 adding a member to Domain Admins (RID 512), Enterprise Admins (RID 519), Schema Admins (RID 518), or Domain Controllers (RID 516). The match is targetSid. The group name is not the match.\n",
       "severity": "critical",
       "mitre": [
         {
@@ -261,29 +263,32 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100310",
+        "100311"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4728",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-008. Not written yet.",
+      "falsePositives": "A domain administrator adds a lab account to Domain Admins or Enterprise Admins during a test. Schema Admins and Domain Controllers adds are the same detection at level 13.\n",
+      "tuningNotes": "Rule 100310 is level 15, critical (ADR 0004). Stock 60159 (RID 512) and 60167 (RID 519) are level 12, cover add and remove, and use MITRE T1484. Adding a member to Domain Admins or Enterprise Admins is domain or forest admin, so this rule is critical and one step above those stock rules. Rule 100311 is level 13, high, for Schema Admins (518) and Domain Controllers (516). Stock scores those adds and removals at 12. The library severity is critical because 100310 is the Domain Admins and Enterprise Admins behavior. There is no name exclusion.\n",
+      "testProcedure": "make logtest ID=SF-008 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-008.md. Not run.\n",
+      "expectedEvent": "Security 4728 or 4756 on DC01 whose targetSid ends in -512 or -519, or the level-13 pair -518 or -516.\n",
+      "expectedAlert": "Description starts with SF-008. Rule 100310 level 15 or rule 100311 level 13. MITRE T1098.\n",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100310\" level=\"15\">\n    <if_sid>60141,60151</if_sid>\n    <field name=\"win.system.eventID\">^4728$|^4756$</field>\n    <field name=\"win.eventdata.targetSid\">^S-1-5-\\S+-512$|^S-1-5-\\S+-519$</field>\n    <description>SF-008: member added to Domain Admins or Enterprise Admins</description>\n    <mitre>\n      <id>T1098</id>\n    </mitre>\n    <group>sentinelforge,accounts,</group>\n  </rule>\n\n<rule id=\"100311\" level=\"13\">\n    <if_sid>60141,60151</if_sid>\n    <field name=\"win.system.eventID\">^4728$|^4756$</field>\n    <field name=\"win.eventdata.targetSid\">^S-1-5-\\S+-518$|^S-1-5-\\S+-516$</field>\n    <description>SF-008: member added to another privileged domain group</description>\n    <mitre>\n      <id>T1098</id>\n    </mitre>\n    <group>sentinelforge,accounts,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-008 member added to a privileged domain group\nid: b582b54d-316c-4683-94d8-95ad185c34b5\nstatus: experimental\ndescription: >\n  Security 4728 or 4756. The group is matched by TargetSid RID, not by\n  name. RID 512 and 519 are Wazuh rule 100310, level 15. RID 518 and 516\n  are Wazuh rule 100311, level 13. A removal is not this rule.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection_event:\n    EventID:\n      - 4728\n      - 4756\n  selection_sid:\n    TargetSid|endswith:\n      - '-512'\n      - '-519'\n      - '-518'\n      - '-516'\n  condition: selection_event and selection_sid\nlevel: critical\ntags:\n  - attack.persistence\n  - attack.t1098\nfalsepositives:\n  - A domain admin adds a lab account to Domain Admins during a test.\n  - Sigma marks RID 518 and 516 critical. Wazuh scores those two at level 13, which is high.\n",
       "tuningHistory": [],
       "demo": true
     },
     {
       "id": "SF-009",
       "name": "New local or domain user",
-      "description": "Security 4720.",
-      "severity": "low",
+      "description": "Security 4720, a user account was created. Enabling an account (4722) and creating a computer account (4741) are not this rule. It stays medium on its own. A later add to a privileged group is SF-007 or SF-008. Joining them is Step 14.\n",
+      "severity": "medium",
       "mitre": [
         {
           "id": "T1136.001",
@@ -294,21 +299,23 @@
       "telemetry": [
         "windows_security"
       ],
-      "wazuhRuleIds": [],
-      "version": "0.1.0",
+      "wazuhRuleIds": [
+        "100320"
+      ],
+      "version": "1",
       "enabled": true,
-      "status": "NOT TESTED",
+      "status": "SYNTAX VALID",
       "windowsValidationRequired": true,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Security 4720",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-009. Not written yet.",
+      "falsePositives": "An administrator creates sf-test-user, or a local user on WS01.",
+      "tuningNotes": "Level 10 is medium (ADR 0004). Stock 60109 is level 8 and matches 4720 and 4722 with MITRE T1098. This rule is 4720 only and T1136.001. Level 10 stays medium and is above 60109 so a create is labeled SF-009. It is below SF-007 and SF-008. There is no account-name exclusion. Correlation with those group rules is Step 14.\n",
+      "testProcedure": "make logtest ID=SF-009 reports LIMITED and does not call logtest. Analysisd loaded the XML with no rule error. Lab procedure is in docs/detections/SF-009.md. Not run.\n",
+      "expectedEvent": "Security 4720 for sf-test-user on DC01 or WS01.",
+      "expectedAlert": "Description starts with SF-009. Rule 100320, level 10. MITRE T1136.001.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "<rule id=\"100320\" level=\"10\">\n    <if_sid>60109</if_sid>\n    <field name=\"win.system.eventID\">^4720$</field>\n    <description>SF-009: new user account created</description>\n    <mitre>\n      <id>T1136.001</id>\n    </mitre>\n    <group>sentinelforge,accounts,</group>\n  </rule>",
+      "sigmaYaml": "title: SF-009 new user account created\nid: 2a8774d6-b2cb-4ea1-a107-38f150066458\nstatus: experimental\ndescription: >\n  Security 4720. Account enabled (4722) and computer account created\n  (4741) are not this rule. A following add to a privileged group is\n  SF-007 or SF-008. Joining those is Step 14, not this selection.\nlogsource:\n  product: windows\n  service: security\ndetection:\n  selection:\n    EventID: 4720\n  condition: selection\nlevel: medium\ntags:\n  - attack.persistence\n  - attack.t1136.001\nfalsepositives:\n  - An administrator creates sf-test-user on DC01 or a local user on WS01.\n",
       "tuningHistory": [],
       "demo": true
     },

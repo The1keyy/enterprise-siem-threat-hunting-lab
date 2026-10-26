@@ -1,0 +1,65 @@
+<!--
+  REQUIRES WINDOWS VALIDATION
+  Eventchannel JSON cannot be replayed in this logtest harness. Status stops
+  at SYNTAX VALID after analysisd loads this file. Not LAB VALIDATED.
+
+  Chain, wazuh/wazuh-manager:4.14.9, file 0580-win-security_rules.xml:
+    60000 -> 60001 channel Security -> 60103 AUDIT_SUCCESS
+    60109 level 8, event 4720 or 4722, MITRE T1098
+    60113 level 5, group-account changed, including 4728, 4732, and 4756
+    60144 level 5, if_sid 60113, event 636 or 4732, local member added
+    60141 level 5, if_sid 60113, event 632 or 4728, global member added
+    60151 level 5, if_sid 60113, event 660 or 4756, universal member added
+  SID children use win.eventdata.targetSid with no type attribute. These
+  rules copy that. They do not match targetUserName or memberName.
+  A display name is not the group.
+
+  Exclusions: none. The SID is the detection. A name or a pasted marker
+  is attacker-controlled and is not an exclusion.
+-->
+<group name="windows,">
+
+  <rule id="100300" level="13">
+    <if_sid>60144</if_sid>
+    <field name="win.system.eventID">^4732$</field>
+    <field name="win.eventdata.targetSid">^S-1-5-32-544$</field>
+    <description>SF-007: member added to local Administrators</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>sentinelforge,accounts,</group>
+  </rule>
+
+  <rule id="100310" level="15">
+    <if_sid>60141,60151</if_sid>
+    <field name="win.system.eventID">^4728$|^4756$</field>
+    <field name="win.eventdata.targetSid">^S-1-5-\S+-512$|^S-1-5-\S+-519$</field>
+    <description>SF-008: member added to Domain Admins or Enterprise Admins</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>sentinelforge,accounts,</group>
+  </rule>
+
+  <rule id="100311" level="13">
+    <if_sid>60141,60151</if_sid>
+    <field name="win.system.eventID">^4728$|^4756$</field>
+    <field name="win.eventdata.targetSid">^S-1-5-\S+-518$|^S-1-5-\S+-516$</field>
+    <description>SF-008: member added to another privileged domain group</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>sentinelforge,accounts,</group>
+  </rule>
+
+  <rule id="100320" level="10">
+    <if_sid>60109</if_sid>
+    <field name="win.system.eventID">^4720$</field>
+    <description>SF-009: new user account created</description>
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+    <group>sentinelforge,accounts,</group>
+  </rule>
+
+</group>

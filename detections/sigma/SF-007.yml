@@ -1,0 +1,21 @@
+title: SF-007 member added to local Administrators
+id: e67f775f-368d-4e30-b0c1-19711fb581ac
+status: experimental
+description: >
+  Security 4732 whose TargetSid is the built-in Administrators group
+  S-1-5-32-544. The group name is not the match. Wazuh rule 100300 is
+  the alert. A removal (4733) is not this rule.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4732
+    TargetSid: 'S-1-5-32-544'
+  condition: selection
+level: high
+tags:
+  - attack.persistence
+  - attack.t1098
+falsepositives:
+  - An administrator adds a lab account to the local Administrators group on WS01.

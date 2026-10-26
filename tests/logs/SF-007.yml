@@ -1,0 +1,55 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The SIDs are labels. Nothing here changes a group.
+comment: SYNTHETIC TEST INPUT
+id: SF-007
+description: >
+  A 4732 whose targetSid is S-1-5-32-544 is the intended SF-007 case.
+  The same event for the Users group is not. A 4733 removal is not.
+  A display name of Administrators with a different SID is not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4732","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled local group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Administrators","targetSid":"S-1-5-32-544","targetDomainName":"WS01","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: true
+      rule_id: 100300
+      level: 13
+      mitre:
+        - T1098
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4732","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled local group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Users","targetSid":"S-1-5-32-545","targetDomainName":"WS01","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100300
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4733","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was removed from a security-enabled local group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Administrators","targetSid":"S-1-5-32-544","targetDomainName":"WS01","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100300
+  - name: negative_name_spoof
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4732","channel":"Security","computer":"WS01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled local group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Administrators","targetSid":"S-1-5-32-545","targetDomainName":"WS01","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100300

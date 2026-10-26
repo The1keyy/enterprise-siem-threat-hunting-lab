@@ -1,0 +1,83 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The SIDs are labels. Nothing here changes a domain group.
+comment: SYNTHETIC TEST INPUT
+id: SF-008
+description: >
+  A 4728 whose targetSid ends in -512 is Domain Admins and is rule 100310.
+  A 4756 ending in -519 is Enterprise Admins and is the same rule. A 4756
+  ending in -518 is Schema Admins and is rule 100311. Domain Users (-513)
+  is not. A removal is not. A display name of Domain Admins with RID 513
+  is not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4728","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled global group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Domain Admins","targetSid":"S-1-5-21-1001-1002-1003-512","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: true
+      rule_id: 100310
+      level: 15
+      mitre:
+        - T1098
+  - name: positive_enterprise_admins
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4756","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled universal group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Enterprise Admins","targetSid":"S-1-5-21-1001-1002-1003-519","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: true
+      rule_id: 100310
+      level: 15
+      mitre:
+        - T1098
+  - name: positive_schema_admins
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4756","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled universal group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Schema Admins","targetSid":"S-1-5-21-1001-1002-1003-518","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: true
+      rule_id: 100311
+      level: 13
+      mitre:
+        - T1098
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4728","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled global group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Domain Users","targetSid":"S-1-5-21-1001-1002-1003-513","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100310
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4729","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was removed from a security-enabled global group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Domain Admins","targetSid":"S-1-5-21-1001-1002-1003-512","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100310
+  - name: negative_name_spoof
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4728","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A member was added to a security-enabled global group. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"Domain Admins","targetSid":"S-1-5-21-1001-1002-1003-513","targetDomainName":"sentinelforge.lab","memberName":"sf-test-user","memberSid":"S-1-5-21-1001-1002-1003-1105","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100310

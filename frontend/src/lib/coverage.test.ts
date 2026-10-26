@@ -29,7 +29,10 @@ describe('ATT&CK coverage', () => {
         detection.id === 'SF-003' ||
         detection.id === 'SF-004' ||
         detection.id === 'SF-005' ||
-        detection.id === 'SF-006'
+        detection.id === 'SF-006' ||
+        detection.id === 'SF-007' ||
+        detection.id === 'SF-008' ||
+        detection.id === 'SF-009'
       ) {
         expect(detection.status).toBe('SYNTAX VALID')
       } else {

@@ -1,0 +1,29 @@
+title: SF-008 member added to a privileged domain group
+id: b582b54d-316c-4683-94d8-95ad185c34b5
+status: experimental
+description: >
+  Security 4728 or 4756. The group is matched by TargetSid RID, not by
+  name. RID 512 and 519 are Wazuh rule 100310, level 15. RID 518 and 516
+  are Wazuh rule 100311, level 13. A removal is not this rule.
+logsource:
+  product: windows
+  service: security
+detection:
+  selection_event:
+    EventID:
+      - 4728
+      - 4756
+  selection_sid:
+    TargetSid|endswith:
+      - '-512'
+      - '-519'
+      - '-518'
+      - '-516'
+  condition: selection_event and selection_sid
+level: critical
+tags:
+  - attack.persistence
+  - attack.t1098
+falsepositives:
+  - A domain admin adds a lab account to Domain Admins during a test.
+  - Sigma marks RID 518 and 516 critical. Wazuh scores those two at level 13, which is high.

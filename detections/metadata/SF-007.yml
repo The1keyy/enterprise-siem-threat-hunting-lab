@@ -1,0 +1,49 @@
+id: SF-007
+name: User added to local Administrators
+description: >
+  Security 4732 adding a member to the local Administrators group,
+  matched by SID S-1-5-32-544. A removal is not this rule. The group
+  name is not the match.
+severity: high
+mitre:
+  - T1098
+telemetry:
+  - windows_security
+wazuh_rule_ids:
+  - "100300"
+sigma_file: detections/sigma/SF-007.yml
+version: "1"
+status: SYNTAX VALID
+windows_validation_required: true
+logtest_mode: limited
+parent_rules:
+  - "60144"
+required_telemetry: >
+  Audit Security Group Management, Success, on WS01. That policy writes
+  4732. The same event on DC01 is the domain built-in Administrators group
+  and also matches. The planned local simulation is WS01.
+false_positives: An administrator adds a lab account to local Administrators on WS01.
+tuning_notes: >
+  Level 13 is high (ADR 0004). Stock 60154 is level 12, targetSid
+  S-1-5-32-544, if_sid 60144 and 60145, so it also matches a removal, and
+  its MITRE id is T1484. This rule is 4732 only and T1098. Level 13 is
+  above 60154 so an add is labeled SF-007. There is no exclusion. A group
+  display name is not used.
+test_procedure: >
+  make logtest ID=SF-007 reports LIMITED and does not call logtest.
+  Analysisd loaded the XML with no rule error. Lab procedure is in
+  docs/detections/SF-007.md. Not run.
+expected_event: Security 4732 on WS01 with targetSid S-1-5-32-544.
+expected_alert: Description starts with SF-007. Rule 100300, level 13. MITRE T1098.
+observed_result: "NOT YET VALIDATED"
+lab_validation:
+  simulation: planned Step 13
+  evidence: null
+syntax_valid_date: 2026-10-26
+syntax_load_log: |
+  2026/10/26 17:50:52 wazuh-analysisd: INFO: Total rules enabled: '8471'
+  2026/10/26 17:50:52 wazuh-analysisd: INFO: Started (pid: 667).
+  No wazuh-analysisd ERROR or WARNING. The only warnings were indexer-connector
+  lines (no indexer). No ossec.log line names sentinelforge_100300_accounts.xml.
+  GET /rules?filename=sentinelforge_100300_accounts.xml returned 100300 level 13
+  enabled.

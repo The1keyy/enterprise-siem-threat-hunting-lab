@@ -180,3 +180,41 @@ docker exec wazuh-logtest grep -n "parentImage" /var/ossec/ruleset/rules/0810-sy
 
 100210 negates `image` and `parentImage` only when the whole value is the Wazuh agent executable. The 4.14.9 Windows agent page says the default directory is `C:\Program Files (x86)\ossec-agent` (MSI `wazuh-agent-4.14.9-1.msi`). VERIFY: `wazuh-agent.exe` is the image in 4.14.1 and 4.14.3 crash reports at that path, not a checked 4.14.9 install on WS01. Rule 92019 writes Windows separators as four backslashes. This exclusion accepts one or two. A custom install directory is not excluded. 100221 uses the same image anchor. `0810-sysmon_id_3.xml` has no `parentImage`, so 100221 does not negate that field.
 
+## SF-007, SF-008, and SF-009 — accounts and groups
+
+Evidence commands:
+
+```bash
+docker exec wazuh-logtest sed -n '100,170p' /var/ossec/ruleset/rules/0580-win-security_rules.xml
+docker exec wazuh-logtest sed -n '450,780p' /var/ossec/ruleset/rules/0580-win-security_rules.xml
+```
+
+### Chain
+
+| Rule | Level | What it matches |
+|---|---|---|
+| 60001 | 0 | `if_sid` 60000, channel Security. File `0575-win-base_rules.xml` |
+| 60103 | 0 | `if_sid` 60001, severity `AUDIT_SUCCESS` or `success` |
+| 60109 | 8 | `if_sid` 60103, event 624, 626, 4720, or 4722. MITRE `T1098`. Group `adduser` |
+| 60113 | 5 | `if_sid` 60103, group-account changed, including 4728, 4732, and 4756. MITRE `T1484` |
+| 60141 | 5 | `if_sid` 60113, event 632 or 4728. Description interpolates `memberSid` |
+| 60144 | 5 | `if_sid` 60113, event 636 or 4732. Description interpolates `memberSid` |
+| 60151 | 5 | `if_sid` 60113, event 660 or 4756 |
+| 60154 | 12 | `if_sid` 60144 or 60145, `targetSid` `^S-1-5-32-544$`. Add and remove. MITRE `T1484` |
+| 60159 | 12 | `if_sid` 60141 or 60142, `targetSid` `^S-1-5-\S+-512$`. MITRE `T1484` |
+| 60164 | 12 | `if_sid` 60141 or 60142, `targetSid` `^S-1-5-\S+-516$` |
+| 60166 | 12 | `if_sid` 60149, 60150, 60151, or 60152, `targetSid` `^S-1-5-\S+-518$` |
+| 60167 | 12 | same parents as 60166, `targetSid` `^S-1-5-\S+-519$` |
+
+`targetSid` checks in this file have no `type` attribute. `memberSid` and `memberName` appear in descriptions, not as `<field>` checks. `subjectUserName` is a `<field>` check later in the same file (line 1052: `LOCAL SERVICE`, `NETWORK SERVICE`, `ANONYMOUS LOGON`). `targetUserName` is used by the 4625 rules, not by these group rules. `targetDomainName` is not a `<field>` check in this file.
+
+### How ours differ
+
+- SF-007 (100300) is 60144 plus eventID `^4732$` and `targetSid` `^S-1-5-32-544$`, level 13, MITRE `T1098`. 60154 also matches a 4733 removal and uses `T1484`.
+- SF-008 (100310) is 60141 or 60151, event 4728 or 4756, RID 512 or 519, level 15, MITRE `T1098`. Level 15 is critical because those two groups are domain or forest admin, one step above stock level 12. 100311 is the same parents and events for RID 518 or 516, level 13. Removals stay on the stock rules. The group display name is not matched.
+- SF-009 (100320) is 60109 plus eventID `^4720$`, level 10, MITRE `T1136.001`. 60109 also matches 4722 and uses `T1098`. Level 10 stays medium and is above 60109. 4741 is a different parent and is not this rule.
+
+### Exclusions
+
+None. The SID or the event ID is the detection. A group name or an account name is not an exclusion.
+

@@ -4,8 +4,8 @@
 > every step.
 
 ## Current step
-**Step 10 batch 2.1 Done.** SF-004, SF-005, and SF-006 stay `SYNTAX VALID`. Content exclusions are gone. 4104 has no exclusion. SF-005 excludes only the anchored Wazuh agent executable path, and its base64 token minimum is 20. Their logtest cases are `LIMITED`. Nothing is `LAB VALIDATED`.
-**Next:** Step 10 batch 3 (SF-007, SF-008, SF-009) not started.
+**Step 10 batch 3 Done.** SF-007, SF-008, and SF-009 are `SYNTAX VALID`. Analysisd loaded rules 100300, 100310, 100311, and 100320 from `sentinelforge_100300_accounts.xml`. Their logtest cases are `LIMITED`. SF-001 through SF-006 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
+**Next:** Step 10 batch 4 (SF-010, SF-011, SF-012) not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -26,7 +26,7 @@
 | 7B | Connect the frontend, plus Docker | Done |
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
-| 10 | MVP detections | Batch 0 done (SF-013, SF-014). Batch 1 done (SF-001, SF-002, SF-003, `SYNTAX VALID`). Batch 2 done (SF-004, SF-005, SF-006, `SYNTAX VALID`). Batch 2.1 removed content exclusions. Batches 3–4 not started |
+| 10 | MVP detections | Batch 0 done (SF-013, SF-014). Batch 1 done (SF-001, SF-002, SF-003, `SYNTAX VALID`). Batch 2 done (SF-004, SF-005, SF-006, `SYNTAX VALID`). Batch 2.1 removed content exclusions. Batch 3 done (SF-007, SF-008, SF-009, `SYNTAX VALID`). Batch 4 not started |
 | 11 | Detection-as-code CI | Not started |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
@@ -38,8 +38,8 @@ Real counts only. Update these as work actually happens.
 
 | Item | Count |
 |---|---|
-| Detections written | 8 (SF-001, SF-002, SF-003, SF-004, SF-005, SF-006, SF-013, SF-014) |
-| `SYNTAX VALID` | 6 (Windows auth and PowerShell) |
+| Detections written | 11 (SF-001 through SF-009, SF-013, SF-014) |
+| `SYNTAX VALID` | 9 (Windows auth, PowerShell, and accounts) |
 | `LOGTEST VALID` | 2 (Linux SSH) |
 | `LAB VALIDATED` | 0 |
 | Saved hunts | 0 |
@@ -55,9 +55,12 @@ Real counts only. Update these as work actually happens.
 | SF-004 | `SYNTAX VALID` | Rule 100200 loaded (level 12, `T1059.001`). Script block 4104. Logtest cases `LIMITED`. Not a Windows result. |
 | SF-005 | `SYNTAX VALID` | Rule 100210 loaded (level 13, `T1059.001` only). Sysmon 1 command line. 4688 is not used. Logtest cases `LIMITED`. |
 | SF-006 | `SYNTAX VALID` | Rules 100220 (level 12) and 100221 (level 10), both `T1105`. Script block and Sysmon 3. They do not wait for each other. Logtest cases `LIMITED`. |
+| SF-007 | `SYNTAX VALID` | Rule 100300 loaded (level 13, `T1098`). 4732 and `targetSid` `S-1-5-32-544`. Logtest cases `LIMITED`. |
+| SF-008 | `SYNTAX VALID` | Rules 100310 (level 15, RID 512 and 519) and 100311 (level 13, RID 518 and 516), both `T1098`. Logtest cases `LIMITED`. |
+| SF-009 | `SYNTAX VALID` | Rule 100320 loaded (level 10, `T1136.001`). 4720 only. Logtest cases `LIMITED`. |
 | SF-013 | `LOGTEST VALID` | Rule 100701 on the 6th invalid-user failure; 100702 on the 6th known-user failure. Five failures stayed on 5710. |
 | SF-014 | `LOGTEST VALID` | Rule 100710 / 100711 after that burst, same source IP. Five failures then a success stayed on 5715. |
-| SF-007–SF-012, SF-015–SF-020 | `NOT TESTED` | Not written |
+| SF-010–SF-012, SF-015–SF-020 | `NOT TESTED` | Not written |
 
 ## What exists so far
 - Folder structure with a README per folder
@@ -74,7 +77,8 @@ Real counts only. Update these as work actually happens.
 - `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), incidents (Step 5), and hunting, detections, and MITRE pages (Step 6A).
 - SF-013 and SF-014 are real rules in `detections/wazuh/rules/sentinelforge_100700_linux.xml`. Logtest on 2026-10-26 passed both, including the below-threshold and benign cases. Status is `LOGTEST VALID`. `observed_result` is still `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-001, SF-002, and SF-003 are real rules in `detections/wazuh/rules/sentinelforge_100100_auth.xml` (100100, 100110, 100120). On 2026-10-26 analysisd started with `Total rules enabled: 8459` and no analysisd error. `GET /rules?rule_ids=100100,100110,100120` returned all three `enabled`. Status is `SYNTAX VALID`. Logtest printed `LIMITED` for every Windows case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
-- SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-007–SF-012 and SF-015–SF-020 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`.
+- SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
+- SF-007, SF-008, and SF-009 are real rules in `detections/wazuh/rules/sentinelforge_100300_accounts.xml` (100300, 100310, 100311, 100320). On 2026-10-26 analysisd started with `Total rules enabled: 8471` and no analysisd error. `GET /rules?filename=sentinelforge_100300_accounts.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T175154Z.json`) printed `LIMITED` for every account case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-010–SF-012 and SF-015–SF-020 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`.
 - Ten hunt drafts are fixtures. Demo "Run hunt" matches incident timeline events and does not query `wazuh-archives-*`. Live "Run hunt" queries that index and returns 503 if Wazuh is down. Promoting a result writes a SQLite incident.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
@@ -88,7 +92,7 @@ Real counts only. Update these as work actually happens.
 - `make logtest-up` runs `docker compose up -d --wait --wait-timeout 120` and returns only after the healthcheck is healthy, or fails at 120 seconds. It starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. That script deletes `/etc/services.d/filebeat` before s6 starts services, so Filebeat is not running. Alert and archive directories are 32m tmpfs. There are no named volumes. `make logtest-down` and `make logtest-clean` remove this container and its volumes only. Analysisd still reached `is running`.
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
-- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 batches 3–4 are not started.
+- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 batch 4 is not started.
 
 ## VERIFY in Step 17 (Wazuh 4.14.9)
 
@@ -163,5 +167,5 @@ Still documented, not built:
 - WS01 virtual TPM and VM encryption on Workstation Pro 26.0.1
 - Static IPs, DC01 DNS, domain join
 - Wazuh 4.14.9 all-in-one on the 8 GB VM, including the heap cap
-- Windows agent events for SF-001–SF-012. Field names for SF-001–SF-006 were read from the 4.14.9 ruleset. A real 4624/4625 from DC01 or WS01 is still required. Frequency, two `same_field` elements, and a `<field>` check on a frequency rule were not replayed. SF-004 and SF-006 still need Script Block Logging (4104) on WS01. SF-005 and SF-006 still need Sysmon EID 1 and EID 3 on WS01. Match behavior for those rules was not replayed.
+- Windows agent events for SF-001–SF-012. Field names for SF-001–SF-009 were read from the 4.14.9 ruleset. A real 4624/4625 from DC01 or WS01 is still required. Frequency, two `same_field` elements, and a `<field>` check on a frequency rule were not replayed. SF-004 and SF-006 still need Script Block Logging (4104) on WS01. SF-005 and SF-006 still need Sysmon EID 1 and EID 3 on WS01. SF-007 still needs Audit Security Group Management and a real 4732 on WS01. SF-008 still needs that policy and a real 4728 or 4756 on DC01. SF-009 still needs Audit User Account Management and a real 4720. Match behavior for those rules was not replayed.
 - SSH listener on the Windows host, limited to the Mac

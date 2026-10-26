@@ -1,0 +1,44 @@
+# SYNTHETIC TEST INPUT — not a Windows agent event and not lab telemetry.
+# mode lab_reference: the runner does not call logtest.
+# REQUIRES WINDOWS VALIDATION. Max status is SYNTAX VALID.
+# The account name is a label. Nothing here creates an account.
+comment: SYNTHETIC TEST INPUT
+id: SF-009
+description: >
+  A 4720 for sf-test-user is the intended SF-009 case. Enabling that
+  account (4722) is not. Creating a computer account (4741) is not.
+cases:
+  - name: positive
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not
+      replayed. Status stays SYNTAX VALID.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4720","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A user account was created. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","targetSid":"S-1-5-21-1001-1002-1003-1105","targetDomainName":"sentinelforge.lab","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: true
+      rule_id: 100320
+      level: 10
+      mitre:
+        - T1136.001
+  - name: negative_below_threshold
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4722","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A user account was enabled. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"sf-test-user","targetSid":"S-1-5-21-1001-1002-1003-1105","targetDomainName":"sentinelforge.lab","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100320
+  - name: negative_benign
+    mode: lab_reference
+    limited_reason: >
+      REQUIRES WINDOWS VALIDATION / logtest-limited. Eventchannel is not replayed.
+    log_format: eventchannel
+    location: EventChannel
+    event: '{"win":{"system":{"providerName":"Microsoft-Windows-Security-Auditing","eventID":"4741","channel":"Security","computer":"DC01.sentinelforge.lab","severityValue":"AUDIT_SUCCESS","message":"A computer account was created. SYNTHETIC TEST INPUT"},"eventdata":{"targetUserName":"WS01$","targetSid":"S-1-5-21-1001-1002-1003-1106","targetDomainName":"sentinelforge.lab","subjectUserName":"sf-test-operator"}}}'
+    expect:
+      fires: false
+      rule_id: 100320
