@@ -8,7 +8,7 @@ The Wazuh manager API client and indexer client are built and mock-tested on the
 
 Step 9 runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aarch64`) with no Rosetta platform flag. `make logtest` passed CANARY-001 on built-in sshd rule 5710. CANARY-002, a synthetic Windows 4625 event, did not reach decoder `windows_eventchannel` (observed decoder `json`, rule 1002). That case is `REQUIRES WINDOWS VALIDATION / logtest-limited`. Logtest does not replace the WAZUH01 install.
 
-The `logtest` GitHub Actions job uses that same image and `scripts/validation/logtest/docker-compose.yml` on `ubuntu-latest` (amd64). It sets no `platform` flag. The API password is generated in the job and is not committed. Windows cases stay `LIMITED` there too.
+The `logtest` GitHub Actions job uses that same image and `scripts/validation/logtest/docker-compose.yml` on `ubuntu-latest` (amd64). It sets no `platform` flag. The API password is generated in the job and is not committed. A hex-only password made the 4.14.9 manager exit 0; the job password includes an uppercase letter and a symbol. Windows cases stay `LIMITED` there too. Run 40382184242 succeeded.
 
 | Component | Build on Mac? | Test on Mac? | How it is tested on Mac | Needs Windows/lab validation? |
 |---|---|---|---|---|

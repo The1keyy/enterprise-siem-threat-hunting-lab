@@ -2,6 +2,8 @@
 
 [![detections](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/detections.yml/badge.svg?branch=main)](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/detections.yml)
 [![app](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/app.yml/badge.svg?branch=main)](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/app.yml)
+[![logtest](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/logtest.yml/badge.svg?branch=main)](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/logtest.yml)
+[![secrets](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/secrets.yml/badge.svg?branch=main)](https://github.com/The1keyy/enterprise-siem-threat-hunting-lab/actions/workflows/secrets.yml)
 
 **Enterprise SIEM & Live Threat Hunting Platform**
 

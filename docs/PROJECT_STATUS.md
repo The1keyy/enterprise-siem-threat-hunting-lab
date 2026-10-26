@@ -6,7 +6,7 @@
 ## Current step
 **Step 10 complete.** SF-010, SF-011, and SF-012 are `SYNTAX VALID`. Analysisd loaded eight rules from `sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). Their logtest cases are `LIMITED`. SF-001 through SF-009 stay `SYNTAX VALID`. SF-013 and SF-014 stay `LOGTEST VALID`. Nothing is `LAB VALIDATED`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`.
-**Next:** Step 11B adds logtest CI, gitleaks, and Dependabot. The logtest and secrets runs are not observed yet. Step 12 is not started.
+**Next:** Step 12 is not started.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -28,7 +28,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
 | 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
-| 11 | Detection-as-code CI | 11A done. 11B workflows added; logtest and secrets results not observed yet |
+| 11 | Detection-as-code CI | 11A and 11B done. Step 12 not started |
 | 12 | Lab configs + scripts | Not started |
 | 13 | Hunts + simulations | Not started |
 | 14 | Correlation + risk scoring | Not started |
@@ -46,7 +46,7 @@ Real counts only. Update these as work actually happens.
 | Saved hunts | 0 |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | `detections` run 40379538889 succeeded. `app` run 40379538866 succeeded. `logtest` and `secrets` are not observed yet. |
+| CI | On 2026-10-26: `detections` 40381588009 succeeded. `app` 40379538866 succeeded (this step did not change `frontend/`, `backend/`, or `fixtures/`, so `app` did not re-run). `secrets` 40382184369 succeeded. `logtest` 40382184242 succeeded in 1m13s after two failures: 40381587906 (hex-only API password, container exited 0) and 40381952511 (the load check treated a missing `sentinelforge` line as a failure). Dependabot's own updater jobs failed with `fetching job details: missing response`. |
 
 | ID | Status | Evidence |
 |---|---|---|
