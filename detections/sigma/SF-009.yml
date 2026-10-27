@@ -4,7 +4,7 @@ status: experimental
 description: >
   Security 4720. Account enabled (4722) and computer account created
   (4741) are not this rule. A following add to a privileged group is
-  SF-007 or SF-008. Joining those is Step 14, not this selection.
+  SF-007 or SF-008. The correlation engine joins those. This selection does not.
 logsource:
   product: windows
   service: security

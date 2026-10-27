@@ -29,7 +29,7 @@ tuning_notes: >
   100501 and 100502 are level 12, high. The library row is high because
   those two are the privileged-account and DC01 behavior. Loopback RDP
   stays stock 92656 at level 15. The privileged account is exactly
-  sf-test-admin. Group membership is Step 14. There is no content exclusion.
+  sf-test-admin. Group membership is not known to this rule. There is no content exclusion.
 test_procedure: >
   make logtest ID=SF-010 reports LIMITED and does not call logtest.
   Analysisd loaded the XML with no rule error. Lab procedure is in
@@ -40,7 +40,7 @@ expected_alert: >
   level 12. MITRE T1021.001.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

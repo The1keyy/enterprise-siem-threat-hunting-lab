@@ -54,7 +54,7 @@ expected_alert: >
   10. MITRE T1105.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

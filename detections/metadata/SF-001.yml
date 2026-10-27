@@ -35,7 +35,7 @@ expected_event: Security 4625 for one non-machine account, six times in 120 seco
 expected_alert: Description starts with SF-001. Rule 100100, level 11. MITRE T1110.001.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

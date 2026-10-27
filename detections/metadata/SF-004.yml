@@ -40,7 +40,7 @@ expected_event: Script block 4104 on WS01 containing one SF-004 string. A marker
 expected_alert: Description starts with SF-004. Rule 100200, level 12. MITRE T1059.001.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

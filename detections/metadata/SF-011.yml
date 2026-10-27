@@ -30,7 +30,7 @@ tuning_notes: >
   IPC$, because IPC$ is normal domain traffic. 100512 is level 5, low, for
   every type 3 logon, and it stays below stock 92652 so NTLM is not
   relabeled. The library row is high because 100510 is the admin-share
-  behavior. A same-IP join of 4624 and 5140 is Step 14. 5145 has no stock
+  behavior. A same-IP join of 4624 and 5140 belongs to the correlation engine. 5145 has no stock
   parent. relativeTargetName is not matched.
 test_procedure: >
   make logtest ID=SF-011 reports LIMITED and does not call logtest.
@@ -40,7 +40,7 @@ expected_event: Security 5140 or 5145 for \\*\C$ or \\*\ADMIN$ on DC01.
 expected_alert: Description starts with SF-011. Rule 100510, level 12. MITRE T1021.002.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

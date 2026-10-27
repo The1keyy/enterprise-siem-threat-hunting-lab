@@ -3,7 +3,7 @@ id: 0cb47174-964b-4f72-9aa3-36a13e13ed4a
 status: experimental
 description: >
   Security 4625 from one source IP. Wazuh 4.14.9 has no different_field, so
-  distinct usernames are not counted in rule 100110. That count is Step 14.
+  distinct usernames are not counted in rule 100110. The correlation engine does that count.
   The six-event, 120 second threshold lives in the Wazuh rule. This selection
   is one failure with a real source IP, excluding a machine account.
 logsource:

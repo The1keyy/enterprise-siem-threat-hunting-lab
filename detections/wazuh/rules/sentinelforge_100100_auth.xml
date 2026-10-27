@@ -41,7 +41,7 @@
   <rule id="100110" level="10" frequency="6" timeframe="120" ignore="60">
     <!--
       Same-IP burst. Distinct usernames are not counted here.
-      different_field is absent from the 4.14.9 ruleset. Step 14 counts them.
+      different_field is absent from the 4.14.9 ruleset. The correlation engine counts them.
       Level 10 loses to 100100 (level 11) when one account also reaches 6.
     -->
     <if_matched_sid>60122</if_matched_sid>

@@ -26,7 +26,7 @@ expected_event: sshd Accepted password from the same source IP after six failure
 expected_alert: Description starts with SF-014. Rule 100710 or 100711, level 12. MITRE T1078 only.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 logtest_date: 2026-10-26
 logtest_result: logtest-20261026T134325Z.json

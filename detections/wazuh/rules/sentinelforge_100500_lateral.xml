@@ -25,8 +25,7 @@
     WinRM event ID. 100520 does not invent one.
 
   4624 and 5140 are different events. This image has no frequency rule that also
-  contains a <field> check. 100512 does not wait for 100510. A same-IP join is
-  Step 14.
+  contains a <field> check. 100512 does not wait for 100510. A same-IP join belongs to the correlation engine.
 
   Exclusions are anchored. Script text is not an exclusion.
   Machine accounts: targetUserName or subjectUserName ending in $.
@@ -55,7 +54,7 @@
   <rule id="100501" level="12">
     <!--
       Lab admin account only. The name is anchored. Domain Admin membership
-      is not known here. Step 14 does that enrichment.
+      is not known here. The correlation engine does that enrichment.
     -->
     <if_sid>100500</if_sid>
     <field name="win.eventdata.targetUserName" type="pcre2">(?i)^sf-test-admin$</field>

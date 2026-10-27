@@ -15,4 +15,4 @@ Required shape:
 
 `CANARY-001.yml` checks built-in sshd rules. `CANARY-002.yml` is the Windows 4625 case and is logtest-limited until a real agent event fires the Windows rule.
 
-**Status:** Canaries only. No `SF-XXX.yml` yet (Step 10).
+**Status:** One file per written detection, plus two canaries. Windows cases are logtest-limited. Linux sshd cases can run in Docker.

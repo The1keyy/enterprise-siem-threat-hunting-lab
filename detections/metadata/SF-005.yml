@@ -42,7 +42,7 @@ expected_event: Sysmon 1 on WS01 for powershell.exe or pwsh.exe with -enc or -En
 expected_alert: Description starts with SF-005. Rule 100210, level 13. MITRE T1059.001 only.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

@@ -4,7 +4,7 @@ description: >
   Security 4720, a user account was created. Enabling an account (4722)
   and creating a computer account (4741) are not this rule. It stays
   medium on its own. A later add to a privileged group is SF-007 or
-  SF-008. Joining them is Step 14.
+  SF-008. The correlation engine joins them.
 severity: medium
 mitre:
   - T1136.001
@@ -29,7 +29,7 @@ tuning_notes: >
   and 4722 with MITRE T1098. This rule is 4720 only and T1136.001. Level
   10 stays medium and is above 60109 so a create is labeled SF-009. It is
   below SF-007 and SF-008. There is no account-name exclusion. Correlation
-  with those group rules is Step 14.
+  with those group rules belongs to the correlation engine.
 test_procedure: >
   make logtest ID=SF-009 reports LIMITED and does not call logtest.
   Analysisd loaded the XML with no rule error. Lab procedure is in
@@ -38,7 +38,7 @@ expected_event: Security 4720 for sf-test-user on DC01 or WS01.
 expected_alert: Description starts with SF-009. Rule 100320, level 10. MITRE T1136.001.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

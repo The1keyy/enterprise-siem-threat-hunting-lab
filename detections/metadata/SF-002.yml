@@ -2,7 +2,7 @@ id: SF-002
 name: Password spray
 description: >
   Six Security 4625 failures from one source IP inside 120 seconds.
-  Distinct usernames are not counted in this rule. That is Step 14.
+  Distinct usernames are not counted in this rule. The correlation engine does that.
   Machine accounts and an ipAddress of "-" are excluded.
 severity: medium
 mitre:
@@ -31,7 +31,7 @@ false_positives: >
 tuning_notes: >
   frequency 6, timeframe 120, same ipAddress, level 10. The 4.14.9 ruleset
   has zero different_field uses, so this is a same-IP burst, not a
-  distinct-user count. Step 14 does that count. Stock 60204 is frequency 8
+  distinct-user count. The correlation engine does that count. Stock 60204 is frequency 8
   in 240 seconds on the authentication_failed group and MITRE T1110.
   Level 10 is medium (ADR 0004). Exclusions are machine accounts and
   ipAddress "-". No other exclusion.
@@ -43,7 +43,7 @@ expected_event: Security 4625 from one source IP, six times in 120 seconds, for 
 expected_alert: Description starts with SF-002. Rule 100110, level 10. MITRE T1110.003.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

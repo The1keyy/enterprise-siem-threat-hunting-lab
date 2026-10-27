@@ -12,4 +12,4 @@ Detection-as-code. Every detection `SF-XXX` is made of:
 
 CI checks syntax, metadata, MITRE IDs, naming, and duplicate rule IDs.
 
-**Status:** No detections yet (Step 10).
+**Status:** SF-001 through SF-014 are written. SF-001 through SF-012 are `SYNTAX VALID`. SF-013 and SF-014 are `LOGTEST VALID`. Nothing is `LAB VALIDATED`.

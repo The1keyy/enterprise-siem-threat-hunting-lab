@@ -23,7 +23,7 @@ parent_rules:
   - "92110"
 required_telemetry: >
   Sysmon Operational event 1 and event 3 on WS01 and DC01. Stock 92110
-  already alerts destination port 5985 at level 4. Step 12 must also
+  already alerts destination port 5985 at level 4. The lab config must also
   collect Microsoft-Windows-WinRM/Operational. No rule matches that
   channel until a lab event shows the ID.
 false_positives: An administrator runs Enter-PSSession between lab VMs.
@@ -43,7 +43,7 @@ expected_event: Sysmon 1 on DC01 whose image ends in \wsmprovhost.exe.
 expected_alert: Description starts with SF-012. Rule 100520, level 12. MITRE T1021.006.
 observed_result: "NOT YET VALIDATED"
 lab_validation:
-  simulation: planned Step 13
+  simulation: not run
   evidence: null
 syntax_valid_date: 2026-10-26
 syntax_load_log: |

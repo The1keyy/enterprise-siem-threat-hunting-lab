@@ -6,4 +6,4 @@ pytest checks for detection-as-code:
 - `SF-XXX` naming
 - unique Wazuh rule IDs in 100000–109999
 
-**Status:** Empty (Step 11).
+**Status:** `test_validator.py` checks metadata, MITRE IDs, names, and rule IDs.
