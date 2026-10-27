@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { TourBar } from '../components/TourBar.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { DemoBanner } from '../components/DemoBanner.tsx'
 import { ToastViewport } from '../components/ToastViewport.tsx'
@@ -36,7 +37,9 @@ export function AppShell() {
       ? 'Components'
       : pathname === '/about'
         ? 'About'
-        : (current?.label ?? 'SentinelForge')
+        : pathname === '/tour'
+          ? 'Tour'
+          : (current?.label ?? 'SentinelForge')
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
@@ -135,6 +138,15 @@ export function AppShell() {
               {title}
             </p>
             <div className="flex items-center gap-2 sm:gap-3">
+              {mode === 'demo' ? (
+                <Link
+                  to="/tour"
+                  className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
+                >
+                  <span className="sm:hidden">Tour</span>
+                  <span className="hidden sm:inline">Take the tour</span>
+                </Link>
+              ) : null}
               <Link
                 to="/about"
                 className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
@@ -173,6 +185,7 @@ export function AppShell() {
           <ToastViewport />
         </div>
       </div>
+      <TourBar />
     </div>
   )
 }

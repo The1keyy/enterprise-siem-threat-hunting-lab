@@ -19,6 +19,7 @@ import { MitrePage } from './pages/MitrePage.tsx'
 import { SocOverview } from './pages/SocOverview.tsx'
 import { SettingsPage } from './pages/SettingsPage.tsx'
 import { SourcesPage } from './pages/SourcesPage.tsx'
+import { TourPage } from './pages/TourPage.tsx'
 
 const DevComponentsPage = import.meta.env.DEV
   ? lazy(() => import('./pages/DevComponentsPage.tsx'))
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="health" element={<HealthPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="tour" element={<TourPage />} />
           {DevComponentsPage ? (
             <Route
               path="dev/components"
