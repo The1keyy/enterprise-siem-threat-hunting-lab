@@ -1,12 +1,12 @@
 # Roadmap
 
-SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-012 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). SF-015 through SF-020 are not written yet. Nothing is `LAB VALIDATED`.
+SF-013 and SF-014 are `LOGTEST VALID` on synthetic sshd lines. SF-001 through SF-012 are written and `SYNTAX VALID` (`REQUIRES WINDOWS VALIDATION`). SF-015 through SF-019 are not written yet. SF-020 is not a detection rule: Step 14A implements it as backend correlation. Nothing is `LAB VALIDATED`.
 
 The MVP set is one Windows attack story:
 
 **failed logons → successful logon → suspicious PowerShell → privilege change → remote connection**
 
-About 12 detections are MVP (`SF-001`–`SF-012`). `SF-013`–`SF-020` are stretch. Stretch work does not block the story.
+About 12 detections are MVP (`SF-001`–`SF-012`). `SF-013`–`SF-019` are stretch. Stretch work does not block the story. `SF-020` is the multi-stage incident, produced by the backend, not by another rule.
 
 Every Windows row is **REQUIRES WINDOWS VALIDATION**. In the Mac column, "Yes" means `wazuh-logtest` can evaluate that synthetic sample. "Limited" means the eventchannel path cannot be replayed (Step 9.1), so the Mac status stops at `SYNTAX VALID`. Neither value means the guest already emits the event.
 
@@ -42,9 +42,9 @@ Story order inside the MVP: `SF-001` and `SF-002`, then `SF-003`, then `SF-004`�
 | SF-017 | Scheduled task created | T1053.005 | `windows_security` | Security **4698**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
 | SF-018 | Security log cleared | T1070.001 | `windows_security` | Security **1102**. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
 | SF-019 | New service installed | T1543.003 | `windows_security` | System **7045**. **VERIFY** channel and Wazuh decoder. **REQUIRES WINDOWS VALIDATION**. | Stretch | Limited (eventchannel can't be replayed, see Step 9.1) | later |
-| SF-020 | Suricata alert on lab traffic | T1071 | `suricata` | eve.json alert record. **VERIFY** schema for the Suricata version that gets installed. | Stretch | Yes, with a synthetic eve line. The sensor itself needs SURI01. | later |
+| SF-020 | Multi-stage correlated incident | union of the member alerts | backend correlation | Not a Wazuh rule and not a metadata file. The backend links the attack story into one incident. pytest uses synthetic alerts. | MVP | Not a logtest rule. | 14A |
 
-`SF-013`–`SF-015` need the Ubuntu guest, not the Windows host. `SF-016`–`SF-019` are **REQUIRES WINDOWS VALIDATION**. `SF-020` needs SURI01, which stays powered off until then.
+`SF-013`–`SF-015` need the Ubuntu guest, not the Windows host. `SF-016`–`SF-019` are **REQUIRES WINDOWS VALIDATION**. Suricata stays an optional sensor. It is not SF-020. SURI01 stays powered off until that work exists.
 
 ## Console features
 
@@ -59,13 +59,13 @@ Story order inside the MVP: `SF-001` and `SF-002`, then `SF-003`, then `SF-004`�
 | Data sources and system health | MVP | Needed when live mode is turned on. Until then they show an empty or unreachable state. |
 | Single-admin auth, CORS, `DATA_MODE=demo\|live` | MVP | Live mode errors when Wazuh is unreachable. It does not fall back to demo data. |
 | Read-only Wazuh API and indexer clients | MVP | Written on the Mac against mocks. Real calls wait for the lab. |
-| Correlation into one incident, explainable risk score | MVP | Backend logic, tested with synthetic events. Weights are defined in Step 14, not measured here. |
+| Correlation into one incident, explainable risk score | MVP | Step 14A. Backend logic in `backend/app/services/correlation.py`, tested with synthetic events. Weights are in `backend/app/core/risk_config.yml`. They are not lab measurements. The demo incident fixtures still use the earlier Settings weights. |
 | Entities list and profile | MVP | Simple profiles for the user and host in the story. |
 | Automation and Settings pages | Stretch | Placeholders only until a later step. |
 | Response actions (isolate, disable account, block IP) | Stretch | `LAB ONLY`, dry-run, explicit approval, audit log. |
 | Archives-heavy hunt views | Stretch | Depends on archives indexing and disk headroom. |
-| Suricata / SURI01 views | Stretch | `SF-020` and the optional VM. |
-| `SF-013`–`SF-020` in the library | Stretch | Present as planned IDs. Not required for the first attack story. |
+| Suricata / SURI01 views | Stretch | Optional sensor. Not an SF detection. |
+| `SF-013`–`SF-019` in the library | Stretch | Present as planned IDs. Not required for the first attack story. `SF-020` is the correlation engine, not a library rule. |
 
 No alert counts, MTTD, or coverage percentages belong on this page until metadata and the lab produce them.
 
@@ -84,7 +84,7 @@ No alert counts, MTTD, or coverage percentages belong on this page until metadat
 | 11 | Detection-as-code CI | GitHub Actions |
 | 12 | Lab configs and PowerShell/Bash scripts, written and linted only | Mac. Apply later on the lab. |
 | 13 | Saved hunts and simulations with cleanup | Written on Mac. Simulations run only in the lab. |
-| 14 | Correlation, risk scoring, ADR for where correlation lives | Mac, pytest with a synthetic story |
+| 14 | Correlation, risk scoring, ADR for where correlation lives | Mac, pytest with a synthetic story. 14A is the engine, the tests, and ADRs 0005 and 0006. The API and the demo incident scores are not switched over in 14A. |
 | 15 | Lab build runbook and VM build | Windows host. **REQUIRES WINDOWS VALIDATION** |
 | 16 | Audit policy, PowerShell logging, Sysmon, agents, archives, custom rules | Lab. **REQUIRES WINDOWS VALIDATION** |
 | 17 | `DATA_MODE=live` to WAZUH01, read-only users, CA bundle | Mac plus lab |

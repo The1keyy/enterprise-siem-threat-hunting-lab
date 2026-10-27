@@ -19,7 +19,7 @@ export const DETECTION_NAMES: Record<string, string> = {
   'SF-017': 'Scheduled task created',
   'SF-018': 'Security log cleared',
   'SF-019': 'New service installed',
-  'SF-020': 'Suricata alert on lab traffic',
+  'SF-020': 'Multi-stage correlated incident',
 }
 
 export function detectionName(ruleId: string): string {

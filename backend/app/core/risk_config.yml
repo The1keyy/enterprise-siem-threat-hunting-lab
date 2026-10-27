@@ -1,0 +1,80 @@
+# Correlation risk model. Every weight the engine uses is in this file.
+# The demo incident scorer in Settings is a separate path and is not read here.
+# These numbers are design choices, not lab measurements.
+
+window_minutes: 60
+max_incident_alerts: 200
+# A link key seen with more distinct users than this is not used.
+# The story source 10.10.10.20 is shared by sf-test-alice, sf-test-bob,
+# and sf-test-admin (3). Keep this above that count.
+hub_user_limit: 8
+open_level: 12
+critical_level: 15
+half_life_hours: 24
+
+# An unmapped host uses this class. It does not become a domain controller.
+default_asset_class: workstation
+
+bands:
+  medium: 40
+  high: 80
+  critical: 150
+
+# Matching is case-insensitive. The loader lowercases these.
+user_prefixes:
+  - 'SENTINELFORGE\'
+user_suffixes:
+  - '@sentinelforge.lab'
+ignored_user_values:
+  - ''
+  - '-'
+machine_account_suffix: '$'
+
+# Exact source addresses. 10.10.10.20 is the lab workstation and is not listed.
+excluded_source_ips:
+  - 10.10.10.1
+  - 127.0.0.1
+  - '::1'
+
+open_statuses:
+  - New
+  - Investigating
+  - Contained
+closed_statuses:
+  - Resolved
+  - False Positive
+
+# Each category is added once per incident, at this point value.
+categories:
+  auth_burst:
+    points: 15
+    detections: [SF-001, SF-002, SF-013]
+  success_after_failures:
+    points: 25
+    detections: [SF-003, SF-014]
+  suspicious_powershell:
+    points: 30
+    detections: [SF-004, SF-005, SF-006]
+  privileged_group_change:
+    points: 35
+    detections: [SF-007, SF-008]
+  new_account:
+    points: 10
+    detections: [SF-009]
+  remote_access:
+    points: 20
+    detections: [SF-010]
+  lateral_movement:
+    points: 30
+    detections: [SF-011, SF-012]
+
+hosts:
+  WS01: workstation
+  UBU01: server
+  WAZUH01: server
+  DC01: domain_controller
+
+multipliers:
+  workstation: 1.0
+  server: 1.3
+  domain_controller: 1.7

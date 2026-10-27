@@ -669,34 +669,26 @@
     },
     {
       "id": "SF-020",
-      "name": "Suricata alert on lab traffic",
-      "description": "eve.json alert record. VERIFY the schema for the Suricata version that gets installed. SURI01 stays off until then.",
+      "name": "Multi-stage correlated incident",
+      "description": "DEMO DATA. Not a Wazuh rule and not a lab result. Step 14A correlates the attack story in the backend. There is no detections/metadata/SF-020.yml file. Suricata is a separate optional sensor.",
       "severity": "medium",
-      "mitre": [
-        {
-          "id": "T1071",
-          "name": "Application Layer Protocol",
-          "tactic": "Command and Control"
-        }
-      ],
-      "telemetry": [
-        "suricata"
-      ],
+      "mitre": [],
+      "telemetry": [],
       "wazuhRuleIds": [],
       "version": "0.1.0",
       "enabled": true,
       "status": "NOT TESTED",
       "windowsValidationRequired": false,
-      "falsePositives": "No lab review yet.",
-      "tuningNotes": "No tuning yet. The rule text is not written.",
-      "testProcedure": "Replay a labeled synthetic sample with wazuh-logtest in Step 9. This has not been run.",
-      "expectedEvent": "Suricata eve.json alert",
-      "expectedAlert": "A Wazuh alert whose description starts with SF-020. Not written yet.",
+      "falsePositives": "A shared source IP can join unrelated users. The hub-key guard and the excluded gateway address are the controls. Not a lab review.",
+      "tuningNotes": "Points, the window, and the multipliers are in backend/app/core/risk_config.yml. This row is not a rule to tune.",
+      "testProcedure": "backend pytest tests/test_correlation.py. The alerts are labeled SYNTHETIC TEST INPUT. This has not been run in the lab.",
+      "expectedEvent": "member alerts from the attack story",
+      "expectedAlert": "One backend incident, not a Wazuh rule whose description starts with SF-020.",
       "observedResult": "NOT YET VALIDATED",
       "lastTriggered": null,
       "alertCount": null,
-      "wazuhRuleXml": "Not written yet (Step 10)",
-      "sigmaYaml": "Not written yet (Step 10)",
+      "wazuhRuleXml": "Not a Wazuh rule. No detections/metadata/SF-020.yml file.",
+      "sigmaYaml": "Not a Sigma rule.",
       "tuningHistory": [],
       "demo": true
     }

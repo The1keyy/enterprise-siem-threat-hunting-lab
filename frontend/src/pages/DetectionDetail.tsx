@@ -58,8 +58,14 @@ function DetailBody({ data }: { data: Detection }) {
         </Section>
         <Section title="Logic">
           <p>
-            Look for {data.expectedEvent} on {data.telemetry.join(', ')}. The
-            rule text is not written yet (Step 10).
+            {`Look for ${data.expectedEvent}${
+              data.telemetry.length > 0
+                ? ` on ${data.telemetry.join(', ')}`
+                : ''
+            }.`}
+            {data.wazuhRuleXml.startsWith('Not written yet')
+              ? ' The rule text is not written yet (Step 10).'
+              : null}
           </p>
         </Section>
         <Section title="Event Requirements">

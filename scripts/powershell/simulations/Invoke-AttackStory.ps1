@@ -6,7 +6,8 @@
 # Requires: Administrator, PowerShell 5.1+
 # Status: NOT TESTED
 # Default remote stage is the C$ map (SF-011). -RemoteStage WinRM runs SF-012
-# and does not enable WinRM. Step 14 correlation is not started here.
+# and does not enable WinRM. Step 14A scores these stages in the backend.
+# This script does not.
 # Expected rules for the default story: 100100, 100120, 100200, 100300, 100510.
 # PauseSeconds must stay inside the 120 second window after the sixth failure
 # if 100120 is going to chain. The default is 15.

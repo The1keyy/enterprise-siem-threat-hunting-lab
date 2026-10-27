@@ -4,9 +4,9 @@
 > every step.
 
 ## Current step
-**Step 13B written locally.** HUNT-001 through HUNT-010 are `NOT TESTED`. SF-001 through SF-014 simulations and `Invoke-AttackStory.ps1` are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`, and nothing is `LAB VALIDATED`.
+**Step 14A written locally.** The correlation engine and the risk model are pure functions plus pytest. The alerts in those tests are labeled `SYNTHETIC TEST INPUT`. That is not a lab result and nothing is `LAB VALIDATED`. HUNT-001 through HUNT-010 are `NOT TESTED`. SF-001 through SF-014 simulations and `Invoke-AttackStory.ps1` are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`. Attack simulations run in the lab: 0.
-**Next:** Step 14 is not started. Ten hunts and every simulation still need a lab run. Nothing is installed on WAZUH01, UBU01, or a Windows host.
+**Next:** Step 14B is not started. The engine is not wired to a route or to the demo incident scores. Ten hunts and every simulation still need a lab run. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
@@ -31,7 +31,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
 | 12 | Lab configs + scripts | 12A, 12B, and 12C written. 12.1 is `make lint-scripts` and `scripts/validation/lint_powershell.ps1`. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
 | 13 | Hunts + simulations | 13A and 13B written on the Mac. Hunts and simulations are `NOT TESTED`. None have run in the lab |
-| 14 | Correlation + risk scoring | Not started |
+| 14 | Correlation + risk scoring | 14A written on the Mac. Synthetic pytest only. 14B is not started |
 | 15–20 | Windows lab build, validation, polish | Later (Windows lab) |
 
 ## Validation summary
@@ -65,7 +65,8 @@ Real counts only. Update these as work actually happens.
 | SF-010 | `SYNTAX VALID` | Rules 100500 (level 10), 100501 (level 12, `sf-test-admin`), and 100502 (level 12, DC01). `T1021.001`. Logtest cases `LIMITED`. |
 | SF-011 | `SYNTAX VALID` | Rules 100510 (level 12, ADMIN$ or C$), 100511 (level 4, IPC$), and 100512 (level 5, 4624 type 3). `T1021.002`. Logtest cases `LIMITED`. |
 | SF-012 | `SYNTAX VALID` | Rules 100520 (level 12, `wsmprovhost.exe`) and 100521 (level 10, port 5985). `T1021.006`. Logtest cases `LIMITED`. |
-| SF-015–SF-020 | `NOT TESTED` | Not written |
+| SF-015–SF-019 | `NOT TESTED` | Not written |
+| SF-020 | not a detection rule | Backend correlation in Step 14A. No metadata file. Synthetic pytest only. Not `LAB VALIDATED` |
 
 ## Step 12 needs
 
@@ -116,13 +117,14 @@ Not Windows:
 - SF-001, SF-002, and SF-003 are real rules in `detections/wazuh/rules/sentinelforge_100100_auth.xml` (100100, 100110, 100120). On 2026-10-26 analysisd started with `Total rules enabled: 8459` and no analysisd error. `GET /rules?rule_ids=100100,100110,100120` returned all three `enabled`. Status is `SYNTAX VALID`. Logtest printed `LIMITED` for every Windows case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-007, SF-008, and SF-009 are real rules in `detections/wazuh/rules/sentinelforge_100300_accounts.xml` (100300, 100310, 100311, 100320). On 2026-10-26 analysisd started with `Total rules enabled: 8471` and no analysisd error. `GET /rules?filename=sentinelforge_100300_accounts.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T175154Z.json`) printed `LIMITED` for every account case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
-- SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-020 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`.
+- SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-019 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`. SF-020 is not a rule. The demo library row says it is backend correlation. There is no `detections/metadata/SF-020.yml`.
 - HUNT-001 through HUNT-010 are YAML in `hunting/`. All are `NOT TESTED`. `/api/hunts` loads those files in demo mode and in live mode. Demo "Run hunt" matches fixture timeline events and is labeled demo. Live "Run hunt" maps YAML `alerts` or `archives` to `ALERTS_INDEX` and `ARCHIVES_INDEX` in `backend/app/core/config.py`, keeps the 7-day cap and `indexed_fields.txt`, and returns 503 if Wazuh is down. HUNT-004 and HUNT-010 are terms aggregations; low-count buckets are not a lab result. Promoting a result writes a SQLite incident. `fixtures/hunts.json` is generated by `scripts/validation/build_hunt_fixtures.py`.
 - Step 13B adds `scripts/powershell/simulations/` and `docs/runbooks/04-simulations.md`. On 2026-10-26, PSScriptAnalyzer reported 0 findings, the parser accepted the new scripts, and Pester 5.6.1 reported 8 passed. That is a Mac check of the guard. Every simulation header stays `NOT TESTED`. No script has run on DC01, WS01, or UBU01. `make test` was 29 pytest and 25 vitest. `make validate` reported 0 errors. The same 9 Sigma `InvalidATTACKTagIssue` warnings remain.
+- Step 14A adds `backend/app/services/correlation.py`, `backend/app/core/risk_config.yml`, `backend/tests/test_correlation.py`, and ADRs 0005 and 0006. The tests use synthetic Wazuh-shaped alerts labeled `SYNTHETIC TEST INPUT`. The story fixture is one incident, subtotal 135, multiplier 1.7 from DC01, final 230, critical. That number is the model, not a lab measurement. On 2026-10-27, `make test` was 46 pytest and 25 vitest. `make validate` reported 0 errors and the same 9 Sigma `InvalidATTACKTagIssue` warnings. `ruff check` on the backend was clean. The demo Settings bands (30 / 60 / 100) are unchanged. No route calls the engine.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
-- Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14 replaces the weights.
+- Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14A does not rescore them. The new model is `backend/app/core/risk_config.yml`, used only by `backend/app/services/correlation.py`.
 - Shared demo JSON lives in `/fixtures` (`overview`, `incidents`, `detections`, `hunts`, `entities`, `sources`, `health`). Each file has `_notice`: `DEMO DATA — synthetic, not real telemetry`. The frontend fixture modules import those files. `scripts/validation/export_fixtures.mjs` generated them.
 - `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode calls the Wazuh manager API and indexer. Responses set `"demo": false`. If Wazuh is unreachable the route returns 503 and does not serve fixtures. Incidents stay in SQLite. There is no live Wazuh in this environment, so nothing here is LAB VALIDATED.
 - Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
@@ -205,6 +207,8 @@ Step 8 is mock-tested on the Mac. The clients do not talk to a real manager here
 Step 9 logtest does not prove Windows field names. CANARY-002 stayed logtest-limited after a second eventchannel replay (decoder `json`, rule 1002, alert false). Windows eventchannel events can't be faithfully replayed in logtest. Step 10 must not mark those detections `LOGTEST VALID` from this harness. They are validated in the lab. Windows Event IDs still need a lab agent.
 
 Step 13B scripts are written and are `NOT TESTED`. Snapshot first. Run them only inside `10.10.10.0/24`. Record the run JSON, the alert export, and a screenshot in the Step 18 table in `docs/runbooks/04-simulations.md`.
+
+Step 14A correlation is synthetic pytest on the Mac. It does not prove a lab alert joins another lab alert. After a story run, compare the exported alerts with this engine before calling any incident `LAB VALIDATED`.
 
 Still documented, not built:
 
