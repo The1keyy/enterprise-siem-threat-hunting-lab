@@ -68,7 +68,7 @@ Wazuh still alerts. The console does not open or extend the SF-020 incident unti
 The gateway and loopback are excluded. Any other key that appears with more than the configured number of users is not used as a link. The cap on incident size is a second guard.
 
 **Is this live?**
-No. The tests use synthetic alerts. No route calls the engine yet. Nothing here is `LAB VALIDATED`.
+`DATA_MODE=live` polls the indexer and `POST /api/correlation/run` calls the same cycle. Demo incidents are this engine over synthetic alerts. The tests use synthetic alerts and a mocked indexer. Nothing here has run against WAZUH01, and nothing is `LAB VALIDATED`.
 
 **Why can't a host link merge two incidents?**
 Host and ten minutes are how a script block with no account still joins the story already running on WS01. If that same clue could union cases, every alert on WS01 in that window would become one incident. The weak alert may join one open incident. It may not drag a second incident along with it.

@@ -77,14 +77,14 @@ An unrelated SSH pair, SF-013 and SF-014, for a different user from `10.10.10.20
 |---|---|
 | Add points for every alert | A noisy auth rule would outrank a group-membership change. |
 | A learned score | There is no labeled incident history. A weight that cannot be shown on the breakdown is not usable in an interview or a write-up. |
-| Reuse the demo Settings bands (30 / 60 / 100) | Those bands belong to the fixture incidents. This model uses 40 / 80 / 150. Changing Settings would change INC-0001's displayed band. This model does not do that. |
+| Reuse the demo Settings bands (30 / 60 / 100) | Those bands belonged to the hand-written fixtures. This model uses 40 / 80 / 150. Settings shows this model. Hunt promotion still uses the older environment weights. |
 | Multiply every entity by the asset factor again | The host page would double-count the domain-controller factor that the incident score already applied. |
 
 ## Tradeoffs
 
 - Two auth detections in one incident still look like one 15-point row plus a skipped row. The timeline keeps both alerts. The score does not.
 - A level-15 alert on a low point total is critical by rule, not because the points crossed 150. The breakdown has to say so (`forced_critical`). SF-008 on DC01 is 35 × 1.7 = 60, which is medium on points and critical because the rule level is 15.
-- The demo incident fixtures still use the older Settings weights. This file does not rescore INC-0001. Wiring that is a later step.
+- Demo incidents are built by this model from `fixtures/alerts.json`. The attack story is subtotal 135, multiplier 1.7 set by DC01, final 230, critical. That number is the model, not a lab measurement.
 - Half-life math is floating point. The tests use the exact halves (40 → 20 → 10).
 
 ## What I must understand
