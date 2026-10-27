@@ -7,7 +7,13 @@
 
 SentinelForge correlates alerts in `backend/app/services/correlation.py`. SF-020 is that behavior. It is not a Wazuh rule, and there is no `detections/metadata/SF-020.yml`.
 
-A new alert joins an incident when it shares a normalized user, or a source IP, with an alert already in the group, and the two timestamps are inside the configured window (60 minutes). Union-find closes the chain: A linked to B by user, and B linked to C by source IP, are one incident. Alerts are keyed by the indexer `_id`. Processing the same id again does not add a second copy.
+A new alert joins an incident on a **strong** link when it shares a normalized user, a user resolved from a SID, or a source IP, with an alert already in the group, and the two timestamps are inside the configured window (60 minutes). Union-find closes the chain: A linked to B by user, and B linked to C by source IP, are one incident. Alerts are keyed by the indexer `_id`. Processing the same id again does not add a second copy.
+
+A SID is learned only from an alert that carries both the SID and the account name (`targetUserSid` with `targetUserName`, `subjectUserSid` with `subjectUserName`, or one security SID with exactly one account name on that alert). The pair is stored in SQLite (`sid_users`) with `last_seen`. The resolved name goes through the same normalization as any other user. An older observation does not replace a newer one.
+
+**VERIFY:** `data.win.system.security.userID`, `targetUserSid`, `subjectUserSid`, and the Sysmon `user` / `userId` names are not in `scripts/validation/indexed_fields.txt` or `docs/detections/_ruleset-notes.md`. The code reads them when they are present. They are not hunt fields until a lab 4624 and a lab 4104 confirm the paths.
+
+A **weak** link is host plus a short clock. An alert with no user after SID resolution and no usable source IP may join one open incident that already has the same `agent.name`, inside `host_proximity_minutes` (default 10). The reason is explicit, for example `linked by host WS01 within 10 min (no user in event)`. A weak link cannot merge two incidents, and it cannot open an incident by itself. An alert that never attaches still opens its own incident when `rule.level` is at least 12, which is the same gate as any other lone alert.
 
 An incident opens when the group's final score is at least medium, or any alert's `rule.level` is at least 12. A later alert is appended only while the incident status is New, Investigating, or Contained. Resolved and False Positive stay closed. A later alert that would have matched opens a new incident instead.
 
@@ -36,12 +42,13 @@ Those are analyst-workflow decisions. They belong next to incident status, which
 
 - The incident exists only after the backend has read the alerts. A rule that fires on the manager is visible in the Wazuh dashboard immediately. SF-020 will not be.
 - The window, the size cap, and the hub limit are code plus config. A frequency rule would have been a shorter XML block and a weaker model.
-- Latency is the poll interval plus this function. The function itself is pure and does not call the network. Step 14A does not wire it to a route. That wait is not measured here.
-- Cross-host correlation depends on the fields the agent actually sends. The synthetic tests set `targetUserName`, `subjectUserName`, `ipAddress`, and `srcip`. A lab 4104 that omits the user will not join unless some other key matches. That is a lab check, not a result of this step.
+- Latency is the poll interval plus this function. The function itself is pure and does not call the network. It is not wired to a route. That wait is not measured here.
+- Cross-host correlation depends on the fields the agent actually sends. A 4104 often has no account and no source IP. The weak host link is the fallback for that shape. It is a hint, not an identity. A lab export still has to show whether `security.userID` is actually on the event.
 
 ## What I must understand
 
-- Linking is by normalized user or source IP. It is not by host. Every DC01 alert must not become one incident.
+- Strong links are user, SID resolved to a user, and source IP. Those may merge incidents. Weak links are host plus the short window, and only for an alert that has neither a user nor a usable IP. A weak link joins one open incident. It does not pull two incidents together, because a workstation runs many unrelated sessions.
+- Every DC01 alert must not become one incident. Host is not a strong key.
 - `10.10.10.1`, `127.0.0.1`, `::1`, empty users, `-`, and accounts that end in `$` are not link keys.
 - A key seen with more distinct users than `hub_user_limit` is not a link key. The story's `10.10.10.20` is shared by three lab accounts, so the default limit is 8.
 - A component stops accepting alerts at `max_incident_alerts` (200).
@@ -61,4 +68,7 @@ Wazuh still alerts. The console does not open or extend the SF-020 incident unti
 The gateway and loopback are excluded. Any other key that appears with more than the configured number of users is not used as a link. The cap on incident size is a second guard.
 
 **Is this live?**
-No. Step 14A is pytest against synthetic alerts. No route calls it yet. Nothing here is `LAB VALIDATED`.
+No. The tests use synthetic alerts. No route calls the engine yet. Nothing here is `LAB VALIDATED`.
+
+**Why can't a host link merge two incidents?**
+Host and ten minutes are how a script block with no account still joins the story already running on WS01. If that same clue could union cases, every alert on WS01 in that window would become one incident. The weak alert may join one open incident. It may not drag a second incident along with it.

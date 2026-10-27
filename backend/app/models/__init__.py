@@ -7,6 +7,7 @@ from app.models.tables import (
     NoteRow,
     RiskEventRow,
     SavedHuntRow,
+    SidUserRow,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "NoteRow",
     "RiskEventRow",
     "SavedHuntRow",
+    "SidUserRow",
 ]

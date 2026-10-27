@@ -3,6 +3,9 @@
 # These numbers are design choices, not lab measurements.
 
 window_minutes: 60
+# An alert with no user and no usable source IP may join one open incident
+# on the same host inside this window. It cannot merge two incidents.
+host_proximity_minutes: 10
 max_incident_alerts: 200
 # A link key seen with more distinct users than this is not used.
 # The story source 10.10.10.20 is shared by sf-test-alice, sf-test-bob,

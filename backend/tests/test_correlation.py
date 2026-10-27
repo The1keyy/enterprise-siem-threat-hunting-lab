@@ -8,11 +8,15 @@ does not run it, so the auth_burst category can be shown counting once.
 
 from __future__ import annotations
 
+import copy
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
+from app.db import upgrade_database
 from app.services.correlation import (
     correlate,
     entity_risk,
@@ -21,6 +25,7 @@ from app.services.correlation import (
     normalize_user,
 )
 from app.services.risk import final_score
+from app.services.sid_map import load_sid_map, remember_sids
 
 LABEL = "SYNTHETIC TEST INPUT"
 BASE = datetime(2026, 10, 27, 15, 0, tzinfo=UTC)
@@ -653,3 +658,180 @@ def test_low_score_without_a_high_level_does_not_open() -> None:
         target="sf-test-dave",
     )
     assert correlate([alert]) == []
+
+
+ALICE_SID = "S-1-5-21-1001-1002-1003-1104"
+WEAK_HOST = (
+    f"linked by host WS01 within {CONFIG.host_proximity_minutes} min (no user in event)"
+)
+
+
+def _strip_identity(alert: dict) -> dict:
+    cloned = copy.deepcopy(alert)
+    eventdata = cloned["data"]["win"]["eventdata"]
+    for key in ("targetUserName", "subjectUserName", "ipAddress", "sourceIp"):
+        eventdata.pop(key, None)
+    for key in ("srcip", "srcuser", "dstuser"):
+        cloned["data"].pop(key, None)
+    return cloned
+
+
+def _replace_alert(alerts: list[dict], alert_id: str, updated: dict) -> list[dict]:
+    return [updated if item["_id"] == alert_id else item for item in alerts]
+
+
+def test_script_block_without_user_or_ip_joins_by_host() -> None:
+    assert CONFIG.host_proximity_minutes == 10
+    alerts = _story()
+    bare = _strip_identity(next(item for item in alerts if item["_id"] == "syn-sf-004"))
+    alerts = _replace_alert(alerts, "syn-sf-004", bare)
+    _assert_labeled(alerts)
+    incidents = correlate(alerts)
+    assert len(incidents) == 1
+    incident = incidents[0]
+    assert incident.final == 230
+    assert incident.band == "critical"
+    entry = next(item for item in incident.timeline if item.alert_id == "syn-sf-004")
+    assert entry.link_strength == "weak"
+    assert entry.link_reason == WEAK_HOST
+    assert WEAK_HOST in incident.link_reasons
+    counted = next(row for row in incident.breakdown if row.sf_id == "SF-004")
+    assert counted.counted is True
+
+
+def test_sid_resolves_to_a_strong_user_link(tmp_path) -> None:
+    teacher = _windows(
+        alert_id="syn-sid-teacher",
+        when=BASE,
+        sf_id="SF-001",
+        rule_id="100100",
+        level=11,
+        host="DC01",
+        description="repeated 4625 failures for one target account",
+        technique="T1110.001",
+        event_id="4625",
+        target="sf-test-alice",
+        ip="10.10.10.20",
+    )
+    teacher["data"]["win"]["eventdata"]["targetUserSid"] = ALICE_SID
+    _assert_labeled([teacher])
+    engine = create_engine(
+        f"sqlite:///{tmp_path / 'sid.db'}",
+        connect_args={"check_same_thread": False},
+    )
+    upgrade_database(f"sqlite:///{tmp_path / 'sid.db'}")
+    with Session(engine) as session:
+        remember_sids(session, [teacher], CONFIG)
+        older = copy.deepcopy(teacher)
+        older["_id"] = "syn-sid-older"
+        older["timestamp"] = _iso(BASE - timedelta(days=1))
+        older["data"]["win"]["eventdata"]["targetUserName"] = "sf-test-bob"
+        remember_sids(session, [older], CONFIG)
+        session.commit()
+        learned = load_sid_map(session)
+    assert learned[ALICE_SID.upper()] == "sf-test-alice"
+
+    alerts = _story()
+    bare = _strip_identity(next(item for item in alerts if item["_id"] == "syn-sf-004"))
+    bare["data"]["win"]["system"]["security"] = {"userID": ALICE_SID}
+    alerts = _replace_alert(alerts, "syn-sf-004", bare)
+    incidents = correlate(alerts, sid_map=learned)
+    assert len(incidents) == 1
+    incident = incidents[0]
+    assert incident.final == 230
+    entry = next(item for item in incident.timeline if item.alert_id == "syn-sf-004")
+    assert entry.link_strength == "strong"
+    assert entry.link_reason == "linked by user sf-test-alice"
+    assert "linked by user sf-test-alice" in incident.link_reasons
+    assert entry.link_reason != WEAK_HOST
+
+
+def test_no_user_alert_without_an_open_host_does_not_attach() -> None:
+    quiet = _windows(
+        alert_id="syn-quiet",
+        when=BASE,
+        sf_id="SF-009",
+        rule_id="100320",
+        level=10,
+        host="WS01",
+        description="new user account created",
+        technique="T1136.001",
+        event_id="4720",
+    )
+    quiet = _strip_identity(quiet)
+    _assert_labeled([quiet])
+    assert correlate([quiet]) == []
+
+    loud = _windows(
+        alert_id="syn-loud",
+        when=BASE,
+        sf_id="SF-004",
+        rule_id="100200",
+        level=12,
+        host="WS01",
+        description="suspicious PowerShell script block",
+        technique="T1059.001",
+        event_id="4104",
+    )
+    loud = _strip_identity(loud)
+    opened = correlate([loud])
+    assert len(opened) == 1
+    assert opened[0].alert_ids == ("syn-loud",)
+    assert opened[0].timeline[0].link_strength is None
+    assert opened[0].link_reasons == ()
+
+
+def test_host_proximity_does_not_merge_two_incidents() -> None:
+    alice = _windows(
+        alert_id="split-alice",
+        when=BASE,
+        sf_id="SF-004",
+        rule_id="100200",
+        level=12,
+        host="WS01",
+        description="suspicious PowerShell script block",
+        technique="T1059.001",
+        event_id="4104",
+        subject="sf-test-alice",
+    )
+    bob = _windows(
+        alert_id="split-bob",
+        when=BASE + timedelta(minutes=8),
+        sf_id="SF-004",
+        rule_id="100200",
+        level=12,
+        host="WS01",
+        description="suspicious PowerShell script block",
+        technique="T1059.001",
+        event_id="4104",
+        subject="sf-test-bob",
+    )
+    left = correlate([alice])
+    right = correlate([bob])
+    assert len(left) == 1
+    assert len(right) == 1
+    orphan = _strip_identity(
+        _windows(
+            alert_id="split-orphan",
+            when=BASE + timedelta(minutes=4),
+            sf_id="SF-005",
+            rule_id="100210",
+            level=12,
+            host="WS01",
+            description="encoded PowerShell process",
+            technique="T1059.001",
+            event_id="1",
+        )
+    )
+    _assert_labeled([alice, bob, orphan])
+    result = correlate([orphan], existing=[left[0], right[0]])
+    assert len(result) == 2
+    assert left[0].id in {item.id for item in result}
+    assert right[0].id in {item.id for item in result}
+    holders = [item for item in result if "split-orphan" in item.alert_ids]
+    assert len(holders) == 1
+    by_id = {item.id: item for item in result}
+    assert "sf-test-alice" in by_id[left[0].id].entities.users
+    assert "sf-test-bob" in by_id[right[0].id].entities.users
+    assert "sf-test-bob" not in by_id[left[0].id].entities.users
+    assert "sf-test-alice" not in by_id[right[0].id].entities.users

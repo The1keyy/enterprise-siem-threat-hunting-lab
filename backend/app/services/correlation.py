@@ -1,6 +1,7 @@
 """Group Wazuh alerts into incidents and score them from risk_config.yml.
 
 Pure functions. This module does not read the indexer or write SQLite.
+SID rows are written by app.services.sid_map.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ _SF_ID = re.compile(r"^(SF-\d{3})\b")
 @dataclass(frozen=True)
 class RiskConfig:
     window_minutes: int
+    host_proximity_minutes: int
     max_incident_alerts: int
     hub_user_limit: int
     open_level: int
@@ -49,6 +51,10 @@ class RiskConfig:
     def window(self) -> timedelta:
         return timedelta(minutes=self.window_minutes)
 
+    @property
+    def host_window(self) -> timedelta:
+        return timedelta(minutes=self.host_proximity_minutes)
+
 
 @dataclass(frozen=True)
 class ScoreRow:
@@ -70,6 +76,8 @@ class TimelineEntry:
     level: int
     rule_id: str | None
     description: str
+    link_strength: str | None = None
+    link_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -97,6 +105,13 @@ class CorrelatedIncident:
     link_reasons: tuple[str, ...]
     alert_ids: tuple[str, ...]
     first_seen: datetime
+    last_seen: datetime
+
+
+@dataclass(frozen=True)
+class SidObservation:
+    sid: str
+    user: str
     last_seen: datetime
 
 
@@ -146,6 +161,18 @@ class _UnionFind:
     def size_of(self, item: str) -> int:
         return self._size[self.find(item)]
 
+    def attach_singleton(self, item: str, target: str, limit: int | None) -> bool:
+        """Move a lone alert into a component. Refuse when that would merge two groups."""
+
+        if self.size_of(item) != 1:
+            return False
+        if self.find(item) == self.find(target):
+            return False
+        if limit is not None and self.size_of(target) + 1 > limit:
+            return False
+        self.union(item, target, None)
+        return True
+
 
 def load_risk_config(path: Path | None = None) -> RiskConfig:
     raw = yaml.safe_load((path or CONFIG_PATH).read_text(encoding="utf-8"))
@@ -168,6 +195,7 @@ def load_risk_config(path: Path | None = None) -> RiskConfig:
     bands = raw.get("bands") or {}
     config = RiskConfig(
         window_minutes=int(raw["window_minutes"]),
+        host_proximity_minutes=int(raw["host_proximity_minutes"]),
         max_incident_alerts=int(raw["max_incident_alerts"]),
         hub_user_limit=int(raw["hub_user_limit"]),
         open_level=int(raw["open_level"]),
@@ -234,6 +262,7 @@ def correlate(
     alerts: list[dict[str, Any]],
     existing: list[CorrelatedIncident] | None = None,
     config: RiskConfig | None = None,
+    sid_map: dict[str, str] | None = None,
 ) -> list[CorrelatedIncident]:
     """Link alerts, append only to open incidents, and score each group once."""
 
@@ -246,19 +275,20 @@ def correlate(
         for alert_id in incident.alert_ids
     }
     open_incidents = [incident for incident in prior if incident.status in cfg.open_statuses]
+    resolved = _merged_sid_map(alerts, prior, sid_map, cfg)
 
     working: dict[str, _Alert] = {}
     for incident in open_incidents:
         for raw in incident.alerts:
-            parsed = _parse_alert(raw, cfg)
+            parsed = _parse_alert(raw, cfg, resolved)
             working.setdefault(parsed.alert_id, parsed)
     for raw in alerts:
-        parsed = _parse_alert(raw, cfg)
+        parsed = _parse_alert(raw, cfg, resolved)
         if parsed.alert_id in closed_ids:
             continue
         working.setdefault(parsed.alert_id, parsed)
 
-    groups = _group_alerts(list(working.values()), open_incidents, cfg)
+    groups, weak = _group_alerts(list(working.values()), open_incidents, cfg)
     emitted: list[CorrelatedIncident] = []
     consumed: set[str] = set()
     for members in groups:
@@ -268,7 +298,7 @@ def correlate(
             for incident in open_incidents
             if set(incident.alert_ids) & member_ids
         ]
-        built = _build_incident(members, cfg, owners[0] if owners else None)
+        built = _build_incident(members, cfg, owners[0] if owners else None, weak)
         if owners:
             consumed.update(incident.id for incident in owners)
             emitted.append(built)
@@ -311,8 +341,12 @@ def entity_risk(
 def _validate(config: RiskConfig) -> None:
     if config.band_medium >= config.band_high or config.band_high >= config.band_critical:
         raise ValueError("risk bands must increase: medium < high < critical")
-    if config.window_minutes <= 0 or config.max_incident_alerts <= 0:
-        raise ValueError("window_minutes and max_incident_alerts must be positive")
+    if (
+        config.window_minutes <= 0
+        or config.host_proximity_minutes <= 0
+        or config.max_incident_alerts <= 0
+    ):
+        raise ValueError("windows and max_incident_alerts must be positive")
     if config.half_life_hours <= 0:
         raise ValueError("half_life_hours must be positive")
     if config.default_asset_class not in config.multipliers:
@@ -328,7 +362,118 @@ def _decay(points: int, age_hours: float, half_life_hours: float) -> float:
     return points * (0.5 ** (age_hours / half_life_hours))
 
 
-def _parse_alert(raw: dict[str, Any], config: RiskConfig) -> _Alert:
+# VERIFY: these SID paths are not in scripts/validation/indexed_fields.txt or
+# docs/detections/_ruleset-notes.md. Eventchannel decoders often keep EventData
+# names and System/Security UserID. Confirm on a lab 4624 and a lab 4104
+# before using them in a hunt. They are not hunt fields.
+_SID_PATHS = (
+    ("data", "win", "eventdata", "targetUserSid"),
+    ("data", "win", "eventdata", "subjectUserSid"),
+    ("data", "win", "system", "security", "userID"),
+    ("data", "win", "eventdata", "userId"),
+    ("data", "win", "eventdata", "userID"),
+)
+_SID_NAME_PAIRS = (
+    ("targetUserSid", "targetUserName"),
+    ("subjectUserSid", "subjectUserName"),
+)
+
+
+def normalize_sid(value: object, config: RiskConfig) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text.lower() in config.ignored_user_values:
+        return None
+    if not text.upper().startswith("S-1-"):
+        return None
+    return text.upper()
+
+
+def sid_observations(
+    alerts: list[dict[str, Any]],
+    config: RiskConfig | None = None,
+) -> list[SidObservation]:
+    """Pairs seen on the same alert. A later timestamp replaces an earlier one."""
+
+    cfg = config or load_risk_config()
+    found: dict[str, SidObservation] = {}
+    for raw in alerts:
+        timestamp = raw.get("timestamp")
+        if not isinstance(timestamp, str):
+            continue
+        when = _parse_time(timestamp)
+        eventdata = _dig(raw, "data", "win", "eventdata")
+        if not isinstance(eventdata, dict):
+            eventdata = {}
+        paired: set[str] = set()
+        for sid_key, name_key in _SID_NAME_PAIRS:
+            sid = normalize_sid(eventdata.get(sid_key), cfg)
+            user = normalize_user(eventdata.get(name_key), cfg)
+            if sid and user:
+                paired.add(sid)
+                _keep_sid(found, sid, user, when)
+        names = _named_users(raw, cfg)
+        if len(names) == 1:
+            user = next(iter(names))
+            for sid in _sid_values(raw, cfg):
+                if sid not in paired:
+                    _keep_sid(found, sid, user, when)
+    return list(found.values())
+
+
+def _keep_sid(
+    found: dict[str, SidObservation],
+    sid: str,
+    user: str,
+    when: datetime,
+) -> None:
+    current = found.get(sid)
+    if current is None or when >= current.last_seen:
+        found[sid] = SidObservation(sid=sid, user=user, last_seen=when)
+
+
+def _merged_sid_map(
+    alerts: list[dict[str, Any]],
+    prior: list[CorrelatedIncident],
+    sid_map: dict[str, str] | None,
+    config: RiskConfig,
+) -> dict[str, str]:
+    raw_alerts = list(alerts)
+    for incident in prior:
+        raw_alerts.extend(incident.alerts)
+    merged = dict(sid_map or {})
+    for observation in sid_observations(raw_alerts, config):
+        merged[observation.sid] = observation.user
+    return merged
+
+
+def _named_users(raw: dict[str, Any], config: RiskConfig) -> set[str]:
+    values = (
+        _dig(raw, "data", "win", "eventdata", "targetUserName"),
+        _dig(raw, "data", "win", "eventdata", "subjectUserName"),
+        _dig(raw, "data", "srcuser"),
+        _dig(raw, "data", "dstuser"),
+        # VERIFY: Sysmon EventData User. Not in indexed_fields.txt.
+        _dig(raw, "data", "win", "eventdata", "user"),
+    )
+    return {user for user in (normalize_user(value, config) for value in values) if user}
+
+
+def _sid_values(raw: dict[str, Any], config: RiskConfig) -> list[str]:
+    found: list[str] = []
+    for path in _SID_PATHS:
+        sid = normalize_sid(_dig(raw, *path), config)
+        if sid and sid not in found:
+            found.append(sid)
+    return found
+
+
+def _parse_alert(
+    raw: dict[str, Any],
+    config: RiskConfig,
+    sid_map: dict[str, str] | None = None,
+) -> _Alert:
     alert_id = raw.get("_id")
     if not isinstance(alert_id, str) or not alert_id:
         raise ValueError("alert is missing indexer _id")
@@ -338,16 +483,12 @@ def _parse_alert(raw: dict[str, Any], config: RiskConfig) -> _Alert:
     description = str(_dig(raw, "rule", "description") or "")
     match = _SF_ID.match(description.strip())
     sf_id = match.group(1) if match else None
-    users = frozenset(
-        user
-        for user in (
-            normalize_user(_dig(raw, "data", "win", "eventdata", "targetUserName"), config),
-            normalize_user(_dig(raw, "data", "win", "eventdata", "subjectUserName"), config),
-            normalize_user(_dig(raw, "data", "srcuser"), config),
-            normalize_user(_dig(raw, "data", "dstuser"), config),
-        )
-        if user
-    )
+    users = set(_named_users(raw, config))
+    for sid in _sid_values(raw, config):
+        resolved = normalize_user((sid_map or {}).get(sid), config)
+        if resolved:
+            users.add(resolved)
+    users_frozen = frozenset(users)
     source_ips = frozenset(
         ip
         for ip in (
@@ -362,7 +503,9 @@ def _parse_alert(raw: dict[str, Any], config: RiskConfig) -> _Alert:
     if isinstance(mitre_raw, str):
         mitre_raw = [mitre_raw]
     rule_id = _dig(raw, "rule", "id")
-    keys = frozenset({("user", user) for user in users} | {("source", ip) for ip in source_ips})
+    keys = frozenset(
+        {("user", user) for user in users_frozen} | {("source", ip) for ip in source_ips}
+    )
     return _Alert(
         alert_id=alert_id,
         time=_parse_time(timestamp),
@@ -370,7 +513,7 @@ def _parse_alert(raw: dict[str, Any], config: RiskConfig) -> _Alert:
         sf_id=sf_id,
         level=_as_int(_dig(raw, "rule", "level")),
         host=host,
-        users=users,
+        users=users_frozen,
         source_ips=source_ips,
         mitre=frozenset(str(item) for item in mitre_raw),
         rule_id=str(rule_id) if rule_id is not None else None,
@@ -383,14 +526,15 @@ def _group_alerts(
     alerts: list[_Alert],
     open_incidents: list[CorrelatedIncident],
     config: RiskConfig,
-) -> list[list[_Alert]]:
+) -> tuple[list[list[_Alert]], dict[str, str]]:
     if not alerts:
-        return []
+        return [], {}
     by_id = {item.alert_id: item for item in alerts}
     hubs = _hub_keys(alerts, config.hub_user_limit)
     union = _UnionFind()
     for alert_id in by_id:
         union.add(alert_id)
+    preexisting = {alert_id for incident in open_incidents for alert_id in incident.alert_ids}
     for incident in open_incidents:
         ids = [alert_id for alert_id in incident.alert_ids if alert_id in by_id]
         for other in ids[1:]:
@@ -409,13 +553,57 @@ def _group_alerts(
                     break
                 union.union(left.alert_id, right.alert_id, config.max_incident_alerts)
 
+    weak = _attach_by_host(alerts, preexisting, union, config)
     grouped: dict[str, list[_Alert]] = defaultdict(list)
     for alert in alerts:
         grouped[union.find(alert.alert_id)].append(alert)
-    return [
+    groups = [
         sorted(members, key=lambda item: (item.time, item.alert_id))
         for members in grouped.values()
     ]
+    return groups, weak
+
+
+def _attach_by_host(
+    alerts: list[_Alert],
+    preexisting: set[str],
+    union: _UnionFind,
+    config: RiskConfig,
+) -> dict[str, str]:
+    """Attach an alert that has no user and no source IP to one open group.
+
+    The alert must already be a singleton. Attaching it cannot union two groups.
+    """
+
+    weak: dict[str, str] = {}
+    orphans = sorted(
+        (alert for alert in alerts if not alert.link_keys and alert.host),
+        key=lambda item: (item.time, item.alert_id),
+    )
+    for orphan in orphans:
+        best: tuple[tuple[float, datetime, str, str], str] | None = None
+        for other in alerts:
+            if other.alert_id == orphan.alert_id or other.host != orphan.host:
+                continue
+            if not other.link_keys and other.alert_id not in preexisting:
+                continue
+            delta = abs(other.time - orphan.time)
+            if delta > config.host_window:
+                continue
+            root = union.find(other.alert_id)
+            if root == union.find(orphan.alert_id):
+                continue
+            rank = (delta.total_seconds(), other.time, other.alert_id, root)
+            if best is None or rank < best[0]:
+                best = (rank, root)
+        if best is None:
+            continue
+        if union.attach_singleton(orphan.alert_id, best[1], config.max_incident_alerts):
+            minutes = config.host_proximity_minutes
+            weak[orphan.alert_id] = (
+                f"linked by host {orphan.host} within {minutes} min (no user in event)"
+            )
+    return weak
 
 
 def _hub_keys(alerts: list[_Alert], limit: int) -> set[tuple[str, str]]:
@@ -430,6 +618,7 @@ def _build_incident(
     members: list[_Alert],
     config: RiskConfig,
     owner: CorrelatedIncident | None,
+    weak: dict[str, str] | None = None,
 ) -> CorrelatedIncident:
     ordered = sorted(members, key=lambda item: (item.time, item.alert_id))
     breakdown = tuple(_score_rows(ordered, config))
@@ -445,18 +634,7 @@ def _build_incident(
         id=incident_id,
         status=status,
         alerts=tuple(item.raw for item in ordered),
-        timeline=tuple(
-            TimelineEntry(
-                alert_id=item.alert_id,
-                time=item.time,
-                sf_id=item.sf_id,
-                host=item.host,
-                level=item.level,
-                rule_id=item.rule_id,
-                description=item.description,
-            )
-            for item in ordered
-        ),
+        timeline=tuple(_timeline_entry(item, ordered, config, weak or {}) for item in ordered),
         entities=Entities(
             users=tuple(sorted({user for item in ordered for user in item.users})),
             hosts=hosts,
@@ -470,7 +648,7 @@ def _build_incident(
         final=score,
         band=_band(score, forced, config),
         forced_critical=forced,
-        link_reasons=tuple(_link_reasons(ordered, config)),
+        link_reasons=tuple(_link_reasons(ordered, config, weak or {})),
         alert_ids=alert_ids,
         first_seen=ordered[0].time,
         last_seen=ordered[-1].time,
@@ -558,7 +736,65 @@ def _opens(incident: CorrelatedIncident, members: list[_Alert], config: RiskConf
     return any(item.level >= config.open_level for item in members)
 
 
-def _link_reasons(alerts: list[_Alert], config: RiskConfig) -> list[str]:
+def _timeline_entry(
+    alert: _Alert,
+    members: list[_Alert],
+    config: RiskConfig,
+    weak: dict[str, str],
+) -> TimelineEntry:
+    strength, reason = _alert_link(alert, members, config, weak)
+    return TimelineEntry(
+        alert_id=alert.alert_id,
+        time=alert.time,
+        sf_id=alert.sf_id,
+        host=alert.host,
+        level=alert.level,
+        rule_id=alert.rule_id,
+        description=alert.description,
+        link_strength=strength,
+        link_reason=reason,
+    )
+
+
+def _alert_link(
+    alert: _Alert,
+    members: list[_Alert],
+    config: RiskConfig,
+    weak: dict[str, str],
+) -> tuple[str | None, str | None]:
+    weak_reason = weak.get(alert.alert_id)
+    if weak_reason:
+        return "weak", weak_reason
+    reasons = _keys_shared_with(alert, members, config)
+    if not reasons:
+        return None, None
+    user_reason = next((item for item in reasons if item.startswith("linked by user ")), None)
+    return "strong", user_reason or reasons[0]
+
+
+def _keys_shared_with(alert: _Alert, members: list[_Alert], config: RiskConfig) -> list[str]:
+    hubs = _hub_keys(members, config.hub_user_limit)
+    reasons: list[str] = []
+    for key in sorted(alert.link_keys):
+        if key in hubs:
+            continue
+        for other in members:
+            if other.alert_id == alert.alert_id or key not in other.link_keys:
+                continue
+            if abs(other.time - alert.time) <= config.window:
+                kind, value = key
+                text = f"linked by user {value}" if kind == "user" else f"linked by source {value}"
+                if text not in reasons:
+                    reasons.append(text)
+                break
+    return reasons
+
+
+def _link_reasons(
+    alerts: list[_Alert],
+    config: RiskConfig,
+    weak: dict[str, str] | None = None,
+) -> list[str]:
     hubs = _hub_keys(alerts, config.hub_user_limit)
     found: list[str] = []
     by_key: dict[tuple[str, str], list[_Alert]] = defaultdict(list)
@@ -584,6 +820,10 @@ def _link_reasons(alerts: list[_Alert], config: RiskConfig) -> list[str]:
             found.append(f"linked by user {value}")
         else:
             found.append(f"linked by source {value}")
+    for alert in alerts:
+        reason = (weak or {}).get(alert.alert_id)
+        if reason and reason not in found:
+            found.append(reason)
     return found
 
 

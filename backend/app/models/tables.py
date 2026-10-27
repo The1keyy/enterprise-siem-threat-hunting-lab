@@ -76,6 +76,16 @@ class SavedHuntRow(Base):
     demo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
+class SidUserRow(Base):
+    """SID to account name, learned from alerts that carried both."""
+
+    __tablename__ = "sid_users"
+
+    sid: Mapped[str] = mapped_column(String, primary_key=True)
+    user_name: Mapped[str] = mapped_column(String, nullable=False)
+    last_seen: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class AuditLogRow(Base):
     __tablename__ = "audit_log"
 
