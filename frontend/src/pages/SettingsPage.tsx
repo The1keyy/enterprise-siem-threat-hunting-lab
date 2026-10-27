@@ -40,7 +40,7 @@ export function SettingsPage() {
               </div>
               <div>
                 <dt className="text-xs text-text-muted">API URL</dt>
-                <dd>{data.apiUrl}</dd>
+                <dd>{data.apiUrl || 'Not used in demo mode'}</dd>
               </div>
               <div>
                 <dt className="text-xs text-text-muted">Wazuh version</dt>

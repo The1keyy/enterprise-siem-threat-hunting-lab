@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/assert-fixtures.mjs && node scripts/assert-demo-build.mjs",
     "build": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "lint": "eslint .",
     "test": "vitest run",

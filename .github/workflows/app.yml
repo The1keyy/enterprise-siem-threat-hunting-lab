@@ -44,11 +44,18 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck
-        run: npx tsc --noEmit -p tsconfig.app.json && npx tsc --noEmit -p tsconfig.node.json
+      - name: Build like Vercel (demo only)
+        env:
+          VERCEL: "1"
+          VITE_DATA_MODE: demo
+        run: npm run build
 
-      - name: Build
-        run: npx vite build
+      - name: Live mode must not build on Vercel
+        run: |
+          if VERCEL=1 VITE_DATA_MODE=live node scripts/assert-demo-build.mjs; then
+            echo "A live-mode Vercel build was allowed."
+            exit 1
+          fi
 
       - name: Vitest
         run: npm test

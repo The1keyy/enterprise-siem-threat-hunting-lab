@@ -19,4 +19,10 @@ export default defineConfig({
       '/health': 'http://127.0.0.1:8000',
     },
   },
+  preview: {
+    port: 4173,
+    // The dev server proxies /health to the API. The production preview must
+    // not, or a refresh of /health never reaches the SPA.
+    proxy: {},
+  },
 })

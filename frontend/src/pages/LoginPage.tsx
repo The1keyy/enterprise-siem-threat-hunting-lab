@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router'
 import { useAuth } from '../hooks/useAuth.ts'
 import { ApiError } from '../services/api.ts'
+import { getDataMode } from '../services/config.ts'
 
 export function LoginPage() {
   const auth = useAuth()
@@ -10,7 +11,9 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  if (auth.username) return <Navigate to="/" replace />
+  if (getDataMode() === 'demo' || auth.username) {
+    return <Navigate to="/" replace />
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault()
