@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
+import { CommandPalette } from '../components/CommandPalette.tsx'
 import { TourBar } from '../components/TourBar.tsx'
 import { useAuth } from '../hooks/useAuth.ts'
 import { DemoBanner } from '../components/DemoBanner.tsx'
@@ -13,6 +14,7 @@ import { NAV_ITEMS } from '../navigation.ts'
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
+  const [palette, setPalette] = useState(false)
   const mode = useDataMode()
   const backend = useServiceHealth()
   const sawDemo = useDemoNotice()
@@ -40,6 +42,17 @@ export function AppShell() {
         : pathname === '/tour'
           ? 'Tour'
           : (current?.label ?? 'SentinelForge')
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setPalette(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
@@ -138,6 +151,17 @@ export function AppShell() {
               {title}
             </p>
             <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-border px-2 py-1 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
+                onClick={() => setPalette(true)}
+              >
+                <Search aria-hidden="true" size={14} />
+                <span className="hidden sm:inline">Search</span>
+                <kbd className="hidden font-mono text-[10px] text-text-muted md:inline">
+                  ⌘K
+                </kbd>
+              </button>
               {mode === 'demo' ? (
                 <Link
                   to="/tour"
@@ -186,6 +210,7 @@ export function AppShell() {
         </div>
       </div>
       <TourBar />
+      {palette ? <CommandPalette onClose={() => setPalette(false)} /> : null}
     </div>
   )
 }
