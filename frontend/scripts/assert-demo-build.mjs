@@ -5,9 +5,9 @@ if (!onVercel) {
 }
 
 const mode = process.env.VITE_DATA_MODE
-if (mode !== 'demo') {
+if (mode === 'live' || (mode && mode !== 'demo')) {
   console.error(
-    'Refusing to build on Vercel. This site is demo-only. Set VITE_DATA_MODE=demo. A live-mode build could point the public site at a lab.',
+    'Refusing to build on Vercel. This site is demo-only. Leave VITE_DATA_MODE unset or set it to demo. A live-mode build could point the public site at a lab.',
   )
   process.exit(1)
 }

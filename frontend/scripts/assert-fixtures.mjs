@@ -9,6 +9,7 @@ const required = [
   'incidents.json',
   'detections.json',
   'hunts.json',
+  'risk_model.json',
 ]
 
 const missing = []
@@ -28,9 +29,6 @@ console.error(
   `Missing fixture files next to the frontend: ${missing.join(', ')}`,
 )
 console.error(
-  'The console imports ../fixtures. On Vercel that directory is outside the frontend root.',
-)
-console.error(
-  'Project Settings → Build and Deployment → Root Directory → Edit → turn on "Include source files outside of the Root Directory in the Build Step".',
+  'The console imports ../fixtures. Leave the Vercel project root as the repository root so the root vercel.json can see that directory.',
 )
 process.exit(1)
