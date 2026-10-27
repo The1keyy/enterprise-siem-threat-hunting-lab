@@ -28,31 +28,39 @@ def test_incident_filters(analyst: TestClient) -> None:
     assert all(any("sf-test-alice" in user for user in row["users"]) for row in alice)
 
 
+def _story_id(analyst: TestClient) -> str:
+    rows = analyst.get("/api/incidents").json()
+    story = next(row for row in rows if row["riskScore"] == 230)
+    return story["id"]
+
+
 def test_patch_updates_status(analyst: TestClient) -> None:
-    updated = analyst.patch("/api/incidents/INC-0001", json={"status": "Contained"})
+    incident_id = _story_id(analyst)
+    updated = analyst.patch(f"/api/incidents/{incident_id}", json={"status": "Contained"})
     assert updated.status_code == 200
     assert updated.json()["status"] == "Contained"
-    again = analyst.get("/api/incidents/INC-0001")
+    again = analyst.get(f"/api/incidents/{incident_id}")
     assert again.json()["status"] == "Contained"
-    assert again.json()["riskScore"] == 125
+    assert again.json()["riskScore"] == 230
 
 
 def test_action_requires_confirm_and_stays_a_dry_run(analyst: TestClient) -> None:
-    before = analyst.get("/api/incidents/INC-0001").json()
+    incident_id = _story_id(analyst)
+    before = analyst.get(f"/api/incidents/{incident_id}").json()
     denied = analyst.post(
-        "/api/incidents/INC-0001/actions",
+        f"/api/incidents/{incident_id}/actions",
         json={"action": "isolate_endpoint", "target": "WS01", "confirm": False},
     )
     assert denied.status_code == 400
 
     allowed = analyst.post(
-        "/api/incidents/INC-0001/actions",
+        f"/api/incidents/{incident_id}/actions",
         json={"action": "isolate_endpoint", "target": "WS01", "confirm": True},
     )
     assert allowed.status_code == 200
     assert allowed.json()["message"] == DRY_RUN_MESSAGE
 
-    after = analyst.get("/api/incidents/INC-0001").json()
+    after = analyst.get(f"/api/incidents/{incident_id}").json()
     assert after["status"] == before["status"]
     assert after["audit"][0]["message"] == DRY_RUN_MESSAGE
     assert after["audit"][0]["target"] == "WS01"

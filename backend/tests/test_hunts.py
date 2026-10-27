@@ -63,7 +63,7 @@ def test_powershell_hunt_matches_a_fixture_process() -> None:
             row["incidentId"] = incident["id"]
             if event_matches_query(hunt["query"], row):
                 matched.append(row)
-    assert any(row["ruleId"] == "SF-005" for row in matched)
+    assert any(row["ruleId"] == "100200" for row in matched)
 
 
 @pytest.mark.asyncio

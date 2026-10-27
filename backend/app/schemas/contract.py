@@ -168,6 +168,8 @@ class TimelineEvent(Strict):
     ruleId: str
     severity: SeverityName
     raw: dict[str, Any]
+    linkStrength: Literal["strong", "weak"] | None = None
+    linkReason: str | None = None
 
 
 class EntitiesBlock(Strict):
@@ -184,6 +186,25 @@ class RiskItem(Strict):
     event: str
     ruleId: str
     points: int
+    counted: bool = True
+    reason: str = "counted"
+
+
+class SprayFindingModel(Strict):
+    alertId: str
+    sourceIp: str
+    status: Literal[
+        "spray confirmed",
+        "same-source failure burst (not confirmed spray)",
+    ]
+    users: list[str]
+
+
+class ChecklistItemModel(Strict):
+    id: str
+    sfId: str
+    text: str
+    checked: bool
 
 
 class RiskBreakdown(Strict):
@@ -193,6 +214,8 @@ class RiskBreakdown(Strict):
     multiplier: float
     final: int
     severityBand: SeverityName
+    multiplierHosts: list[str] = Field(default_factory=list)
+    forcedCritical: bool = False
 
 
 class NoteModel(Strict):
@@ -231,6 +254,9 @@ class IncidentDetailModel(Strict):
     summary: str
     recommendedContainment: list[str]
     audit: list[AuditModel]
+    linkReasons: list[str] = Field(default_factory=list)
+    sprayFindings: list[SprayFindingModel] = Field(default_factory=list)
+    checklist: list[ChecklistItemModel] = Field(default_factory=list)
 
 
 class IncidentFile(NoticeFile):
@@ -434,6 +460,45 @@ class HealthFile(NoticeFile):
     activeRules: int
 
 
+class RiskWeightModel(Strict):
+    label: str
+    points: int
+
+
+class RiskMultiplierModel(Strict):
+    assetType: AssetType
+    multiplier: float
+
+
+class RiskBandModel(Strict):
+    severity: SeverityName
+    rule: str
+
+
+class RiskCorrelationModel(Strict):
+    windowMinutes: int
+    hostProximityMinutes: int
+    halfLifeHours: float
+    sprayMinDistinctUsers: int
+    openLevel: int
+    criticalLevel: int
+
+
+class RiskModelFile(NoticeFile):
+    weights: list[RiskWeightModel]
+    multipliers: list[RiskMultiplierModel]
+    bands: list[RiskBandModel]
+    correlation: RiskCorrelationModel
+
+
+class AlertFixtureFile(NoticeFile):
+    """Synthetic alerts the correlation engine turns into demo incidents."""
+
+    demo: Literal[True]
+    alerts: list[dict[str, Any]]
+    archives: list[dict[str, Any]]
+
+
 FIXTURE_MODELS: dict[str, type[NoticeFile]] = {
     "overview.json": OverviewFile,
     "incidents.json": IncidentFile,
@@ -442,4 +507,6 @@ FIXTURE_MODELS: dict[str, type[NoticeFile]] = {
     "entities.json": EntityFile,
     "sources.json": SourceFile,
     "health.json": HealthFile,
+    "alerts.json": AlertFixtureFile,
+    "risk_model.json": RiskModelFile,
 }

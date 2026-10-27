@@ -1,15 +1,18 @@
+import { incidentFixtures } from '../fixtures/incidents.ts'
 import { overviewFixture } from '../fixtures/overview.ts'
+import riskModel from '../../../fixtures/risk_model.json'
 import { labAsset } from './labAssets.ts'
-import {
-  ASSET_MULTIPLIERS,
-  RISK_EVENT_WEIGHTS,
-  SEVERITY_THRESHOLDS,
-} from './risk.ts'
 import { WAZUH_VERSION } from './versions.ts'
-import type { DataMode, Severity } from '../types/domain.ts'
-import type { IncidentDetail, TimelineEvent } from '../types/incident.ts'
+import type { DataMode } from '../types/domain.ts'
+import type {
+  IncidentDetail,
+  RiskAssetType,
+  RiskMultiplier,
+  TimelineEvent,
+} from '../types/incident.ts'
 import type {
   AgentRow,
+  CorrelationStatus,
   DataSourceCard,
   HealthReport,
   SettingsView,
@@ -150,6 +153,24 @@ export function buildHealth(activeRules: number): HealthReport {
     diskPercent: null,
     failedIngestion: null,
     activeRules,
+    correlation: demoCorrelationStatus(incidentFixtures),
+  }
+}
+
+export function demoCorrelationStatus(
+  incidents: readonly { timeline: readonly unknown[] }[],
+): CorrelationStatus {
+  const alertsProcessed = incidents.reduce(
+    (sum, incident) => sum + incident.timeline.length,
+    0,
+  )
+  return {
+    enabled: false,
+    lastRun: null,
+    checkpoint: null,
+    alertsProcessed,
+    error: null,
+    note: 'Demo mode does not poll Wazuh. Incidents were built by the correlation engine from synthetic alerts.',
   }
 }
 
@@ -166,20 +187,20 @@ export function buildWorkflows(): Workflow[] {
         'Attach to incident',
       ],
       destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented',
+      status: 'Stretch',
     },
     {
       id: 'escalation',
       name: 'High-risk escalation',
-      trigger: `Risk ≥ ${SEVERITY_THRESHOLDS.high} (high band)`,
+      trigger: 'Incident created or risk band rises',
       steps: [
-        'Risk ≥ threshold',
-        'Create incident',
-        'Set severity',
-        'Generate analyst checklist',
+        'Incident opened or band rises',
+        'Read the detection investigation steps',
+        'Write the checklist on the incident',
+        'Record an audit log entry',
       ],
-      destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented',
+      destructive: 'Destructive actions: none. No response action is executed.',
+      status: 'Implemented',
     },
     {
       id: 'context',
@@ -193,45 +214,32 @@ export function buildWorkflows(): Workflow[] {
         'Display context',
       ],
       destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented',
+      status: 'Stretch',
     },
   ]
+}
+
+const model = riskModel as {
+  weights: { label: string; points: number }[]
+  multipliers: { assetType: string; multiplier: number }[]
+  bands: { severity: SettingsView['bands'][number]['severity']; rule: string }[]
+  correlation: SettingsView['correlation']
 }
 
 export function buildSettings(input: {
   dataMode: DataMode
   apiUrl: string
 }): SettingsView {
-  const bands: { severity: Severity; rule: string }[] = [
-    {
-      severity: 'critical',
-      rule: `${SEVERITY_THRESHOLDS.critical} or higher`,
-    },
-    {
-      severity: 'high',
-      rule: `${SEVERITY_THRESHOLDS.high} to ${SEVERITY_THRESHOLDS.critical - 1}`,
-    },
-    {
-      severity: 'medium',
-      rule: `${SEVERITY_THRESHOLDS.medium} to ${SEVERITY_THRESHOLDS.high - 1}`,
-    },
-    { severity: 'low', rule: `1 to ${SEVERITY_THRESHOLDS.medium - 1}` },
-    { severity: 'info', rule: '0' },
-  ]
   return {
     dataMode: input.dataMode,
     apiUrl: input.apiUrl,
     wazuhVersion: WAZUH_VERSION,
-    weights: RISK_EVENT_WEIGHTS.map((item) => ({
-      label: item.label,
-      points: item.points,
+    weights: model.weights,
+    multipliers: model.multipliers.map((row) => ({
+      assetType: row.assetType as RiskAssetType,
+      multiplier: row.multiplier as RiskMultiplier,
     })),
-    multipliers: (
-      Object.entries(ASSET_MULTIPLIERS) as [
-        keyof typeof ASSET_MULTIPLIERS,
-        (typeof ASSET_MULTIPLIERS)[keyof typeof ASSET_MULTIPLIERS],
-      ][]
-    ).map(([assetType, multiplier]) => ({ assetType, multiplier })),
-    bands,
+    bands: model.bands,
+    correlation: model.correlation,
   }
 }

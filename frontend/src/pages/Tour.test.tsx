@@ -11,7 +11,9 @@ describe('guided tour and command palette', () => {
         <TourPage />
       </MemoryRouter>,
     )
-    expect(screen.getByText(/hand-written demo fixture/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/built by the correlation engine from synthetic alerts/),
+    ).toBeInTheDocument()
     expect(
       screen.getByText(/real detection rule from the repository/),
     ).toBeInTheDocument()

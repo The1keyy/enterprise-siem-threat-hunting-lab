@@ -1,3 +1,5 @@
+import { storyIncidentId } from '../fixtures/incidents.ts'
+
 export type TourStep = {
   title: string
   path: string
@@ -13,20 +15,20 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
   {
     title: 'Incident',
-    path: '/incidents/INC-0001',
-    body: 'This incident is a hand-written demo fixture. The correlation engine is real and tested, and it does not fill this queue yet.',
+    path: `/incidents/${storyIncidentId}`,
+    body: 'This incident was built by the correlation engine from synthetic alerts. The score is the risk model, not a lab result.',
   },
   {
     title: 'Timeline',
-    path: '/incidents/INC-0001',
+    path: `/incidents/${storyIncidentId}`,
     hash: 'timeline',
-    body: 'The stages follow the attack story in the fixture. A chip means a user, source IP, or host also appears on an earlier event.',
+    body: 'The stages follow the synthetic attack story. A strong link shares a user or source IP. A weak link is the same host within 10 minutes when the event has no user.',
   },
   {
     title: 'Risk breakdown',
-    path: '/incidents/INC-0001',
+    path: `/incidents/${storyIncidentId}`,
     hash: 'risk',
-    body: 'The score is rule-based. Each row is a category and its points. A row with zero points is not counted and stays muted.',
+    body: 'The score is rule-based. Each row is a category and its points. A row that is not counted stays visible with the reason.',
   },
   {
     title: 'Detection rule',

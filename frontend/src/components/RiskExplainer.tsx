@@ -1,19 +1,16 @@
-import { finalRiskScore } from '../lib/risk.ts'
 import type { RiskLine } from '../types/entity.ts'
 
 export function RiskExplainer({ lines }: { lines: readonly RiskLine[] }) {
-  const total = lines.reduce(
-    (sum, line) => sum + finalRiskScore(line.subtotal, line.multiplier),
-    0,
-  )
+  const total = lines.reduce((sum, line) => sum + line.decayed, 0)
   return (
     <details className="rounded-card border border-border bg-surface p-4">
       <summary className="cursor-pointer text-sm font-medium text-text">
         How risk is calculated
       </summary>
       <p className="mt-2 text-sm text-text-muted">
-        Each related incident is round(subtotal × asset multiplier). The entity
-        score is the sum of those finals. The weights are the fixture model.
+        The entity score sums each incident&apos;s counted subtotal, then halves
+        that weight every 24 hours after the incident&apos;s last alert. The
+        asset multiplier is not applied again.
       </p>
       {lines.length === 0 ? (
         <p className="mt-2 text-sm text-text-muted">No data yet.</p>
@@ -24,7 +21,7 @@ export function RiskExplainer({ lines }: { lines: readonly RiskLine[] }) {
               <th className="py-1 font-medium">Incident</th>
               <th className="py-1 font-medium">Subtotal</th>
               <th className="py-1 font-medium">Multiplier</th>
-              <th className="py-1 text-right font-medium">Final</th>
+              <th className="py-1 text-right font-medium">Decayed</th>
             </tr>
           </thead>
           <tbody>
@@ -35,9 +32,7 @@ export function RiskExplainer({ lines }: { lines: readonly RiskLine[] }) {
                 </td>
                 <td className="py-1">{line.subtotal}</td>
                 <td className="py-1">× {line.multiplier}</td>
-                <td className="py-1 text-right">
-                  {finalRiskScore(line.subtotal, line.multiplier)}
-                </td>
+                <td className="py-1 text-right">{line.decayed}</td>
               </tr>
             ))}
           </tbody>

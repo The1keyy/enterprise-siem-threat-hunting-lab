@@ -1,21 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import { incidentFixtures } from '../fixtures/incidents.ts'
-import { ASSET_MULTIPLIERS, finalRiskScore } from './risk.ts'
-import { buildHost, buildUser } from './entityModel.ts'
+import { overviewFixture } from '../fixtures/overview.ts'
+import { ASSET_MULTIPLIERS } from './risk.ts'
+import { buildHost, buildUser, decayedSubtotal } from './entityModel.ts'
 import { buildHealth, buildSettings, buildSources } from './operationsModel.ts'
 
 describe('entity risk', () => {
-  it('sums incident scores with the shared multiplier', () => {
+  it('sums decayed incident subtotals and does not reapply the multiplier', () => {
     const profile = buildUser(incidentFixtures, 'sf-test-alice')
     expect(profile).not.toBeNull()
     if (!profile) return
+    const now = Date.parse(overviewFixture.generatedAt)
     const expected = profile.lines.reduce(
-      (sum, line) => sum + finalRiskScore(line.subtotal, line.multiplier),
+      (sum, line) => sum + decayedSubtotal(line.subtotal, line.lastSeen, now),
       0,
     )
     expect(profile.riskScore).toBe(expected)
     expect(profile.riskScore).toBeGreaterThan(0)
-    expect(profile.lines.some((line) => line.multiplier === 1)).toBe(true)
+    expect(profile.lines.some((line) => line.multiplier === 1.7)).toBe(true)
   })
 
   it('keeps the domain controller multiplier on DC01', () => {
@@ -50,8 +52,13 @@ describe('operations fixtures', () => {
     })
     expect(settings.wazuhVersion).toBe('4.14.9')
     expect(settings.weights.find((row) => row.points === 15)?.label).toBe(
-      'Failed-auth burst',
+      'Auth burst',
     )
+    expect(settings.bands.find((band) => band.severity === 'critical')?.rule).toBe(
+      '150 or higher',
+    )
+    expect(settings.correlation.sprayMinDistinctUsers).toBe(3)
+    expect(settings.correlation.halfLifeHours).toBe(24)
     expect(settings.multipliers).toEqual([
       { assetType: 'workstation', multiplier: 1 },
       { assetType: 'server', multiplier: 1.3 },

@@ -48,6 +48,40 @@ export function SettingsPage() {
               </div>
             </dl>
           </section>
+          <section className="rounded-card border border-border bg-surface p-4 text-sm">
+            <h2 className="font-medium text-text">Correlation</h2>
+            <p className="mt-1 text-xs text-text-muted">
+              Read-only copy of the risk model. These values are not edited here.
+            </p>
+            <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+              <div>
+                <dt className="text-xs text-text-muted">Window</dt>
+                <dd>{data.correlation.windowMinutes} minutes</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">Host proximity</dt>
+                <dd>{data.correlation.hostProximityMinutes} minutes</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">Entity half-life</dt>
+                <dd>{data.correlation.halfLifeHours} hours</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">Spray confirmation</dt>
+                <dd>
+                  {data.correlation.sprayMinDistinctUsers} distinct users
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">Open level</dt>
+                <dd>{data.correlation.openLevel}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-text-muted">Critical level</dt>
+                <dd>{data.correlation.criticalLevel}</dd>
+              </div>
+            </dl>
+          </section>
           <section className="rounded-card border border-border bg-surface p-4">
             <h2 className="text-sm font-medium text-text">Risk weights</h2>
             <table className="mt-2 w-full text-left text-sm">

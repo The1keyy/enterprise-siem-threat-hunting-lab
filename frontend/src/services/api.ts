@@ -1,3 +1,4 @@
+import { incidentFixtures } from '../fixtures/incidents.ts'
 import { overviewFixture } from '../fixtures/overview.ts'
 import type { IncidentFilters } from '../lib/incidentFilters.ts'
 import type {
@@ -19,6 +20,7 @@ import {
   listDemoIncidents,
   logDemoDryRun,
   saveDemoAnalyst,
+  setDemoChecklist,
   updateDemoIncident,
 } from './demoIncidents.ts'
 import {
@@ -32,9 +34,11 @@ import {
   buildSettings,
   buildSources,
   buildWorkflows,
+  demoCorrelationStatus,
 } from '../lib/operationsModel.ts'
 import type { EntityRow, HostProfile, UserProfile } from '../types/entity.ts'
 import type {
+  CorrelationStatus,
   DataSourceCard,
   HealthReport,
   SettingsView,
@@ -276,6 +280,45 @@ export async function saveAnalyst(
     `/incidents/${encodeURIComponent(id)}/analyst`,
     'PATCH',
     patch,
+  )
+}
+
+export async function getCorrelationStatus(): Promise<CorrelationStatus> {
+  if (getDataMode() === 'demo') return demoCorrelationStatus(incidentFixtures)
+  const body = await liveSend<{
+    enabled: boolean
+    lastRun: string | null
+    checkpoint: { timestamp: string; id: string } | null
+    alertsProcessed: number
+    error: string | null
+    note?: string
+  }>('/correlation/status', 'GET')
+  return {
+    enabled: body.enabled,
+    lastRun: body.lastRun,
+    checkpoint: body.checkpoint,
+    alertsProcessed: body.alertsProcessed,
+    error: body.error,
+    note:
+      body.note ??
+      (body.error
+        ? body.error
+        : body.enabled
+          ? 'The poller reads alerts whose rule group is sentinelforge.'
+          : 'The background poller is off.'),
+  }
+}
+
+export async function setChecklistItem(
+  id: string,
+  itemId: string,
+  checked: boolean,
+): Promise<IncidentDetail> {
+  if (getDataMode() === 'demo') return setDemoChecklist(id, itemId, checked)
+  return liveSend<IncidentDetail>(
+    `/incidents/${encodeURIComponent(id)}/checklist/${encodeURIComponent(itemId)}`,
+    'PATCH',
+    { checked },
   )
 }
 

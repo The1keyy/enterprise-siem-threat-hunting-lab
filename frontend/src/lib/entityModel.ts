@@ -17,6 +17,20 @@ import type {
 } from '../types/incident.ts'
 
 const DEMO_END = Date.parse(overviewFixture.generatedAt)
+const HALF_LIFE_HOURS = 24
+
+/** Counted subtotal, halved every 24 hours after the incident's last alert. */
+export function decayedSubtotal(
+  subtotal: number,
+  lastSeen: string,
+  now: number,
+): number {
+  const last = Date.parse(lastSeen)
+  if (Number.isNaN(last)) return subtotal
+  const ageHours = Math.max(0, (now - last) / 3_600_000)
+  const decayed = subtotal * 0.5 ** (ageHours / HALF_LIFE_HOURS)
+  return Math.round(decayed * 100) / 100
+}
 
 function record(value: unknown): Record<string, unknown> | null {
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
@@ -57,6 +71,8 @@ function linesFor(incidents: readonly IncidentDetail[]): RiskLine[] {
     multiplier: incident.risk.multiplier,
     assetType: incident.risk.assetType,
     final: finalRiskScore(incident.risk.subtotal, incident.risk.multiplier),
+    lastSeen: incident.lastSeen,
+    decayed: decayedSubtotal(incident.risk.subtotal, incident.lastSeen, DEMO_END),
   }))
 }
 
@@ -72,8 +88,7 @@ function historyFor(
       .filter((incident) => incident.lastSeen.slice(0, 10) === key)
       .reduce(
         (sum, incident) =>
-          sum +
-          finalRiskScore(incident.risk.subtotal, incident.risk.multiplier),
+          sum + decayedSubtotal(incident.risk.subtotal, incident.lastSeen, DEMO_END),
         0,
       )
     return { label: key.slice(5), score }
@@ -95,7 +110,7 @@ function summary(
   const lines = linesFor(incidents)
   return {
     name,
-    riskScore: lines.reduce((sum, line) => sum + line.final, 0),
+    riskScore: lines.reduce((sum, line) => sum + line.decayed, 0),
     incidentIds: incidents.map((incident) => incident.id),
     lastActivity: lastActivity(incidents),
   }
@@ -141,9 +156,9 @@ function detectionLinks(events: readonly TimelineEvent[]) {
 export function listUsers(incidents: readonly IncidentDetail[]): EntityRow[] {
   const names = new Set<string>()
   for (const incident of incidents) {
-    for (const name of incident.users) names.add(name)
-    for (const name of incident.entities.users) names.add(name)
-    for (const event of incident.timeline) names.add(event.user)
+    for (const name of incident.users) if (name) names.add(name)
+    for (const name of incident.entities.users) if (name) names.add(name)
+    for (const event of incident.timeline) if (event.user) names.add(event.user)
   }
   return [...names]
     .map((name) =>
@@ -158,9 +173,9 @@ export function listUsers(incidents: readonly IncidentDetail[]): EntityRow[] {
 export function listHosts(incidents: readonly IncidentDetail[]): EntityRow[] {
   const names = new Set<string>()
   for (const incident of incidents) {
-    for (const name of incident.hosts) names.add(name)
-    for (const name of incident.entities.hosts) names.add(name)
-    for (const event of incident.timeline) names.add(event.host)
+    for (const name of incident.hosts) if (name) names.add(name)
+    for (const name of incident.entities.hosts) if (name) names.add(name)
+    for (const event of incident.timeline) if (event.host) names.add(event.host)
   }
   return [...names]
     .map((name) =>

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { incidentFixtures, storyIncidentId } from '../fixtures/incidents.ts'
 import { DRY_RUN_MESSAGE } from '../types/incident.ts'
 import { IncidentDetail } from './IncidentDetail.tsx'
 import { Incidents } from './Incidents.tsx'
@@ -25,18 +26,26 @@ describe('incidents queue', () => {
 
   it('narrows the table when a severity filter is applied', async () => {
     renderIncidents()
-    expect(await screen.findByText('INC-0001')).toBeInTheDocument()
-    expect(screen.getByText('INC-0009')).toBeInTheDocument()
-    expect(screen.getByText('9 incidents · 2 critical')).toBeInTheDocument()
+    const critical = incidentFixtures.filter((item) => item.severity === 'critical')
+    expect(await screen.findByText(storyIncidentId)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        `${incidentFixtures.length} incidents · ${critical.length} critical`,
+      ),
+    ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('checkbox', { name: 'Critical' }))
 
     expect(
-      await screen.findByText('2 incidents · 2 critical'),
+      await screen.findByText(
+        `${critical.length} ${critical.length === 1 ? 'incident' : 'incidents'} · ${critical.length} critical`,
+      ),
     ).toBeInTheDocument()
-    expect(screen.getByText('INC-0001')).toBeInTheDocument()
-    expect(screen.getByText('INC-0002')).toBeInTheDocument()
-    expect(screen.queryByText('INC-0009')).not.toBeInTheDocument()
+    expect(screen.getByText(storyIncidentId)).toBeInTheDocument()
+    for (const incident of incidentFixtures) {
+      if (incident.severity === 'critical') continue
+      expect(screen.queryByText(incident.id)).not.toBeInTheDocument()
+    }
   })
 })
 
@@ -48,7 +57,7 @@ describe('investigation response actions', () => {
 
   it('shows a confirm modal and does not execute the action', async () => {
     const execute = vi.spyOn(api, 'executeResponseAction')
-    renderIncidents('/incidents/INC-0001')
+    renderIncidents(`/incidents/${storyIncidentId}`)
 
     fireEvent.click(
       await screen.findByRole('button', { name: 'Isolate lab endpoint' }),
@@ -56,7 +65,8 @@ describe('investigation response actions', () => {
 
     const dialog = screen.getByRole('dialog')
     expect(dialog).toHaveTextContent('Isolate lab endpoint')
-    expect(dialog).toHaveTextContent('WS01')
+    const story = incidentFixtures.find((item) => item.id === storyIncidentId)
+    expect(dialog).toHaveTextContent(story?.hosts[0] ?? '')
     expect(execute).not.toHaveBeenCalled()
     expect(screen.queryByText(DRY_RUN_MESSAGE)).not.toBeInTheDocument()
 

@@ -4,7 +4,7 @@ import { LoadingState } from '../components/LoadingState.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
 import { StatusPill } from '../components/StatusPill.tsx'
 import { useResource } from '../hooks/useResource.ts'
-import { getHealth } from '../services/api.ts'
+import { getCorrelationStatus, getHealth } from '../services/api.ts'
 
 function dash(value: string | number | null): string {
   if (value === null || value === '') return '—'
@@ -13,6 +13,11 @@ function dash(value: string | number | null): string {
 
 export function HealthPage() {
   const state = useResource(getHealth, 'health', 'The health request failed.')
+  const correlation = useResource(
+    getCorrelationStatus,
+    'correlation',
+    'The correlation status request failed.',
+  )
   const data = state.data
 
   return (
@@ -21,6 +26,49 @@ export function HealthPage() {
         title="System Health"
         description="Version 4.14.9 is the pinned target. Nothing here was checked against a running manager."
       />
+      <section className="mb-3 rounded-card border border-border bg-surface p-4">
+        <h2 className="text-sm font-medium text-text">Correlation</h2>
+        {correlation.loading ? (
+          <LoadingState label="Loading correlation status" lines={2} />
+        ) : null}
+        {correlation.error ? (
+          <ErrorState message={correlation.error} onRetry={correlation.reload} />
+        ) : null}
+        {correlation.data ? (
+          <dl className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-text-muted">Poller</dt>
+              <dd>{correlation.data.enabled ? 'On' : 'Off'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-text-muted">Last run</dt>
+              <dd>{dash(correlation.data.lastRun)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-text-muted">Checkpoint</dt>
+              <dd>
+                {correlation.data.checkpoint
+                  ? `${correlation.data.checkpoint.timestamp} ${correlation.data.checkpoint.id}`
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-text-muted">Alerts processed</dt>
+              <dd>{correlation.data.alertsProcessed}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-xs text-text-muted">Note</dt>
+              <dd>{correlation.data.note}</dd>
+            </div>
+            {correlation.data.error ? (
+              <div className="sm:col-span-2">
+                <dt className="text-xs text-text-muted">Error</dt>
+                <dd className="text-high">{correlation.data.error}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
+      </section>
       {state.loading ? <LoadingState label="Loading health" lines={4} /> : null}
       {state.error ? (
         <ErrorState message={state.error} onRetry={state.reload} />

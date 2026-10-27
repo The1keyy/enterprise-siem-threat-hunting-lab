@@ -1,29 +1,238 @@
 {
-  "_notice": "DEMO DATA — synthetic, not real telemetry",
+  "_notice": "DEMO DATA \u2014 SYNTHETIC, not real telemetry. Not a lab result.",
   "incidents": [
     {
-      "id": "INC-0001",
-      "title": "Password spray then PowerShell on WS01",
-      "severity": "critical",
-      "riskScore": 125,
-      "status": "Investigating",
-      "owner": "Analyst",
+      "id": "INC-0c86d897",
+      "title": "SF-013, SF-014 on UBU01",
+      "severity": "medium",
+      "riskScore": 52,
+      "status": "New",
+      "owner": "Unassigned",
       "users": [
-        "sf-test-alice"
+        "sf-test-carol"
       ],
       "hosts": [
-        "WS01"
+        "UBU01"
       ],
       "mitre": [
-        {
-          "id": "T1110.003",
-          "name": "Password Spraying",
-          "tactic": "Credential Access"
-        },
         {
           "id": "T1078",
           "name": "Valid Accounts",
           "tactic": "Initial Access"
+        },
+        {
+          "id": "T1110.001",
+          "name": "Password Guessing",
+          "tactic": "Credential Access"
+        }
+      ],
+      "firstSeen": "2026-10-25T15:00:00Z",
+      "lastSeen": "2026-10-25T15:01:00Z",
+      "demo": true,
+      "timeline": [
+        {
+          "time": "2026-10-25T15:00:00Z",
+          "title": "SF-013: sshd failure burst SYNTHETIC TEST INPUT",
+          "source": "linux_auth",
+          "host": "UBU01",
+          "user": "sf-test-carol",
+          "eventId": "sshd",
+          "ruleId": "100701",
+          "severity": "medium",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-013-sf-test-carol",
+            "timestamp": "2026-10-25T15:00:00.000Z",
+            "agent": {
+              "name": "UBU01"
+            },
+            "rule": {
+              "id": "100701",
+              "level": 10,
+              "description": "SF-013: sshd failure burst SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1110.001"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "sshd"
+              ]
+            },
+            "data": {
+              "srcip": "10.10.10.200",
+              "srcuser": "sf-test-carol"
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-carol"
+        },
+        {
+          "time": "2026-10-25T15:01:00Z",
+          "title": "SF-014: sshd success after failures SYNTHETIC TEST INPUT",
+          "source": "linux_auth",
+          "host": "UBU01",
+          "user": "sf-test-carol",
+          "eventId": "sshd",
+          "ruleId": "100710",
+          "severity": "high",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-014-sf-test-carol",
+            "timestamp": "2026-10-25T15:01:00.000Z",
+            "agent": {
+              "name": "UBU01"
+            },
+            "rule": {
+              "id": "100710",
+              "level": 12,
+              "description": "SF-014: sshd success after failures SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1078"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "sshd"
+              ]
+            },
+            "data": {
+              "srcip": "10.10.10.200",
+              "srcuser": "sf-test-carol"
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-carol"
+        }
+      ],
+      "entities": {
+        "users": [
+          "sf-test-carol"
+        ],
+        "hosts": [
+          "UBU01"
+        ],
+        "srcIps": [
+          "10.10.10.200"
+        ],
+        "dstIps": [],
+        "processes": [],
+        "domains": [],
+        "hashes": []
+      },
+      "risk": {
+        "items": [
+          {
+            "event": "SF-013 auth burst",
+            "ruleId": "100701",
+            "points": 15,
+            "counted": true,
+            "reason": "counted"
+          },
+          {
+            "event": "SF-014 success after failures",
+            "ruleId": "100710",
+            "points": 25,
+            "counted": true,
+            "reason": "counted"
+          }
+        ],
+        "subtotal": 40,
+        "assetType": "server",
+        "multiplier": 1.3,
+        "final": 52,
+        "severityBand": "medium",
+        "multiplierHosts": [
+          "UBU01"
+        ],
+        "forcedCritical": false
+      },
+      "notes": [],
+      "disposition": "Undetermined",
+      "summary": "Subtotal 40 \u00d7 1.3 set by UBU01 = 52 (medium). Synthetic alerts. Not a lab result.",
+      "recommendedContainment": [],
+      "audit": [],
+      "linkReasons": [
+        "linked by source 10.10.10.200",
+        "linked by user sf-test-carol"
+      ],
+      "sprayFindings": [],
+      "checklist": [
+        {
+          "id": "CHK-d22bf5a9b7",
+          "sfId": "SF-013",
+          "text": "Read the source IP and the account names in the alert.",
+          "checked": false
+        },
+        {
+          "id": "CHK-59d6625010",
+          "sfId": "SF-013",
+          "text": "See whether SF-014 also fired (a success followed).",
+          "checked": false
+        },
+        {
+          "id": "CHK-2d7143ea15",
+          "sfId": "SF-013",
+          "text": "Check whether `10.10.10.200` is a lab host you started.",
+          "checked": false
+        },
+        {
+          "id": "CHK-50d08373fc",
+          "sfId": "SF-013",
+          "text": "On UBU01, read the same minute in the auth log or journal once that path is confirmed.",
+          "checked": false
+        },
+        {
+          "id": "CHK-19a5d77baa",
+          "sfId": "SF-014",
+          "text": "Confirm SF-013 fired for the same source IP in the previous two minutes.",
+          "checked": false
+        },
+        {
+          "id": "CHK-b0ba4e3f17",
+          "sfId": "SF-014",
+          "text": "Record the account that succeeded.",
+          "checked": false
+        },
+        {
+          "id": "CHK-364a5187e7",
+          "sfId": "SF-014",
+          "text": "See whether that account is `sf-test-*` and whether you started the client at `10.10.10.200`.",
+          "checked": false
+        },
+        {
+          "id": "CHK-f1ed16666b",
+          "sfId": "SF-014",
+          "text": "If the source is unexpected, check UBU01 for a new session (`who`) and end it.",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "id": "INC-a69e4a81",
+      "title": "SF-001, SF-002, SF-003, SF-004, SF-007, SF-011 on DC01, WS01",
+      "severity": "critical",
+      "riskScore": 230,
+      "status": "New",
+      "owner": "Unassigned",
+      "users": [
+        "sf-test-admin",
+        "sf-test-alice",
+        "sf-test-bob"
+      ],
+      "hosts": [
+        "DC01",
+        "WS01"
+      ],
+      "mitre": [
+        {
+          "id": "T1021.002",
+          "name": "SMB / Windows Admin Shares",
+          "tactic": "Lateral Movement"
         },
         {
           "id": "T1059.001",
@@ -31,519 +240,352 @@
           "tactic": "Execution"
         },
         {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "tactic": "Initial Access"
+        },
+        {
           "id": "T1098",
           "name": "Account Manipulation",
           "tactic": "Persistence"
         },
-        {
-          "id": "T1021.002",
-          "name": "SMB / Windows Admin Shares",
-          "tactic": "Lateral Movement"
-        }
-      ],
-      "firstSeen": "2026-10-25T15:20:00Z",
-      "lastSeen": "2026-10-25T15:40:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T15:20:00Z",
-          "title": "Failed-auth burst",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4625",
-          "ruleId": "SF-002",
-          "severity": "critical",
-          "raw": {
-            "timestamp": "2026-10-25T15:20:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 10,
-              "description": "Password spray after repeated failed logons",
-              "groups": [
-                "windows",
-                "authentication_failed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4625",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-alice",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01",
-                  "status": "0xc000006d"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T15:25:00Z",
-          "title": "Successful login after failures",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4624",
-          "ruleId": "SF-003",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T15:25:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 12,
-              "description": "Successful logon after failures",
-              "groups": [
-                "windows",
-                "authentication_success"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4624",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-alice",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T15:30:00Z",
-          "title": "Suspicious encoded PowerShell",
-          "source": "sysmon",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "1",
-          "ruleId": "SF-005",
-          "severity": "critical",
-          "raw": {
-            "timestamp": "2026-10-25T15:30:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 12,
-              "description": "Encoded PowerShell process",
-              "groups": [
-                "windows",
-                "sysmon",
-                "sysmon_eid1_detections"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "1",
-                  "channel": "Microsoft-Windows-Sysmon/Operational",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-                  "commandLine": "powershell.exe -NoP -NonI -EncodedCommand ZABlAG0AbwA=",
-                  "parentImage": "C:\\Windows\\System32\\cmd.exe",
-                  "parentCommandLine": "cmd.exe",
-                  "user": "sf-test-alice"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T15:35:00Z",
-          "title": "User added to privileged group",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4732",
-          "ruleId": "SF-007",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T15:35:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 12,
-              "description": "User added to local Administrators",
-              "groups": [
-                "windows",
-                "account_changed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4732",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "memberName": "sf-test-alice",
-                  "targetUserName": "Administrators",
-                  "subjectUserName": "sf-test-alice"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T15:40:00Z",
-          "title": "Remote connection RDP/SMB",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4624",
-          "ruleId": "SF-011",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T15:40:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 10,
-              "description": "SMB admin-share remote logon",
-              "groups": [
-                "windows",
-                "authentication_success"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4624",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-alice",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01",
-                  "shareName": "\\\\DC01\\ADMIN$"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-alice"
-        ],
-        "hosts": [
-          "WS01"
-        ],
-        "srcIps": [
-          "10.10.10.20"
-        ],
-        "dstIps": [
-          "10.10.10.10"
-        ],
-        "processes": [
-          "powershell.exe"
-        ],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Failed-auth burst",
-            "ruleId": "SF-002",
-            "points": 15
-          },
-          {
-            "event": "Successful login after failures",
-            "ruleId": "SF-003",
-            "points": 25
-          },
-          {
-            "event": "Suspicious encoded PowerShell",
-            "ruleId": "SF-005",
-            "points": 30
-          },
-          {
-            "event": "User added to privileged group",
-            "ruleId": "SF-007",
-            "points": 35
-          },
-          {
-            "event": "Remote connection RDP/SMB",
-            "ruleId": "SF-011",
-            "points": 20
-          }
-        ],
-        "subtotal": 125,
-        "assetType": "workstation",
-        "multiplier": 1,
-        "final": 125,
-        "severityBand": "critical"
-      },
-      "notes": [
-        {
-          "id": "NOTE-0001",
-          "author": "Analyst",
-          "time": "2026-10-25T15:42:00Z",
-          "text": "DEMO DATA. Timeline follows the planned MVP story. Not a lab finding."
-        }
-      ],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Snapshot WS01 before any lab change",
-        "Isolate WS01 from the lab network",
-        "Disable sf-test-alice",
-        "Block 10.10.10.20 on the lab segment"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0002",
-      "title": "Privileged group change on DC01",
-      "severity": "critical",
-      "riskScore": 119,
-      "status": "New",
-      "owner": "Unassigned",
-      "users": [
-        "sf-test-bob"
-      ],
-      "hosts": [
-        "DC01"
-      ],
-      "mitre": [
         {
           "id": "T1110.001",
           "name": "Password Guessing",
           "tactic": "Credential Access"
         },
         {
-          "id": "T1098",
-          "name": "Account Manipulation",
-          "tactic": "Persistence"
-        },
-        {
-          "id": "T1021.001",
-          "name": "Remote Desktop Protocol",
-          "tactic": "Lateral Movement"
+          "id": "T1110.003",
+          "name": "Password Spraying",
+          "tactic": "Credential Access"
         }
       ],
-      "firstSeen": "2026-10-25T15:02:00Z",
-      "lastSeen": "2026-10-25T15:12:00Z",
+      "firstSeen": "2026-10-25T15:00:00Z",
+      "lastSeen": "2026-10-25T15:05:00Z",
       "demo": true,
       "timeline": [
         {
-          "time": "2026-10-25T15:02:00Z",
-          "title": "Failed-auth burst",
+          "time": "2026-10-25T15:00:00Z",
+          "title": "SF-001: repeated 4625 failures for one target account SYNTHETIC TEST INPUT",
+          "source": "windows_security",
+          "host": "DC01",
+          "user": "sf-test-alice",
+          "eventId": "4625",
+          "ruleId": "100100",
+          "severity": "medium",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-001",
+            "timestamp": "2026-10-25T15:00:00.000Z",
+            "agent": {
+              "name": "DC01"
+            },
+            "rule": {
+              "id": "100100",
+              "level": 11,
+              "description": "SF-001: repeated 4625 failures for one target account SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1110.001"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows"
+              ]
+            },
+            "data": {
+              "win": {
+                "system": {
+                  "eventID": "4625"
+                },
+                "eventdata": {
+                  "targetUserName": "sf-test-alice",
+                  "ipAddress": "10.10.10.20"
+                }
+              }
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-alice"
+        },
+        {
+          "time": "2026-10-25T15:01:00Z",
+          "title": "SF-002: repeated 4625 failures from one source IP SYNTHETIC TEST INPUT",
           "source": "windows_security",
           "host": "DC01",
           "user": "sf-test-bob",
           "eventId": "4625",
-          "ruleId": "SF-001",
+          "ruleId": "100110",
           "severity": "medium",
           "raw": {
-            "timestamp": "2026-10-25T15:02:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 8,
-              "description": "Repeated failed logons",
-              "groups": [
-                "windows",
-                "authentication_failed"
-              ]
-            },
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-002",
+            "timestamp": "2026-10-25T15:01:00.000Z",
             "agent": {
-              "id": "VERIFY",
-              "name": "DC01",
-              "ip": "10.10.10.10"
+              "name": "DC01"
             },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
+            "rule": {
+              "id": "100110",
+              "level": 10,
+              "description": "SF-002: repeated 4625 failures from one source IP SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1110.003"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows"
+              ]
             },
             "data": {
               "win": {
                 "system": {
-                  "eventID": "4625",
-                  "channel": "Security",
-                  "computer": "DC01.sentinelforge.lab"
+                  "eventID": "4625"
                 },
                 "eventdata": {
                   "targetUserName": "sf-test-bob",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01"
+                  "ipAddress": "10.10.10.20"
                 }
               }
             }
-          }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-bob"
         },
         {
-          "time": "2026-10-25T15:08:00Z",
-          "title": "User added to privileged group",
+          "time": "2026-10-25T15:02:00Z",
+          "title": "SF-003: 4624 after repeated failures SYNTHETIC TEST INPUT",
           "source": "windows_security",
           "host": "DC01",
-          "user": "sf-test-bob",
-          "eventId": "4728",
-          "ruleId": "SF-008",
-          "severity": "critical",
-          "raw": {
-            "timestamp": "2026-10-25T15:08:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 14,
-              "description": "User added to a privileged domain group",
-              "groups": [
-                "windows",
-                "account_changed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "DC01",
-              "ip": "10.10.10.10"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4728",
-                  "channel": "Security",
-                  "computer": "DC01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "memberName": "sf-test-bob",
-                  "targetUserName": "Domain Admins",
-                  "subjectUserName": "sf-test-alice"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T15:12:00Z",
-          "title": "Inbound RDP logon",
-          "source": "windows_security",
-          "host": "DC01",
-          "user": "sf-test-bob",
+          "user": "sf-test-alice",
           "eventId": "4624",
-          "ruleId": "SF-010",
+          "ruleId": "100120",
           "severity": "high",
           "raw": {
-            "timestamp": "2026-10-25T15:12:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 10,
-              "description": "Inbound RDP logon",
-              "groups": [
-                "windows",
-                "authentication_success"
-              ]
-            },
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-003",
+            "timestamp": "2026-10-25T15:02:00.000Z",
             "agent": {
-              "id": "VERIFY",
-              "name": "DC01",
-              "ip": "10.10.10.10"
+              "name": "DC01"
             },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
+            "rule": {
+              "id": "100120",
+              "level": 12,
+              "description": "SF-003: 4624 after repeated failures SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1078"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows"
+              ]
             },
             "data": {
               "win": {
                 "system": {
-                  "eventID": "4624",
-                  "channel": "Security",
-                  "computer": "DC01.sentinelforge.lab"
+                  "eventID": "4624"
                 },
                 "eventdata": {
-                  "targetUserName": "sf-test-bob",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "10",
-                  "workstationName": "WS01"
+                  "targetUserName": "sf-test-alice",
+                  "ipAddress": "10.10.10.20"
                 }
               }
             }
-          }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-alice"
+        },
+        {
+          "time": "2026-10-25T15:03:00Z",
+          "title": "SF-004: suspicious PowerShell script block SYNTHETIC TEST INPUT",
+          "source": "powershell",
+          "host": "WS01",
+          "user": "SENTINELFORGE\\sf-test-admin",
+          "eventId": "4104",
+          "ruleId": "100200",
+          "severity": "high",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-004",
+            "timestamp": "2026-10-25T15:03:00.000Z",
+            "agent": {
+              "name": "WS01"
+            },
+            "rule": {
+              "id": "100200",
+              "level": 12,
+              "description": "SF-004: suspicious PowerShell script block SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1059.001"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows_powershell"
+              ]
+            },
+            "data": {
+              "win": {
+                "system": {
+                  "eventID": "4104"
+                },
+                "eventdata": {
+                  "subjectUserName": "SENTINELFORGE\\sf-test-admin"
+                }
+              }
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-admin"
+        },
+        {
+          "time": "2026-10-25T15:03:30Z",
+          "title": "script block with no account SYNTHETIC",
+          "source": "powershell",
+          "host": "WS01",
+          "user": "",
+          "eventId": "4104",
+          "ruleId": "1002",
+          "severity": "low",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-no-user",
+            "timestamp": "2026-10-25T15:03:30.000Z",
+            "agent": {
+              "name": "WS01"
+            },
+            "rule": {
+              "id": "1002",
+              "level": 4,
+              "description": "script block with no account SYNTHETIC",
+              "groups": [
+                "sentinelforge",
+                "windows_powershell"
+              ],
+              "mitre": {
+                "id": [],
+                "tactic": []
+              }
+            },
+            "data": {
+              "win": {
+                "system": {
+                  "eventID": "4104"
+                },
+                "eventdata": {}
+              }
+            }
+          },
+          "linkStrength": "weak",
+          "linkReason": "linked by host WS01 within 10 min (no user in event)"
+        },
+        {
+          "time": "2026-10-25T15:04:00Z",
+          "title": "SF-007: member added to local Administrators SYNTHETIC TEST INPUT",
+          "source": "windows_security",
+          "host": "WS01",
+          "user": "sf-test-bob",
+          "eventId": "4732",
+          "ruleId": "100300",
+          "severity": "high",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-007",
+            "timestamp": "2026-10-25T15:04:00.000Z",
+            "agent": {
+              "name": "WS01"
+            },
+            "rule": {
+              "id": "100300",
+              "level": 13,
+              "description": "SF-007: member added to local Administrators SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1098"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows"
+              ]
+            },
+            "data": {
+              "win": {
+                "system": {
+                  "eventID": "4732"
+                },
+                "eventdata": {
+                  "targetUserName": "sf-test-bob",
+                  "subjectUserName": "SENTINELFORGE\\sf-test-admin"
+                }
+              }
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-admin"
+        },
+        {
+          "time": "2026-10-25T15:05:00Z",
+          "title": "SF-011: admin share access SYNTHETIC TEST INPUT",
+          "source": "windows_security",
+          "host": "DC01",
+          "user": "sf-test-admin",
+          "eventId": "5140",
+          "ruleId": "100510",
+          "severity": "high",
+          "raw": {
+            "_label": "SYNTHETIC",
+            "_id": "syn-sf-011",
+            "timestamp": "2026-10-25T15:05:00.000Z",
+            "agent": {
+              "name": "DC01"
+            },
+            "rule": {
+              "id": "100510",
+              "level": 12,
+              "description": "SF-011: admin share access SYNTHETIC TEST INPUT",
+              "mitre": {
+                "id": [
+                  "T1021.002"
+                ],
+                "tactic": []
+              },
+              "groups": [
+                "sentinelforge",
+                "windows"
+              ]
+            },
+            "data": {
+              "win": {
+                "system": {
+                  "eventID": "5140"
+                },
+                "eventdata": {
+                  "subjectUserName": "sf-test-admin",
+                  "ipAddress": "10.10.10.20"
+                }
+              }
+            }
+          },
+          "linkStrength": "strong",
+          "linkReason": "linked by user sf-test-admin"
         }
       ],
       "entities": {
         "users": [
-          "sf-test-bob",
-          "sf-test-alice"
+          "sf-test-admin",
+          "sf-test-alice",
+          "sf-test-bob"
         ],
         "hosts": [
           "DC01",
@@ -552,937 +594,237 @@
         "srcIps": [
           "10.10.10.20"
         ],
-        "dstIps": [
-          "10.10.10.10"
-        ],
-        "processes": [],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Failed-auth burst",
-            "ruleId": "SF-001",
-            "points": 15
-          },
-          {
-            "event": "User added to privileged group",
-            "ruleId": "SF-008",
-            "points": 35
-          },
-          {
-            "event": "Remote connection RDP/SMB",
-            "ruleId": "SF-010",
-            "points": 20
-          }
-        ],
-        "subtotal": 70,
-        "assetType": "domain_controller",
-        "multiplier": 1.7,
-        "final": 119,
-        "severityBand": "critical"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Snapshot DC01 before any lab change",
-        "Disable sf-test-bob",
-        "Review Domain Admins membership"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0003",
-      "title": "Repeated failed logons against sf-test-carol",
-      "severity": "high",
-      "riskScore": 15,
-      "status": "New",
-      "owner": "Unassigned",
-      "users": [
-        "sf-test-carol"
-      ],
-      "hosts": [
-        "WS01"
-      ],
-      "mitre": [
-        {
-          "id": "T1110.001",
-          "name": "Password Guessing",
-          "tactic": "Credential Access"
-        }
-      ],
-      "firstSeen": "2026-10-25T14:05:00Z",
-      "lastSeen": "2026-10-25T14:05:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T14:05:00Z",
-          "title": "Failed-auth burst",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-carol",
-          "eventId": "4625",
-          "ruleId": "SF-001",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T14:05:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 8,
-              "description": "Repeated failed logons",
-              "groups": [
-                "windows",
-                "authentication_failed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4625",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-carol",
-                  "ipAddress": "10.10.10.30",
-                  "logonType": "3",
-                  "workstationName": "UBU01"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-carol"
-        ],
-        "hosts": [
-          "WS01"
-        ],
-        "srcIps": [
-          "10.10.10.30"
-        ],
-        "dstIps": [
-          "10.10.10.20"
-        ],
-        "processes": [],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Failed-auth burst",
-            "ruleId": "SF-001",
-            "points": 15
-          }
-        ],
-        "subtotal": 15,
-        "assetType": "workstation",
-        "multiplier": 1,
-        "final": 15,
-        "severityBand": "low"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Confirm sf-test-carol still uses a lab-only password"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0004",
-      "title": "SSH success after failures on UBU01",
-      "severity": "medium",
-      "riskScore": 52,
-      "status": "Contained",
-      "owner": "Analyst",
-      "users": [
-        "sf-test-dave"
-      ],
-      "hosts": [
-        "UBU01"
-      ],
-      "mitre": [
-        {
-          "id": "T1110.001",
-          "name": "Password Guessing",
-          "tactic": "Credential Access"
-        },
-        {
-          "id": "T1078",
-          "name": "Valid Accounts",
-          "tactic": "Initial Access"
-        }
-      ],
-      "firstSeen": "2026-10-25T13:10:00Z",
-      "lastSeen": "2026-10-25T13:16:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T13:10:00Z",
-          "title": "Failed-auth burst",
-          "source": "linux_auth",
-          "host": "UBU01",
-          "user": "sf-test-dave",
-          "eventId": "sshd-failed",
-          "ruleId": "SF-013",
-          "severity": "medium",
-          "raw": {
-            "timestamp": "2026-10-25T13:10:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 8,
-              "description": "Linux SSH failure burst",
-              "groups": [
-                "syslog",
-                "sshd",
-                "authentication_failed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "UBU01",
-              "ip": "10.10.10.30"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "sshd"
-            },
-            "data": {
-              "srcip": "10.10.10.20",
-              "dstuser": "sf-test-dave"
-            },
-            "full_log": "sshd[2412]: Failed password for sf-test-dave from 10.10.10.20 port 51224 ssh2"
-          }
-        },
-        {
-          "time": "2026-10-25T13:16:00Z",
-          "title": "Successful login after failures",
-          "source": "linux_auth",
-          "host": "UBU01",
-          "user": "sf-test-dave",
-          "eventId": "sshd-accepted",
-          "ruleId": "SF-014",
-          "severity": "medium",
-          "raw": {
-            "timestamp": "2026-10-25T13:16:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 10,
-              "description": "Linux SSH success after failures",
-              "groups": [
-                "syslog",
-                "sshd",
-                "authentication_success"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "UBU01",
-              "ip": "10.10.10.30"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "sshd"
-            },
-            "data": {
-              "srcip": "10.10.10.20",
-              "dstuser": "sf-test-dave"
-            },
-            "full_log": "sshd[2412]: Accepted password for sf-test-dave from 10.10.10.20 port 51224 ssh2"
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-dave"
-        ],
-        "hosts": [
-          "UBU01"
-        ],
-        "srcIps": [
-          "10.10.10.20"
-        ],
-        "dstIps": [
-          "10.10.10.30"
-        ],
-        "processes": [
-          "sshd"
-        ],
-        "domains": [],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Failed-auth burst",
-            "ruleId": "SF-013",
-            "points": 15
-          },
-          {
-            "event": "Successful login after failures",
-            "ruleId": "SF-014",
-            "points": 25
-          }
-        ],
-        "subtotal": 40,
-        "assetType": "server",
-        "multiplier": 1.3,
-        "final": 52,
-        "severityBand": "medium"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Disable sf-test-dave on UBU01",
-        "Block 10.10.10.20"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0005",
-      "title": "New local account on WS01",
-      "severity": "low",
-      "riskScore": 10,
-      "status": "Resolved",
-      "owner": "Analyst",
-      "users": [
-        "sf-test-alice"
-      ],
-      "hosts": [
-        "WS01"
-      ],
-      "mitre": [
-        {
-          "id": "T1136.001",
-          "name": "Local Account",
-          "tactic": "Persistence"
-        }
-      ],
-      "firstSeen": "2026-10-25T12:40:00Z",
-      "lastSeen": "2026-10-25T12:40:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T12:40:00Z",
-          "title": "New local user created",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4720",
-          "ruleId": "SF-009",
-          "severity": "low",
-          "raw": {
-            "timestamp": "2026-10-25T12:40:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 6,
-              "description": "New local user",
-              "groups": [
-                "windows",
-                "adduser"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4720",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-extra",
-                  "subjectUserName": "sf-test-alice"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-alice",
-          "sf-test-extra"
-        ],
-        "hosts": [
-          "WS01"
-        ],
-        "srcIps": [
-          "10.10.10.20"
-        ],
         "dstIps": [],
         "processes": [],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "New local user created",
-            "ruleId": "SF-009",
-            "points": 10
-          }
-        ],
-        "subtotal": 10,
-        "assetType": "workstation",
-        "multiplier": 1,
-        "final": 10,
-        "severityBand": "low"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Remove sf-test-extra if the lab account is unused"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0006",
-      "title": "Suspicious command on UBU01",
-      "severity": "low",
-      "riskScore": 26,
-      "status": "False Positive",
-      "owner": "Analyst",
-      "users": [
-        "sf-test-dave"
-      ],
-      "hosts": [
-        "UBU01"
-      ],
-      "mitre": [
-        {
-          "id": "T1059.004",
-          "name": "Unix Shell",
-          "tactic": "Execution"
-        }
-      ],
-      "firstSeen": "2026-10-25T11:15:00Z",
-      "lastSeen": "2026-10-25T11:15:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T11:15:00Z",
-          "title": "Suspicious Linux command",
-          "source": "auditd",
-          "host": "UBU01",
-          "user": "sf-test-dave",
-          "eventId": "EXECVE",
-          "ruleId": "SF-015",
-          "severity": "low",
-          "raw": {
-            "timestamp": "2026-10-25T11:15:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 6,
-              "description": "Suspicious Linux command execution",
-              "groups": [
-                "audit",
-                "auditd"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "UBU01",
-              "ip": "10.10.10.30"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "auditd"
-            },
-            "data": {
-              "audit": {
-                "exe": "/usr/bin/curl",
-                "command": "curl http://10.10.10.40/demo"
-              }
-            },
-            "full_log": "type=EXECVE msg=audit(synthetic): argc=2 a0=\"curl\" a1=\"http://10.10.10.40/demo\""
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-dave"
-        ],
-        "hosts": [
-          "UBU01"
-        ],
-        "srcIps": [
-          "10.10.10.30"
-        ],
-        "dstIps": [
-          "10.10.10.40"
-        ],
-        "processes": [
-          "curl"
-        ],
         "domains": [],
         "hashes": []
       },
       "risk": {
         "items": [
           {
-            "event": "Suspicious Linux command",
-            "ruleId": "SF-015",
-            "points": 20
-          }
-        ],
-        "subtotal": 20,
-        "assetType": "server",
-        "multiplier": 1.3,
-        "final": 26,
-        "severityBand": "low"
-      },
-      "notes": [],
-      "disposition": "False positive",
-      "summary": "DEMO DATA. Lab health check, not an intrusion.",
-      "recommendedContainment": [
-        "No containment. Recorded as a false positive."
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0007",
-      "title": "WinRM session from WS01 to WAZUH01",
-      "severity": "high",
-      "riskScore": 65,
-      "status": "Investigating",
-      "owner": "Analyst",
-      "users": [
-        "sf-test-bob"
-      ],
-      "hosts": [
-        "WAZUH01",
-        "WS01"
-      ],
-      "mitre": [
-        {
-          "id": "T1059.001",
-          "name": "PowerShell",
-          "tactic": "Execution"
-        },
-        {
-          "id": "T1021.006",
-          "name": "Windows Remote Management",
-          "tactic": "Lateral Movement"
-        }
-      ],
-      "firstSeen": "2026-10-25T16:05:00Z",
-      "lastSeen": "2026-10-25T16:09:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T16:05:00Z",
-          "title": "Suspicious encoded PowerShell",
-          "source": "powershell",
-          "host": "WS01",
-          "user": "sf-test-bob",
-          "eventId": "4104",
-          "ruleId": "SF-005",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T16:05:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 12,
-              "description": "Encoded PowerShell process",
-              "groups": [
-                "windows",
-                "powershell"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4104",
-                  "channel": "Microsoft-Windows-PowerShell/Operational",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-                  "commandLine": "powershell.exe -NoP -NonI -EncodedCommand ZABlAG0AbwA=",
-                  "parentImage": "C:\\Windows\\explorer.exe",
-                  "user": "sf-test-bob"
-                }
-              }
-            }
-          }
-        },
-        {
-          "time": "2026-10-25T16:09:00Z",
-          "title": "WinRM remote connection",
-          "source": "windows_security",
-          "host": "WAZUH01",
-          "user": "sf-test-bob",
-          "eventId": "4624",
-          "ruleId": "SF-012",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T16:09:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 10,
-              "description": "WinRM / PowerShell remoting",
-              "groups": [
-                "windows",
-                "authentication_success"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WAZUH01",
-              "ip": "10.10.10.40"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4624",
-                  "channel": "Security",
-                  "computer": "WAZUH01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-bob",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-bob"
-        ],
-        "hosts": [
-          "WAZUH01",
-          "WS01"
-        ],
-        "srcIps": [
-          "10.10.10.20"
-        ],
-        "dstIps": [
-          "10.10.10.40"
-        ],
-        "processes": [
-          "powershell.exe"
-        ],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Suspicious encoded PowerShell",
-            "ruleId": "SF-005",
-            "points": 30
+            "event": "SF-001 auth burst",
+            "ruleId": "100100",
+            "points": 15,
+            "counted": true,
+            "reason": "counted"
           },
           {
-            "event": "Remote connection RDP/SMB",
-            "ruleId": "SF-012",
-            "points": 20
-          }
-        ],
-        "subtotal": 50,
-        "assetType": "server",
-        "multiplier": 1.3,
-        "final": 65,
-        "severityBand": "high"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Snapshot WAZUH01 before any lab change",
-        "Disable sf-test-bob"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0008",
-      "title": "Scheduled task created on WS01",
-      "severity": "info",
-      "riskScore": 15,
-      "status": "New",
-      "owner": "Unassigned",
-      "users": [
-        "sf-test-carol"
-      ],
-      "hosts": [
-        "WS01"
-      ],
-      "mitre": [
-        {
-          "id": "T1053.005",
-          "name": "Scheduled Task",
-          "tactic": "Persistence"
-        }
-      ],
-      "firstSeen": "2026-10-25T10:22:00Z",
-      "lastSeen": "2026-10-25T10:22:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T10:22:00Z",
-          "title": "Scheduled task created",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-carol",
-          "eventId": "4698",
-          "ruleId": "SF-017",
-          "severity": "info",
-          "raw": {
-            "timestamp": "2026-10-25T10:22:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 5,
-              "description": "Scheduled task created",
-              "groups": [
-                "windows",
-                "policy_changed"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4698",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "subjectUserName": "sf-test-carol",
-                  "taskName": "\\SentinelForge\\DemoTask"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-carol"
-        ],
-        "hosts": [
-          "WS01"
-        ],
-        "srcIps": [],
-        "dstIps": [
-          "10.10.10.20"
-        ],
-        "processes": [],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
+            "event": "SF-002 auth burst",
+            "ruleId": "100110",
+            "points": 15,
+            "counted": false,
+            "reason": "category already counted"
+          },
           {
-            "event": "Scheduled task created",
-            "ruleId": "SF-017",
-            "points": 15
+            "event": "SF-003 success after failures",
+            "ruleId": "100120",
+            "points": 25,
+            "counted": true,
+            "reason": "counted"
+          },
+          {
+            "event": "SF-004 suspicious powershell",
+            "ruleId": "100200",
+            "points": 30,
+            "counted": true,
+            "reason": "counted"
+          },
+          {
+            "event": "Alert",
+            "ruleId": "1002",
+            "points": 0,
+            "counted": false,
+            "reason": "not an SF category"
+          },
+          {
+            "event": "SF-007 privileged group change",
+            "ruleId": "100300",
+            "points": 35,
+            "counted": true,
+            "reason": "counted"
+          },
+          {
+            "event": "SF-011 lateral movement",
+            "ruleId": "100510",
+            "points": 30,
+            "counted": true,
+            "reason": "counted"
           }
         ],
-        "subtotal": 15,
-        "assetType": "workstation",
-        "multiplier": 1,
-        "final": 15,
-        "severityBand": "low"
-      },
-      "notes": [],
-      "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Remove \\SentinelForge\\DemoTask if it is not part of the lab"
-      ],
-      "audit": []
-    },
-    {
-      "id": "INC-0009",
-      "title": "SMB admin-share logon from WS01",
-      "severity": "high",
-      "riskScore": 20,
-      "status": "New",
-      "owner": "Unassigned",
-      "users": [
-        "sf-test-alice"
-      ],
-      "hosts": [
-        "WS01"
-      ],
-      "mitre": [
-        {
-          "id": "T1021.002",
-          "name": "SMB / Windows Admin Shares",
-          "tactic": "Lateral Movement"
-        }
-      ],
-      "firstSeen": "2026-10-25T09:48:00Z",
-      "lastSeen": "2026-10-25T09:48:00Z",
-      "demo": true,
-      "timeline": [
-        {
-          "time": "2026-10-25T09:48:00Z",
-          "title": "Remote connection RDP/SMB",
-          "source": "windows_security",
-          "host": "WS01",
-          "user": "sf-test-alice",
-          "eventId": "4624",
-          "ruleId": "SF-011",
-          "severity": "high",
-          "raw": {
-            "timestamp": "2026-10-25T09:48:00.000Z",
-            "rule": {
-              "id": "VERIFY",
-              "level": 8,
-              "description": "SMB admin-share remote logon",
-              "groups": [
-                "windows",
-                "authentication_success"
-              ]
-            },
-            "agent": {
-              "id": "VERIFY",
-              "name": "WS01",
-              "ip": "10.10.10.20"
-            },
-            "manager": {
-              "name": "WAZUH01"
-            },
-            "decoder": {
-              "name": "windows_eventchannel"
-            },
-            "data": {
-              "win": {
-                "system": {
-                  "eventID": "4624",
-                  "channel": "Security",
-                  "computer": "WS01.sentinelforge.lab"
-                },
-                "eventdata": {
-                  "targetUserName": "sf-test-alice",
-                  "ipAddress": "10.10.10.20",
-                  "logonType": "3",
-                  "workstationName": "WS01",
-                  "shareName": "\\\\DC01\\C$"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "entities": {
-        "users": [
-          "sf-test-alice"
-        ],
-        "hosts": [
-          "WS01",
+        "subtotal": 135,
+        "assetType": "domain_controller",
+        "multiplier": 1.7,
+        "final": 230,
+        "severityBand": "critical",
+        "multiplierHosts": [
           "DC01"
         ],
-        "srcIps": [
-          "10.10.10.20"
-        ],
-        "dstIps": [
-          "10.10.10.10"
-        ],
-        "processes": [],
-        "domains": [
-          "sentinelforge.lab"
-        ],
-        "hashes": []
-      },
-      "risk": {
-        "items": [
-          {
-            "event": "Remote connection RDP/SMB",
-            "ruleId": "SF-011",
-            "points": 20
-          }
-        ],
-        "subtotal": 20,
-        "assetType": "workstation",
-        "multiplier": 1,
-        "final": 20,
-        "severityBand": "low"
+        "forcedCritical": false
       },
       "notes": [],
       "disposition": "Undetermined",
-      "summary": "",
-      "recommendedContainment": [
-        "Confirm the admin share session was a lab test"
+      "summary": "Subtotal 135 \u00d7 1.7 set by DC01 = 230 (critical). Synthetic alerts. Not a lab result.",
+      "recommendedContainment": [],
+      "audit": [],
+      "linkReasons": [
+        "linked by source 10.10.10.20",
+        "linked by user sf-test-admin",
+        "linked by user sf-test-alice",
+        "linked by user sf-test-bob",
+        "linked by host WS01 within 10 min (no user in event)"
       ],
-      "audit": []
+      "sprayFindings": [
+        {
+          "alertId": "syn-sf-002",
+          "sourceIp": "10.10.10.20",
+          "status": "spray confirmed",
+          "users": [
+            "sf-test-alice",
+            "sf-test-bob",
+            "sf-test-carol"
+          ]
+        }
+      ],
+      "checklist": [
+        {
+          "id": "CHK-28710b3942",
+          "sfId": "SF-001",
+          "text": "Read `targetUserName`, `ipAddress`, `logonType`, and `workstationName` on the alert.",
+          "checked": false
+        },
+        {
+          "id": "CHK-fbcc8867bf",
+          "sfId": "SF-001",
+          "text": "See whether SF-003 also fired (a success followed).",
+          "checked": false
+        },
+        {
+          "id": "CHK-96bb47b0c6",
+          "sfId": "SF-001",
+          "text": "Check the source address in the event. The scripted SMB source is expected to be `10.10.10.20`. `10.10.10.200` is a secondary address on WS01, not a separate VM.",
+          "checked": false
+        },
+        {
+          "id": "CHK-1812442600",
+          "sfId": "SF-001",
+          "text": "On the host in the event's computer name, open the Security log for that minute.",
+          "checked": false
+        },
+        {
+          "id": "CHK-fa1d9d8612",
+          "sfId": "SF-002",
+          "text": "List the account names in the six 4625s that share the source IP. If they are one name, this is SF-001's case and 100100 should be the alert.",
+          "checked": false
+        },
+        {
+          "id": "CHK-499b4fcc9b",
+          "sfId": "SF-002",
+          "text": "Confirm the source is `10.10.10.200` and that you started it.",
+          "checked": false
+        },
+        {
+          "id": "CHK-7e20a47e3d",
+          "sfId": "SF-002",
+          "text": "Check DC01 or WS01 for locked `sf-test-*` accounts.",
+          "checked": false
+        },
+        {
+          "id": "CHK-0317acaddf",
+          "sfId": "SF-003",
+          "text": "Confirm 100100 fired for the same account and source IP in the previous two minutes.",
+          "checked": false
+        },
+        {
+          "id": "CHK-af0d59d5a4",
+          "sfId": "SF-003",
+          "text": "Record the account that succeeded and the logon type.",
+          "checked": false
+        },
+        {
+          "id": "CHK-2ced31556b",
+          "sfId": "SF-003",
+          "text": "See whether the account is `sf-test-*` and whether you started the client at `10.10.10.200`.",
+          "checked": false
+        },
+        {
+          "id": "CHK-f314d71449",
+          "sfId": "SF-003",
+          "text": "If the source is unexpected, check the target host for a session and end it.",
+          "checked": false
+        },
+        {
+          "id": "CHK-7268af3ec2",
+          "sfId": "SF-004",
+          "text": "Read the script block text on the alert. Confirm which string matched.",
+          "checked": false
+        },
+        {
+          "id": "CHK-e9e94d717e",
+          "sfId": "SF-004",
+          "text": "See whether SF-006 also fired for the same host and minute.",
+          "checked": false
+        },
+        {
+          "id": "CHK-4105168f46",
+          "sfId": "SF-004",
+          "text": "Confirm the computer is WS01 and that you started the Atomic test.",
+          "checked": false
+        },
+        {
+          "id": "CHK-d3152f4507",
+          "sfId": "SF-004",
+          "text": "If the source is unexpected, keep the script text and look for a new process from that second.",
+          "checked": false
+        },
+        {
+          "id": "CHK-2eeb076237",
+          "sfId": "SF-007",
+          "text": "Read `targetSid`, `memberSid`, `memberName`, and `subjectUserName`.",
+          "checked": false
+        },
+        {
+          "id": "CHK-f191b011a1",
+          "sfId": "SF-007",
+          "text": "Confirm the computer is WS01, or DC01 if you changed the domain built-in group.",
+          "checked": false
+        },
+        {
+          "id": "CHK-9922add885",
+          "sfId": "SF-007",
+          "text": "Confirm the account is `sf-test-*` and that you started the Atomic test.",
+          "checked": false
+        },
+        {
+          "id": "CHK-6968e17184",
+          "sfId": "SF-007",
+          "text": "If the member is unexpected, keep the SID and remove the membership.",
+          "checked": false
+        },
+        {
+          "id": "CHK-9c958b3eca",
+          "sfId": "SF-011",
+          "text": "Read `shareName`, `subjectUserName`, `ipAddress`, and the computer.",
+          "checked": false
+        },
+        {
+          "id": "CHK-bd14ebae27",
+          "sfId": "SF-011",
+          "text": "For a type-3 alert, read `targetUserName` and `logonType`, then look for a 5140 or 5145 from the same address. That join is manual until the correlation engine links them.",
+          "checked": false
+        },
+        {
+          "id": "CHK-1120a4e4ac",
+          "sfId": "SF-011",
+          "text": "Confirm the account is `sf-test-*` and that you mapped the share.",
+          "checked": false
+        },
+        {
+          "id": "CHK-387b2e2406",
+          "sfId": "SF-011",
+          "text": "If the source is unexpected, keep the address and remove the drive.",
+          "checked": false
+        }
+      ]
     }
   ]
 }

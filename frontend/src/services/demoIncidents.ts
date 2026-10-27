@@ -35,6 +35,22 @@ function seed(): IncidentDetail[] {
   return records
 }
 
+export function setDemoChecklist(
+  id: string,
+  itemId: string,
+  checked: boolean,
+): IncidentDetail {
+  const detail = seed().find((item) => item.id === id)
+  if (!detail) throw new ApiError(`Incident ${id} was not found.`, 404)
+  detail.checklist = (detail.checklist ?? []).map((item) =>
+    item.id === itemId ? { ...item, checked } : item,
+  )
+  if (!detail.checklist.some((item) => item.id === itemId)) {
+    throw new ApiError(`Checklist item ${itemId} was not found.`, 404)
+  }
+  return detail
+}
+
 export function resetDemoIncidents(): void {
   records = null
   noteCounter = 1
@@ -197,7 +213,10 @@ export function createDemoIncident(input: {
   const events = [...input.events].sort((left, right) =>
     left.time.localeCompare(right.time),
   )
-  const numbers = seed().map((item) => Number(item.id.replace('INC-', '')))
+  const numbers = seed().flatMap((item) => {
+    const match = /^INC-(\d+)$/.exec(item.id)
+    return match ? [Number(match[1])] : []
+  })
   const id = `INC-${String(Math.max(0, ...numbers) + 1).padStart(4, '0')}`
   const hosts = [...new Set(events.map((event) => event.host))]
   const users = [...new Set(events.map((event) => event.user))]
@@ -244,18 +263,25 @@ export function createDemoIncident(input: {
         event: event.title,
         ruleId: event.ruleId,
         points: PROMOTE_POINTS,
+        counted: true,
+        reason: 'promoted hunt',
       })),
       subtotal,
       assetType,
       multiplier,
       final,
       severityBand: severityBandFor(final),
+      multiplierHosts: [],
+      forcedCritical: false,
     },
     notes: [],
     disposition: 'Undetermined',
     summary: 'Promoted from a demo hunt. Not a lab finding.',
     recommendedContainment: ['Snapshot the lab VM before any change.'],
     audit: [],
+    linkReasons: [],
+    sprayFindings: [],
+    checklist: [],
   }
   seed().push(detail)
   pushToast(DEMO_SAVE_TOAST)

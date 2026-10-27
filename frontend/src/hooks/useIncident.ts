@@ -5,6 +5,7 @@ import {
   getIncident,
   logResponseDryRun,
   saveAnalyst,
+  setChecklistItem,
   updateIncident,
 } from '../services/api.ts'
 import type {
@@ -25,6 +26,7 @@ type IncidentState = {
   addAnalystNote: (text: string) => Promise<void>
   saveAnalystFields: (patch: AnalystPatch) => Promise<void>
   confirmDryRun: (action: ResponseActionName, target: string) => Promise<void>
+  setChecklist: (itemId: string, checked: boolean) => Promise<void>
 }
 
 function messageFrom(error: unknown): string {
@@ -88,5 +90,7 @@ export function useIncident(id: string): IncidentState {
     saveAnalystFields: (patch) => apply(saveAnalyst(id, patch)),
     confirmDryRun: (action, target) =>
       apply(logResponseDryRun(id, action, target)),
+    setChecklist: (itemId, checked) =>
+      apply(setChecklistItem(id, itemId, checked)),
   }
 }

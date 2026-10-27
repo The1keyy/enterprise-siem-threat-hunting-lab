@@ -33,6 +33,15 @@ export type AgentRow = {
   lastTelemetry: string | null
 }
 
+export type CorrelationStatus = {
+  enabled: boolean
+  lastRun: string | null
+  checkpoint: { timestamp: string; id: string } | null
+  alertsProcessed: number
+  error: string | null
+  note: string
+}
+
 export type HealthReport = {
   components: HealthComponent[]
   pipeline: string[]
@@ -40,6 +49,7 @@ export type HealthReport = {
   diskPercent: number | null
   failedIngestion: number | null
   activeRules: number
+  correlation: CorrelationStatus
 }
 
 export type Workflow = {
@@ -51,6 +61,15 @@ export type Workflow = {
   status: string
 }
 
+export type CorrelationSettings = {
+  windowMinutes: number
+  hostProximityMinutes: number
+  halfLifeHours: number
+  sprayMinDistinctUsers: number
+  openLevel: number
+  criticalLevel: number
+}
+
 export type SettingsView = {
   dataMode: 'demo' | 'live'
   apiUrl: string
@@ -58,4 +77,5 @@ export type SettingsView = {
   weights: { label: string; points: number }[]
   multipliers: { assetType: RiskAssetType; multiplier: RiskMultiplier }[]
   bands: { severity: Severity; rule: string }[]
+  correlation: CorrelationSettings
 }

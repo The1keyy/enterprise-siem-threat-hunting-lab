@@ -1,0 +1,339 @@
+{
+  "_notice": "DEMO DATA \u2014 SYNTHETIC, not real telemetry. Not a lab result.",
+  "demo": true,
+  "alerts": [
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-001",
+      "timestamp": "2026-10-25T15:00:00.000Z",
+      "agent": {
+        "name": "DC01"
+      },
+      "rule": {
+        "id": "100100",
+        "level": 11,
+        "description": "SF-001: repeated 4625 failures for one target account SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1110.001"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4625"
+          },
+          "eventdata": {
+            "targetUserName": "sf-test-alice",
+            "ipAddress": "10.10.10.20"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-002",
+      "timestamp": "2026-10-25T15:01:00.000Z",
+      "agent": {
+        "name": "DC01"
+      },
+      "rule": {
+        "id": "100110",
+        "level": 10,
+        "description": "SF-002: repeated 4625 failures from one source IP SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1110.003"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4625"
+          },
+          "eventdata": {
+            "targetUserName": "sf-test-bob",
+            "ipAddress": "10.10.10.20"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-003",
+      "timestamp": "2026-10-25T15:02:00.000Z",
+      "agent": {
+        "name": "DC01"
+      },
+      "rule": {
+        "id": "100120",
+        "level": 12,
+        "description": "SF-003: 4624 after repeated failures SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1078"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4624"
+          },
+          "eventdata": {
+            "targetUserName": "sf-test-alice",
+            "ipAddress": "10.10.10.20"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-004",
+      "timestamp": "2026-10-25T15:03:00.000Z",
+      "agent": {
+        "name": "WS01"
+      },
+      "rule": {
+        "id": "100200",
+        "level": 12,
+        "description": "SF-004: suspicious PowerShell script block SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1059.001"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows_powershell"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4104"
+          },
+          "eventdata": {
+            "subjectUserName": "SENTINELFORGE\\sf-test-admin"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-007",
+      "timestamp": "2026-10-25T15:04:00.000Z",
+      "agent": {
+        "name": "WS01"
+      },
+      "rule": {
+        "id": "100300",
+        "level": 13,
+        "description": "SF-007: member added to local Administrators SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1098"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4732"
+          },
+          "eventdata": {
+            "targetUserName": "sf-test-bob",
+            "subjectUserName": "SENTINELFORGE\\sf-test-admin"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-011",
+      "timestamp": "2026-10-25T15:05:00.000Z",
+      "agent": {
+        "name": "DC01"
+      },
+      "rule": {
+        "id": "100510",
+        "level": 12,
+        "description": "SF-011: admin share access SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1021.002"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "windows"
+        ]
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "5140"
+          },
+          "eventdata": {
+            "subjectUserName": "sf-test-admin",
+            "ipAddress": "10.10.10.20"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-no-user",
+      "timestamp": "2026-10-25T15:03:30.000Z",
+      "agent": {
+        "name": "WS01"
+      },
+      "rule": {
+        "id": "1002",
+        "level": 4,
+        "description": "script block with no account SYNTHETIC",
+        "groups": [
+          "sentinelforge",
+          "windows_powershell"
+        ],
+        "mitre": {
+          "id": [],
+          "tactic": []
+        }
+      },
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4104"
+          },
+          "eventdata": {}
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-013-sf-test-carol",
+      "timestamp": "2026-10-25T15:00:00.000Z",
+      "agent": {
+        "name": "UBU01"
+      },
+      "rule": {
+        "id": "100701",
+        "level": 10,
+        "description": "SF-013: sshd failure burst SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1110.001"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "sshd"
+        ]
+      },
+      "data": {
+        "srcip": "10.10.10.200",
+        "srcuser": "sf-test-carol"
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "_id": "syn-sf-014-sf-test-carol",
+      "timestamp": "2026-10-25T15:01:00.000Z",
+      "agent": {
+        "name": "UBU01"
+      },
+      "rule": {
+        "id": "100710",
+        "level": 12,
+        "description": "SF-014: sshd success after failures SYNTHETIC TEST INPUT",
+        "mitre": {
+          "id": [
+            "T1078"
+          ],
+          "tactic": []
+        },
+        "groups": [
+          "sentinelforge",
+          "sshd"
+        ]
+      },
+      "data": {
+        "srcip": "10.10.10.200",
+        "srcuser": "sf-test-carol"
+      }
+    }
+  ],
+  "archives": [
+    {
+      "_label": "SYNTHETIC",
+      "timestamp": "2026-10-25T15:00:20.000Z",
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4625"
+          },
+          "eventdata": {
+            "ipAddress": "10.10.10.20",
+            "targetUserName": "sf-test-alice"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "timestamp": "2026-10-25T15:00:40.000Z",
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4625"
+          },
+          "eventdata": {
+            "ipAddress": "10.10.10.20",
+            "targetUserName": "sf-test-bob"
+          }
+        }
+      }
+    },
+    {
+      "_label": "SYNTHETIC",
+      "timestamp": "2026-10-25T15:00:50.000Z",
+      "data": {
+        "win": {
+          "system": {
+            "eventID": "4625"
+          },
+          "eventdata": {
+            "ipAddress": "10.10.10.20",
+            "targetUserName": "sf-test-carol"
+          }
+        }
+      }
+    }
+  ]
+}

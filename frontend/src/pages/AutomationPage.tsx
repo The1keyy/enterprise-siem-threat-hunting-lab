@@ -14,12 +14,13 @@ export function AutomationPage() {
 
   return (
     <div className="min-w-0 overflow-x-hidden">
-      <p className="mb-3 text-sm font-medium text-medium">
-        Stretch: design preview
+      <p className="mb-3 text-sm font-medium text-text">
+        Escalation is implemented. Enrichment and context stay stretch. No
+        response action runs.
       </p>
       <PageHeader
         title="Automation"
-        description="These diagrams are a design preview. No workflow runs."
+        description="A new incident or a higher risk band writes an analyst checklist. Nothing is isolated or disabled."
       />
       {state.loading ? (
         <LoadingState label="Loading workflows" lines={4} />

@@ -32,7 +32,9 @@ function Profile({ data }: { data: HostProfile }) {
           Asset criticality {assetLabel(data.assetType)} × {data.multiplier}
         </p>
         <p className="mt-1 text-sm text-text-muted">
-          Agent status {data.agentStatus} · Risk score {data.riskScore}
+          Agent status {data.agentStatus} · Risk score {data.riskScore}. Decayed
+          incident subtotal, 24-hour half-life. The asset multiplier is not
+          applied again.
         </p>
       </header>
       <div className="grid gap-3">

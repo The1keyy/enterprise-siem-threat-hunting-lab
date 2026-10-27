@@ -61,7 +61,7 @@ export function EntitiesPage() {
     <div className="min-w-0 overflow-x-hidden">
       <PageHeader
         title="Entities"
-        description="Risk scores are the sum of related incident scores. They are demo fixtures."
+        description="Risk scores are decayed incident subtotals. The half-life is 24 hours, and the asset multiplier is not applied again."
       />
       <div className="mb-4 flex gap-2">
         {(['users', 'hosts'] as const).map((item) => (

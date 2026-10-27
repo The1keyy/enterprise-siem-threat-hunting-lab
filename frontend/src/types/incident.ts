@@ -35,6 +35,8 @@ export type TimelineEvent = {
   ruleId: string
   severity: Severity
   raw: Record<string, unknown>
+  linkStrength?: 'strong' | 'weak' | null
+  linkReason?: string | null
 }
 
 export type Entities = {
@@ -55,6 +57,24 @@ export type RiskItem = {
   event: string
   ruleId: string
   points: number
+  counted?: boolean
+  reason?: string
+}
+
+export type SprayFinding = {
+  alertId: string
+  sourceIp: string
+  status:
+    | 'spray confirmed'
+    | 'same-source failure burst (not confirmed spray)'
+  users: string[]
+}
+
+export type ChecklistItem = {
+  id: string
+  sfId: string
+  text: string
+  checked: boolean
 }
 
 export type RiskBreakdown = {
@@ -64,6 +84,8 @@ export type RiskBreakdown = {
   multiplier: RiskMultiplier
   final: number
   severityBand: Severity
+  multiplierHosts?: string[]
+  forcedCritical?: boolean
 }
 
 export type Note = {
@@ -111,6 +133,9 @@ export type IncidentDetail = Incident & {
   summary: string
   recommendedContainment: string[]
   audit: ResponseAuditEntry[]
+  linkReasons?: string[]
+  sprayFindings?: SprayFinding[]
+  checklist?: ChecklistItem[]
 }
 
 export type IncidentPatch = {

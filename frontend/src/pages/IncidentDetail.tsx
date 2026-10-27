@@ -83,6 +83,7 @@ function Workspace({ id }: { id: string }) {
     addAnalystNote,
     saveAnalystFields,
     confirmDryRun,
+    setChecklist,
   } = useIncident(id)
   const [selected, setSelected] = useState(0)
   const [note, setNote] = useState('')
@@ -122,6 +123,7 @@ function Workspace({ id }: { id: string }) {
       onSummary={(summary) => {
         if (summary !== data.summary) void saveAnalystFields({ summary })
       }}
+      onChecklist={(itemId, checked) => void setChecklist(itemId, checked)}
       onDryRun={confirmDryRun}
     />
   )
@@ -139,6 +141,7 @@ type BodyProps = {
   onAddNote: () => void
   onDisposition: (disposition: IncidentDetailData['disposition']) => void
   onSummary: (summary: string) => void
+  onChecklist: (itemId: string, checked: boolean) => void
   onDryRun: (
     action: 'Isolate lab endpoint' | 'Disable test account' | 'Block test IP',
     target: string,
@@ -157,6 +160,7 @@ function IncidentBody({
   onAddNote,
   onDisposition,
   onSummary,
+  onChecklist,
   onDryRun,
 }: BodyProps) {
   const event = data.timeline[selected] ?? data.timeline[0] ?? null
@@ -175,6 +179,19 @@ function IncidentBody({
           <h1 className="text-xl font-semibold text-text">{data.title}</h1>
           <SeverityBadge severity={data.severity} />
           <span className="text-sm text-text">Risk {data.riskScore}</span>
+          {(data.sprayFindings ?? []).map((finding) => (
+            <span
+              key={finding.alertId}
+              className={
+                finding.status === 'spray confirmed'
+                  ? 'rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-text'
+                  : 'rounded-full border border-border bg-surface-2 px-2 py-0.5 text-xs text-text-muted'
+              }
+            >
+              {finding.status}
+              {finding.users.length > 0 ? `: ${finding.users.join(', ')}` : ''}
+            </span>
+          ))}
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1 text-xs text-text-muted">
@@ -329,9 +346,66 @@ function IncidentBody({
               ))}
             </ul>
           </Card>
+          <Card title="Why these alerts are grouped">
+            {(data.linkReasons ?? []).length === 0 ? (
+              <p className="text-sm text-text-muted">
+                No shared user, source IP, or host link.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {(data.linkReasons ?? []).map((reason) => {
+                  const weak =
+                    reason.startsWith('linked by host') ||
+                    reason.includes('no user in event')
+                  return (
+                    <li
+                      key={reason}
+                      className={
+                        weak
+                          ? 'rounded-md border border-border bg-surface-2 px-2 py-1 text-sm text-text-muted'
+                          : 'rounded-md border border-accent/40 bg-accent/10 px-2 py-1 text-sm text-text'
+                      }
+                    >
+                      <span className="mr-2 text-xs font-medium">
+                        {weak ? 'Weak' : 'Strong'}
+                      </span>
+                      {reason}
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </Card>
+          <Card title="Investigation checklist">
+            {(data.checklist ?? []).length === 0 ? (
+              <p className="text-sm text-text-muted">No checklist yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {(data.checklist ?? []).map((item) => (
+                  <li key={item.id} className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={item.checked}
+                      aria-label={item.text}
+                      onChange={(change) =>
+                        onChecklist(item.id, change.target.checked)
+                      }
+                    />
+                    <span className="text-sm text-text">
+                      <span className="mr-2 font-mono text-xs text-text-muted">
+                        {item.sfId}
+                      </span>
+                      {item.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
           <Card
             title="Risk score breakdown"
-            subtitle="A row with zero points is not counted."
+            subtitle="A row that is not counted stays visible with the reason."
           >
             <table id="risk" className="w-full text-left text-sm">
               <thead className="text-xs text-text-muted">
@@ -343,7 +417,7 @@ function IncidentBody({
               </thead>
               <tbody>
                 {data.risk.items.map((item) => {
-                  const counted = item.points > 0
+                  const counted = item.counted !== false
                   return (
                     <tr
                       key={`${item.ruleId}-${item.event}`}
@@ -358,6 +432,7 @@ function IncidentBody({
                         {counted ? null : (
                           <span className="mt-0.5 block text-xs">
                             Not counted
+                            {item.reason ? ` — ${item.reason}` : ''}
                           </span>
                         )}
                       </td>
@@ -371,7 +446,11 @@ function IncidentBody({
               </tbody>
             </table>
             <p className="mt-3 text-sm text-text">
-              {`Subtotal ${data.risk.subtotal} \u00d7 ${multiplier} (${assetLabel(data.risk.assetType)}) = ${data.risk.final}`}
+              {`Subtotal ${data.risk.subtotal} \u00d7 ${multiplier} set by ${
+                data.risk.multiplierHosts?.length
+                  ? data.risk.multiplierHosts.join(', ')
+                  : assetLabel(data.risk.assetType)
+              } = ${data.risk.final}`}
             </p>
             <div className="mt-2 flex items-center gap-2">
               <span className="text-sm text-text">Final {data.risk.final}</span>

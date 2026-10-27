@@ -1,5 +1,6 @@
 // DEMO DATA — synthetic fixtures for UI development. Not real telemetry.
 // The incidents live in /fixtures/incidents.json so the API and the UI share one copy.
+// scripts/validation/build_demo_incidents.py writes that file from the correlation engine.
 import raw from '../../../fixtures/incidents.json'
 import type { IncidentDetail } from '../types/incident.ts'
 
@@ -16,22 +17,28 @@ if (!file._notice.startsWith('DEMO DATA')) {
 
 export const incidentFixtures: readonly IncidentDetail[] = file.incidents
 
-const story = incidentFixtures.find((item) => item.id === 'INC-0001')
-const dc = incidentFixtures.find((item) => item.id === 'INC-0002')
+export const storyIncident = incidentFixtures.find(
+  (item) => item.risk.final === 230 && item.severity === 'critical',
+)
+
 if (
-  !story ||
-  story.risk.subtotal !== 125 ||
-  story.risk.multiplier !== 1 ||
-  story.risk.final !== 125
+  !storyIncident ||
+  storyIncident.risk.subtotal !== 135 ||
+  storyIncident.risk.multiplier !== 1.7 ||
+  storyIncident.risk.assetType !== 'domain_controller' ||
+  !storyIncident.risk.multiplierHosts?.includes('DC01')
 ) {
-  throw new Error('INC-0001 must be 125 × 1.0 workstation = 125')
+  throw new Error('The attack-story incident must be 135 × 1.7 = 230, critical, set by DC01')
 }
+
+const ssh = incidentFixtures.find((item) => item.hosts.includes('UBU01'))
 if (
-  !dc ||
-  dc.risk.subtotal !== 70 ||
-  dc.risk.multiplier !== 1.7 ||
-  dc.risk.assetType !== 'domain_controller' ||
-  dc.risk.final !== Math.round(70 * 1.7)
+  !ssh ||
+  ssh.risk.subtotal !== 40 ||
+  ssh.risk.multiplier !== 1.3 ||
+  ssh.risk.final !== 52
 ) {
-  throw new Error('INC-0002 must show the 1.7 domain controller multiplier')
+  throw new Error('The SSH pair must be 40 × 1.3 = 52')
 }
+
+export const storyIncidentId = storyIncident.id

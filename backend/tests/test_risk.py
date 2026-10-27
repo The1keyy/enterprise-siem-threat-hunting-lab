@@ -15,15 +15,13 @@ def test_score_uses_config_weights_and_multipliers() -> None:
 
 
 def test_fixture_incidents_match_the_score(analyst: TestClient) -> None:
-    first = analyst.get("/api/incidents/INC-0001").json()
-    assert first["riskScore"] == 125
-    assert first["risk"]["subtotal"] == 125
-    assert first["risk"]["multiplier"] == 1
-    assert first["risk"]["final"] == 125
-
-    domain = analyst.get("/api/incidents/INC-0002").json()
-    assert domain["risk"]["assetType"] == "domain_controller"
-    assert domain["risk"]["multiplier"] == 1.7
-    assert "DC01" in domain["hosts"]
-    assert domain["risk"]["final"] == final_score(domain["risk"]["subtotal"], 1.7)
-    assert domain["riskScore"] == domain["risk"]["final"]
+    rows = analyst.get("/api/incidents").json()
+    story = next(row for row in rows if row["riskScore"] == 230)
+    detail = analyst.get(f"/api/incidents/{story['id']}").json()
+    assert detail["risk"]["subtotal"] == 135
+    assert detail["risk"]["multiplier"] == 1.7
+    assert detail["risk"]["assetType"] == "domain_controller"
+    assert "DC01" in detail["hosts"]
+    assert detail["risk"]["final"] == final_score(detail["risk"]["subtotal"], 1.7)
+    assert detail["risk"]["final"] == 230
+    assert detail["riskScore"] == detail["risk"]["final"]

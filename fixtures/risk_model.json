@@ -1,0 +1,77 @@
+{
+  "weights": [
+    {
+      "label": "Auth burst",
+      "points": 15
+    },
+    {
+      "label": "Success after failures",
+      "points": 25
+    },
+    {
+      "label": "Suspicious PowerShell",
+      "points": 30
+    },
+    {
+      "label": "Privileged group change",
+      "points": 35
+    },
+    {
+      "label": "New account",
+      "points": 10
+    },
+    {
+      "label": "Remote access",
+      "points": 20
+    },
+    {
+      "label": "Lateral movement",
+      "points": 30
+    }
+  ],
+  "multipliers": [
+    {
+      "assetType": "workstation",
+      "multiplier": 1.0
+    },
+    {
+      "assetType": "server",
+      "multiplier": 1.3
+    },
+    {
+      "assetType": "domain_controller",
+      "multiplier": 1.7
+    }
+  ],
+  "bands": [
+    {
+      "severity": "critical",
+      "rule": "150 or higher"
+    },
+    {
+      "severity": "high",
+      "rule": "80 to 149"
+    },
+    {
+      "severity": "medium",
+      "rule": "40 to 79"
+    },
+    {
+      "severity": "low",
+      "rule": "1 to 39"
+    },
+    {
+      "severity": "info",
+      "rule": "0"
+    }
+  ],
+  "correlation": {
+    "windowMinutes": 60,
+    "hostProximityMinutes": 10,
+    "halfLifeHours": 24.0,
+    "sprayMinDistinctUsers": 3,
+    "openLevel": 12,
+    "criticalLevel": 15
+  },
+  "_notice": "DEMO DATA \u2014 copy of backend/app/core/risk_config.yml. Not a lab measurement."
+}

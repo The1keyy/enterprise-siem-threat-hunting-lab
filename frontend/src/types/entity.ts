@@ -18,6 +18,8 @@ export type RiskLine = {
   multiplier: RiskMultiplier
   assetType: RiskAssetType
   final: number
+  lastSeen: string
+  decayed: number
 }
 
 export type LoginRow = {

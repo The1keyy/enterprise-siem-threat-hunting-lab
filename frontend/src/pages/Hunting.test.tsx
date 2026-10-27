@@ -32,7 +32,7 @@ describe('hunt promotion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run hunt' }))
 
     const checkboxes = await screen.findAllByRole('checkbox', {
-      name: /Select SF-005/,
+      name: /Select 100200/,
     })
     const checkbox = checkboxes[0]
     if (!checkbox) throw new Error('Expected a hunt result')
@@ -40,7 +40,7 @@ describe('hunt promotion', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Promote to incident' }))
     fireEvent.click(screen.getByRole('button', { name: 'Create incident' }))
 
-    expect(await screen.findByText('INC-0010')).toBeInTheDocument()
-    expect(screen.getByText('10 incidents · 2 critical')).toBeInTheDocument()
+    expect(await screen.findByText('INC-0001')).toBeInTheDocument()
+    expect(screen.getByText('3 incidents · 1 critical')).toBeInTheDocument()
   })
 })

@@ -4,7 +4,7 @@
   "generatedAt": "2026-10-25T16:00:00Z",
   "kpis": {
     "demo": true,
-    "activeIncidents": 3,
+    "activeIncidents": 2,
     "criticalAlerts24h": 6,
     "highAlerts24h": 17,
     "monitoredEndpoints": 3,
@@ -282,33 +282,23 @@
   "incidents": [
     {
       "demo": true,
-      "id": "INC-0001",
-      "title": "Password spray then PowerShell on WS01",
-      "severity": "critical",
-      "status": "Investigating",
-      "host": "WS01",
-      "user": "sf-test-alice",
-      "lastSeen": "2026-10-25T15:40:00Z"
-    },
-    {
-      "demo": true,
-      "id": "INC-0002",
-      "title": "Privileged group change on DC01",
+      "id": "INC-a69e4a81",
+      "title": "SF-001, SF-002, SF-003, SF-004, SF-007, SF-011 on DC01, WS01",
       "severity": "critical",
       "status": "New",
       "host": "DC01",
-      "user": "sf-test-bob",
-      "lastSeen": "2026-10-25T15:12:00Z"
+      "user": "sf-test-alice",
+      "lastSeen": "2026-10-25T15:05:00Z"
     },
     {
       "demo": true,
-      "id": "INC-0003",
-      "title": "Repeated failed logons against sf-test-carol",
-      "severity": "high",
+      "id": "INC-0c86d897",
+      "title": "SF-013, SF-014 on UBU01",
+      "severity": "medium",
       "status": "New",
-      "host": "WS01",
+      "host": "UBU01",
       "user": "sf-test-carol",
-      "lastSeen": "2026-10-25T14:05:00Z"
+      "lastSeen": "2026-10-25T15:01:00Z"
     }
   ],
   "recentDetections": [

@@ -21,7 +21,8 @@ function Profile({ data }: { data: UserProfile }) {
         <p className="text-sm text-text-muted">User</p>
         <h1 className="text-xl font-semibold text-text">{data.name}</h1>
         <p className="mt-1 text-sm text-text-muted">
-          Risk score {data.riskScore}
+          Risk score {data.riskScore}. Decayed incident subtotal, 24-hour
+          half-life. The asset multiplier is not applied again.
         </p>
       </header>
       <div className="grid gap-3">
