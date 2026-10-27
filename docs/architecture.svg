@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" role="img" aria-label="Planned lab. The console on a Mac reads Wazuh. Agents report to WAZUH01 on an isolated network.">
+  <rect width="760" height="300" fill="#0b0f17"/>
+  <g fill="none" stroke="#1f2a3a" stroke-width="1">
+    <rect x="16" y="24" width="200" height="252" rx="8"/>
+    <rect x="240" y="24" width="504" height="252" rx="8"/>
+  </g>
+  <g fill="#9ca3af" font-family="Inter, ui-sans-serif, sans-serif" font-size="12">
+    <text x="28" y="48">Mac</text>
+    <text x="256" y="48">Isolated lab 10.10.10.0/24</text>
+  </g>
+  <g fill="#111827" stroke="#1f2a3a" stroke-width="1">
+    <rect x="36" y="72" width="160" height="40" rx="6"/>
+    <rect x="36" y="128" width="160" height="40" rx="6"/>
+    <rect x="264" y="80" width="140" height="52" rx="6"/>
+    <rect x="424" y="80" width="140" height="52" rx="6"/>
+    <rect x="584" y="80" width="140" height="52" rx="6"/>
+    <rect x="424" y="184" width="180" height="56" rx="6"/>
+  </g>
+  <g fill="#e5e7eb" font-family="Inter, ui-sans-serif, sans-serif" font-size="13">
+    <text x="52" y="96">React console</text>
+    <text x="52" y="152">FastAPI</text>
+    <text x="280" y="102">DC01</text>
+    <text x="440" y="102">WS01</text>
+    <text x="600" y="102">UBU01</text>
+    <text x="440" y="208">WAZUH01</text>
+  </g>
+  <g fill="#9ca3af" font-family="ui-monospace, monospace" font-size="11">
+    <text x="280" y="120">10.10.10.10</text>
+    <text x="440" y="120">10.10.10.20</text>
+    <text x="600" y="120">10.10.10.30</text>
+    <text x="440" y="226">10.10.10.40</text>
+  </g>
+  <path d="M196 148 H240" stroke="#9ca3af" stroke-dasharray="4 4" fill="none"/>
+  <path d="M334 132 V184 H424 M494 132 V184 M654 132 V200 H604" stroke="#1f2a3a" fill="none"/>
+</svg>
