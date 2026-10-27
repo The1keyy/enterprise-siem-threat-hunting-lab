@@ -3,7 +3,7 @@
 > REQUIRES WINDOWS VALIDATION for every Windows row. Linux rows are lab checks on UBU01.
 > This file is the source for Steps 12A, 12B, and 12C. 12B writes the agent snippets. 12C is not started.
 
-Rows are SF-001 through SF-014 only. A setting is listed because a detection reads that event, or because Step 12A requires the command-line field on Security 4688. Subcategories that no row uses are not set: Special Logon, Other Object Access Events, and Security System Extension.
+Rows are SF-001 through SF-014 only. A setting is listed because a detection reads that event, or because Security 4688 should carry a command line. Subcategories that no row uses are not set: Special Logon, Other Object Access Events, and Security System Extension.
 
 | ID | Host(s) | Channel or log | Event IDs | Audit subcategory or Sysmon event | Config file | Agent localfile |
 |---|---|---|---|---|---|---|
@@ -24,11 +24,11 @@ Rows are SF-001 through SF-014 only. A setting is listed because a detection rea
 
 ## Command line on Security 4688
 
-Not an SF row. SF-005 does not alert on 4688. Step 12A still turns on Process Creation, Success, and `ProcessCreationIncludeCmdLine_Enabled`, so a lab 4688 can carry a command line. The script is `configs/windows/audit-policy/apply-audit-policy.ps1`.
+Not an SF row. SF-005 does not alert on 4688. The audit script still turns on Process Creation, Success, and `ProcessCreationIncludeCmdLine_Enabled`, so a lab 4688 can carry a command line. The script is `configs/windows/audit-policy/apply-audit-policy.ps1`.
 
 ## Process images in the Sysmon file that no current rule alerts on
 
-`schtasks.exe` and `sc.exe` process creation is in the merged Sysmon config because Step 12A requires those images. No SF-001–SF-014 rule matches them.
+`schtasks.exe` and `sc.exe` process creation is in the merged Sysmon config so those images are recorded with a command line. No SF-001–SF-014 rule matches them.
 
 ## Linux files the agent reads
 

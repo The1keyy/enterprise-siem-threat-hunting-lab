@@ -3,7 +3,7 @@
 This file is the single source of truth for versions. Change a version only with a short ADR in
 `docs/adr/`.
 
-**Last checked:** 2026-10-25 (backend pins locked in Step 7A)
+**Last checked:** 2026-10-25 (backend pins locked 2026-10-25)
 
 Anything marked **VERIFY** must be confirmed against the official download page on the day you
 install it.
@@ -41,25 +41,25 @@ support; the lab stays on a host-only network.
 
 | Component | Version | Notes |
 |---|---|---|
-| Node.js | **24.22.1** | Installed for Step 3 (`node -v`). Node 24 LTS. |
+| Node.js | **24.22.1** | Node 24 LTS. Checked with `node -v`. |
 | npm | **11.19.1** | Installed with that Node. |
 | React / React DOM | **19.3.1** | Locked in `frontend/package-lock.json`. |
 | Vite | **8.3.5** | `@vitejs/plugin-react` **6.1.2**. |
 | TypeScript | **6.0.3** | `strict` is on. |
 | Tailwind CSS | **4.3.3** | `@tailwindcss/vite` **4.3.3**. Tokens live in `frontend/src/styles/tokens.css` via `@theme`. |
-| react-router | **8.5.0** | Current major at Step 3. |
-| Recharts | **3.10.1** | Installed. Chart wrappers start in Step 4. |
+| react-router | **8.5.0** | Pinned in the lockfile. |
+| Recharts | **3.10.1** | Installed. Used by the overview charts. |
 | lucide-react | **1.61.0** | |
 | clsx | **2.1.1** | |
 | ESLint | **10.13.0** | Flat config in `frontend/eslint.config.js`, plus Prettier **3.9.10**. |
 | @fontsource/inter | **5.3.0** | Inter is bundled. No font CDN. |
-| Vitest | **5.0.5** | Added in Step 4. jsdom **30.1.3**, Testing Library React **16.3.3**, jest-dom **7.0.1**. |
+| Vitest | **5.0.5** | Used for component tests. jsdom **30.1.3**, Testing Library React **16.3.3**, jest-dom **7.0.1**. |
 | Python | **3.12.15** | `python3.12` used to create `backend/.venv`. The project stays on 3.12. |
 | FastAPI | **0.162.0** | Locked in `backend/requirements.txt`. |
 | Uvicorn | **0.54.0** | `uvicorn[standard]`. |
 | Pydantic | **2.14.1** | pydantic-settings **2.16.1**. |
 | SQLAlchemy | **2.1.6** | SQLAlchemy 2. Alembic **1.20.1**. |
-| bcrypt / PyJWT / httpx | **5.0.0** / **2.15.1** / **0.28.1** | Password hash, session JWT, and the HTTP client reserved for Step 8. |
+| bcrypt / PyJWT / httpx | **5.0.0** / **2.15.1** / **0.28.1** | Password hash, session JWT, and the HTTP client Used by the Wazuh client. |
 | pytest / ruff | **9.1.1** / **0.17.2** | pytest-asyncio **1.4.1**. Dev requirements only. |
 | Database | SQLite (dev) | Postgres only if an ADR justifies it. |
 
@@ -77,5 +77,5 @@ support; the lab stays on a host-only network.
 
 ```bash
 brew install node@24 python@3.12 powershell shellcheck yamllint
-# Docker Desktop (free for personal use) — needed in Step 9 for wazuh-logtest
+# Docker Desktop (free for personal use) — needed for wazuh-logtest
 ```

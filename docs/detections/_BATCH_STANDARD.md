@@ -1,6 +1,6 @@
 # Detection batch standard
 
-Later Step 10 batches follow this. `docs/ROADMAP.md` is the source of truth for id, MITRE, and telemetry. One detection per roadmap row.
+New detections follow this. `docs/ROADMAP.md` is the source of truth for id, MITRE, and telemetry. One detection per roadmap row.
 
 ## A. Research first
 
@@ -31,7 +31,7 @@ A fact confirmed by grep or by a logtest response is not `VERIFY`.
    - `required_telemetry` (audit policy, Sysmon, or log path)
    - `windows_validation_required`
    - `observed_result: "NOT YET VALIDATED"` until a lab run
-   - `lab_validation: { simulation: "planned Step 13", evidence: null }`
+   - `lab_validation: { simulation: "not run", evidence: null }`
 4. `tests/logs/SF-XXX.yml`
    - `comment: SYNTHETIC TEST INPUT`
    - Cases: `positive`, `negative_below_threshold` for a burst, `negative_benign`
@@ -73,4 +73,4 @@ The fixture builder rewrites `fixtures/detections.json` from metadata, the rule 
 
 ## D. Finish
 
-Update `docs/PROJECT_STATUS.md` with a status table and real counts. Commit `Step 10 batch N: <IDs>`. Push. Do not start the next batch.
+Update `docs/PROJECT_STATUS.md` with a status table and real counts. Record the real status counts.

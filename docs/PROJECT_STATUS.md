@@ -1,20 +1,27 @@
 # Project status
 
-> Cursor/AI: read this file first at the start of every new chat, and update it at the end of
-> every step.
+> Update this file when the status changes.
 
 ## Current step
-**Step 14A written locally.** The correlation engine and the risk model are pure functions plus pytest. The alerts in those tests are labeled `SYNTHETIC TEST INPUT`. That is not a lab result and nothing is `LAB VALIDATED`. HUNT-001 through HUNT-010 are `NOT TESTED`. SF-001 through SF-014 simulations and `Invoke-AttackStory.ps1` are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`.
+**Correlation is written locally.** The correlation engine and the risk model are pure functions plus pytest. The alerts in those tests are labeled `SYNTHETIC TEST INPUT`. That is not a lab result and nothing is `LAB VALIDATED`. HUNT-001 through HUNT-010 are `NOT TESTED`. SF-001 through SF-014 simulations and `Invoke-AttackStory.ps1` are `NOT TESTED`. Detections are unchanged: SF-001 through SF-012 are `SYNTAX VALID`, SF-013 and SF-014 are `LOGTEST VALID`.
 Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED`. Attack simulations run in the lab: 0.
-**Next:** Step 14B is not started. The engine is not wired to a route or to the demo incident scores. Ten hunts and every simulation still need a lab run. Nothing is installed on WAZUH01, UBU01, or a Windows host.
+The analyst console visual refresh is committed on `main`. Demo screenshots are in `docs/screenshots-demo/`. Those pages still use fixture data. Nothing there is `LAB VALIDATED`.
+
+Comments and docs no longer use build-step labels for correlation, logtest limits, or exclusions. Rule logic is unchanged.
+
+A Vercel demo deploy is documented in `docs/DEPLOY.md` and is not deployed from this machine. The public site is demo-only. `VITE_DATA_MODE=live` fails the build when `VERCEL=1`.
+
+`README.md` was rewritten for a public reader. Detection counts in it come from `scripts/validation/readme_stats.py`. The live demo URL is still the placeholder `PASTE_MY_VERCEL_URL_HERE`. The 4104 weak-link sentence describes the uncommitted correlator, not the last commit before the README rewrite.
+
+**Next:** A route that calls the correlator is not started. A pre-fix for alerts with no user and no source IP is written in the working tree and is not committed. It learns a SID-to-user row in SQLite and, failing that, attaches one alert to one open incident on the same host within 10 minutes. That weak link cannot merge two incidents. SID field names are **VERIFY**: they are not in `indexed_fields.txt` or `_ruleset-notes.md`. The engine is not wired to a route or to the demo incident scores. Ten hunts and every simulation still need a lab run. Nothing is installed on WAZUH01, UBU01, or a Windows host.
 
 ## Repository
 - GitHub: https://github.com/The1keyy/enterprise-siem-threat-hunting-lab (branch `main`)
 - Local path: `/Users/adage-131/Desktop/siem-pro`
 
-## Step log
+## Build log
 
-| Step | Description | State |
+| Item | Description | State |
 |---|---|---|
 | 1 | Repo scaffold | Done |
 | 2 | Architecture & ADRs | Done |
@@ -27,7 +34,7 @@ Counts: 2 `LOGTEST VALID` (Linux), 12 `SYNTAX VALID` (Windows), 0 `LAB VALIDATED
 | 7B | Connect the frontend, plus Docker | Done |
 | 8 | Wazuh integration code | Done (mock-tested; live behavior REQUIRES LAB VALIDATION) |
 | 9 | Local wazuh-logtest in Docker | Done (9.1: Filebeat off, no leftover volumes) |
-| 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Batch 2.1 removed content exclusions. Batch 3.1 caps Vitest `maxWorkers` at 2. Nothing is `LAB VALIDATED` |
+| 10 | MVP detections | Done. SF-013 and SF-014 are `LOGTEST VALID`. SF-001 through SF-012 are `SYNTAX VALID`. Content exclusions were removed. Vitest `maxWorkers` is capped at 2. Nothing is `LAB VALIDATED` |
 | 11 | Detection-as-code CI | Done. 11.1 `logtest` run 40385108944 printed `loaded 23 = 23` and succeeded. `detections` 40385108937 and `secrets` 40385109013 succeeded on the same push |
 | 12 | Lab configs + scripts | 12A, 12B, and 12C written. 12.1 is `make lint-scripts` and `scripts/validation/lint_powershell.ps1`. Auditd rules stay NOT TESTED until UBU01 loads them. Nothing has run on a VM |
 | 13 | Hunts + simulations | 13A and 13B written on the Mac. Hunts and simulations are `NOT TESTED`. None have run in the lab |
@@ -47,12 +54,12 @@ Real counts only. Update these as work actually happens.
 | Attack simulations written | 14 plus `Invoke-AttackStory.ps1`, all `NOT TESTED` |
 | Attack simulations run in lab | 0 |
 | Telemetry sources confirmed ingesting | 0 |
-| CI | On 2026-10-26, Step 11.1: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for 11.1. Dependabot updater jobs failed with `fetching job details: missing response`. Step 12A: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. Step 12B: `detections` 40391492945 succeeded. `secrets` 40391493005 succeeded. `logtest` and `app` did not run. Step 12C: `scripts` 40393444997 succeeded (shellcheck, powershell, snippets). `secrets` 40393445016 succeeded. `detections`, `logtest`, and `app` did not run; their path filters do not include `scripts/` or `docs/`. Step 12.1: `scripts` 40394873108 succeeded. `detections` 40394873059 succeeded. `secrets` 40394872867 succeeded. |
+| CI | On 2026-10-26, Rule-count check: `logtest` 40385108944 succeeded and printed `loaded 23 = 23`. `detections` 40385108937 succeeded. `secrets` 40385109013 succeeded. Earlier the same day, `logtest` 40382184242 succeeded after 40381587906 (hex-only API password) and 40381952511 (a missing `sentinelforge` line was treated as a failure). `app` 40379538866 succeeded and did not re-run for that push. Dependabot updater jobs failed with `fetching job details: missing response`. Windows logging: `detections` 40387224868 succeeded (`tests/configs/test_sysmon_config.py` 4 passed, 13 passed total). `secrets` 40387224832 succeeded. `logtest` did not run; its path filter does not include `configs/` or `docs/`. `app` did not run. Agent snippets: `detections` 40391492945 succeeded. `secrets` 40391493005 succeeded. `logtest` and `app` did not run. Install scripts: `scripts` 40393444997 succeeded (shellcheck, powershell, snippets). `secrets` 40393445016 succeeded. `detections`, `logtest`, and `app` did not run; their path filters do not include `scripts/` or `docs/`. Step 12.1: `scripts` 40394873108 succeeded. `detections` 40394873059 succeeded. `secrets` 40394872867 succeeded. |
 
 | ID | Status | Evidence |
 |---|---|---|
 | SF-001 | `SYNTAX VALID` | Rule 100100 loaded (level 11, `T1110.001`). Logtest cases `LIMITED`. Not a Windows result. |
-| SF-002 | `SYNTAX VALID` | Rule 100110 loaded (level 10, `T1110.003`). Same-IP burst. Distinct users are Step 14. `different_field` is absent in 4.14.9. |
+| SF-002 | `SYNTAX VALID` | Rule 100110 loaded (level 10, `T1110.003`). Same-IP burst. The correlation engine counts distinct users. `different_field` is absent in 4.14.9. |
 | SF-003 | `SYNTAX VALID` | Rule 100120 loaded (level 12, `T1078` only). Chains on 100100. Two `same_field` elements are unproven until the lab. |
 | SF-004 | `SYNTAX VALID` | Rule 100200 loaded (level 12, `T1059.001`). Script block 4104. Logtest cases `LIMITED`. Not a Windows result. |
 | SF-005 | `SYNTAX VALID` | Rule 100210 loaded (level 13, `T1059.001` only). Sysmon 1 command line. 4688 is not used. Logtest cases `LIMITED`. |
@@ -66,11 +73,11 @@ Real counts only. Update these as work actually happens.
 | SF-011 | `SYNTAX VALID` | Rules 100510 (level 12, ADMIN$ or C$), 100511 (level 4, IPC$), and 100512 (level 5, 4624 type 3). `T1021.002`. Logtest cases `LIMITED`. |
 | SF-012 | `SYNTAX VALID` | Rules 100520 (level 12, `wsmprovhost.exe`) and 100521 (level 10, port 5985). `T1021.006`. Logtest cases `LIMITED`. |
 | SF-015–SF-019 | `NOT TESTED` | Not written |
-| SF-020 | not a detection rule | Backend correlation in Step 14A. No metadata file. Synthetic pytest only. Not `LAB VALIDATED` |
+| SF-020 | not a detection rule | Backend correlation. No metadata file. Synthetic pytest only. Not `LAB VALIDATED` |
 
-## Step 12 needs
+## Windows logging
 
-Step 12A writes the Windows logging side. Step 12B writes the agent and manager snippets from `docs/TELEMETRY_MATRIX.md` and `configs/windows/channels.md`. Nothing is installed. 12C is not started. Process Creation is in the audit script only so Security 4688 can include a command line, and the Windows agent query forwards 4688. Special Logon, Other Object Access Events, and Security System Extension are not in the matrix and are not set. `schtasks.exe` and `sc.exe` are in the Sysmon include and no current rule alerts on them. The System channel is collected with no XPath because no event ID is listed. The stock 4.14.9 Security query excludes 5145; the snippet's allow-list keeps it.
+The Windows logging scripts and the agent snippets in `docs/TELEMETRY_MATRIX.md` and `configs/windows/channels.md` are written. Nothing is installed. The install scripts have not run on a VM. Process Creation is in the audit script only so Security 4688 can include a command line, and the Windows agent query forwards 4688. Special Logon, Other Object Access Events, and Security System Extension are not in the matrix and are not set. `schtasks.exe` and `sc.exe` are in the Sysmon include and no current rule alerts on them. The System channel is collected with no XPath because no event ID is listed. The stock 4.14.9 Security query excludes 5145; the snippet's allow-list keeps it.
 
 Windows channels:
 
@@ -111,20 +118,20 @@ Not Windows:
 - `docs/MAC_VS_WINDOWS.md`
 - `docs/adr/0001-wazuh-as-siem.md`, `0002-fastapi-backend.md`, `0003-console-on-top-of-wazuh.md`
 - `scripts/validation/check_scaffold.sh` (verifies the structure)
-- `.cursor/rules/` (Cursor project rules)
-- `frontend/` analyst console shell (Step 3), SOC Overview (Step 4), incidents (Step 5), and hunting, detections, and MITRE pages (Step 6A).
+- `.cursor/rules/` (project rules)
+- `frontend/` analyst console: overview, incidents, hunting, detections, and MITRE.
 - SF-013 and SF-014 are real rules in `detections/wazuh/rules/sentinelforge_100700_linux.xml`. Logtest on 2026-10-26 passed both, including the below-threshold and benign cases. Status is `LOGTEST VALID`. `observed_result` is still `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-001, SF-002, and SF-003 are real rules in `detections/wazuh/rules/sentinelforge_100100_auth.xml` (100100, 100110, 100120). On 2026-10-26 analysisd started with `Total rules enabled: 8459` and no analysisd error. `GET /rules?rule_ids=100100,100110,100120` returned all three `enabled`. Status is `SYNTAX VALID`. Logtest printed `LIMITED` for every Windows case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-004, SF-005, and SF-006 are real rules in `detections/wazuh/rules/sentinelforge_100200_powershell.xml` (100200, 100210, 100220, 100221). On 2026-10-26 analysisd started with `Total rules enabled: 8465` and no analysisd error. `GET /rules?filename=sentinelforge_100200_powershell.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T173329Z.json`) printed `LIMITED` for every PowerShell case, including a script block that contains `sentinelforge-setup`, and did not call logtest for them. Content exclusions are removed. 4104 has no exclusion. SF-005's token minimum is 20 characters, and its only exclusion is the anchored agent executable path. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
 - SF-007, SF-008, and SF-009 are real rules in `detections/wazuh/rules/sentinelforge_100300_accounts.xml` (100300, 100310, 100311, 100320). On 2026-10-26 analysisd started with `Total rules enabled: 8471` and no analysisd error. `GET /rules?filename=sentinelforge_100300_accounts.xml` returned all four `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T175154Z.json`) printed `LIMITED` for every account case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null.
-- SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-019 are still the placeholder "Not written yet (Step 10)" with status `NOT TESTED`. SF-020 is not a rule. The demo library row says it is backend correlation. There is no `detections/metadata/SF-020.yml`.
+- SF-010, SF-011, and SF-012 are real rules in `detections/wazuh/rules/sentinelforge_100500_lateral.xml` (100500, 100501, 100502, 100510, 100511, 100512, 100520, 100521). On 2026-10-26 analysisd started with `Total rules enabled: 8481` and no analysisd error. `GET /rules?filename=sentinelforge_100500_lateral.xml` returned all eight `enabled`. Status is `SYNTAX VALID`. Logtest (`tests/results/logtest-20261026T181410Z.json`) printed `LIMITED` for every lateral case and did not call logtest for them. They are not `LOGTEST VALID`. `observed_result` is `NOT YET VALIDATED`. `lastTriggered` and `alertCount` are null. SF-015–SF-019 are still the placeholder "Not written yet" with status `NOT TESTED`. SF-020 is not a rule. The demo library row says it is backend correlation. There is no `detections/metadata/SF-020.yml`.
 - HUNT-001 through HUNT-010 are YAML in `hunting/`. All are `NOT TESTED`. `/api/hunts` loads those files in demo mode and in live mode. Demo "Run hunt" matches fixture timeline events and is labeled demo. Live "Run hunt" maps YAML `alerts` or `archives` to `ALERTS_INDEX` and `ARCHIVES_INDEX` in `backend/app/core/config.py`, keeps the 7-day cap and `indexed_fields.txt`, and returns 503 if Wazuh is down. HUNT-004 and HUNT-010 are terms aggregations; low-count buckets are not a lab result. Promoting a result writes a SQLite incident. `fixtures/hunts.json` is generated by `scripts/validation/build_hunt_fixtures.py`.
-- Step 13B adds `scripts/powershell/simulations/` and `docs/runbooks/04-simulations.md`. On 2026-10-26, PSScriptAnalyzer reported 0 findings, the parser accepted the new scripts, and Pester 5.6.1 reported 8 passed. That is a Mac check of the guard. Every simulation header stays `NOT TESTED`. No script has run on DC01, WS01, or UBU01. `make test` was 29 pytest and 25 vitest. `make validate` reported 0 errors. The same 9 Sigma `InvalidATTACKTagIssue` warnings remain.
-- Step 14A adds `backend/app/services/correlation.py`, `backend/app/core/risk_config.yml`, `backend/tests/test_correlation.py`, and ADRs 0005 and 0006. The tests use synthetic Wazuh-shaped alerts labeled `SYNTHETIC TEST INPUT`. The story fixture is one incident, subtotal 135, multiplier 1.7 from DC01, final 230, critical. That number is the model, not a lab measurement. On 2026-10-27, `make test` was 46 pytest and 25 vitest. `make validate` reported 0 errors and the same 9 Sigma `InvalidATTACKTagIssue` warnings. `ruff check` on the backend was clean. The demo Settings bands (30 / 60 / 100) are unchanged. No route calls the engine.
+- Adds `scripts/powershell/simulations/` and `docs/runbooks/04-simulations.md`. On 2026-10-26, PSScriptAnalyzer reported 0 findings, the parser accepted the new scripts, and Pester 5.6.1 reported 8 passed. That is a Mac check of the guard. Every simulation header stays `NOT TESTED`. No script has run on DC01, WS01, or UBU01. `make test` was 29 pytest and 25 vitest. `make validate` reported 0 errors. The same 9 Sigma `InvalidATTACKTagIssue` warnings remain.
+- Adds `backend/app/services/correlation.py`, `backend/app/core/risk_config.yml`, `backend/tests/test_correlation.py`, and ADRs 0005 and 0006. The tests use synthetic Wazuh-shaped alerts labeled `SYNTHETIC TEST INPUT`. The story fixture is one incident, subtotal 135, multiplier 1.7 from DC01, final 230, critical. That number is the model, not a lab measurement. On 2026-10-27, `make test` was 46 pytest and 25 vitest. `make validate` reported 0 errors and the same 9 Sigma `InvalidATTACKTagIssue` warnings. `ruff check` on the backend was clean. The demo Settings bands (30 / 60 / 100) are unchanged. No route calls the engine.
 - The ATT&CK page counts techniques from those detections. Lab-validated coverage is 0. The Navigator layer JSON marks its format version `VERIFY`.
 - All 10 sidebar pages render in demo mode. Entity risk reuses `finalRiskScore` from incident breakdowns. Data-source volume counts fixture timeline events. Health cards and agents are `Offline` / `never connected` because the lab is not running. Automation workflows are a design preview and do not run. Settings is read-only.
 - Overview numbers are demo fixtures in `frontend/src/fixtures/overview.ts`. They are not lab measurements.
-- Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. Step 14A does not rescore them. The new model is `backend/app/core/risk_config.yml`, used only by `backend/app/services/correlation.py`.
+- Incident queue numbers, timelines, and risk scores are demo fixtures in `frontend/src/fixtures/incidents.ts`. Final scores are `round(subtotal × multiplier)` and are covered by tests. They are not lab measurements. The correlation model does not rescore them. The new model is `backend/app/core/risk_config.yml`, used only by `backend/app/services/correlation.py`.
 - Shared demo JSON lives in `/fixtures` (`overview`, `incidents`, `detections`, `hunts`, `entities`, `sources`, `health`). Each file has `_notice`: `DEMO DATA — synthetic, not real telemetry`. The frontend fixture modules import those files. `scripts/validation/export_fixtures.mjs` generated them.
 - `backend/` is a FastAPI app on Python 3.12. Demo mode seeds SQLite from `/fixtures` and returns `"demo": true`. `GET /health` is open. `/api/*` requires the lab-admin cookie. Live mode calls the Wazuh manager API and indexer. Responses set `"demo": false`. If Wazuh is unreachable the route returns 503 and does not serve fixtures. Incidents stay in SQLite. There is no live Wazuh in this environment, so nothing here is LAB VALIDATED.
 - Response actions are LAB ONLY and dry-run. `confirm: true` writes `audit_log.dry_run=true` and returns `Dry run: no action executed`. Nothing is executed.
@@ -133,12 +140,12 @@ Not Windows:
 - `make logtest-up` runs `docker compose up -d --wait --wait-timeout 120` and returns only after the healthcheck is healthy, or fails at 120 seconds. It starts only `wazuh/wazuh-manager:4.14.9` as `wazuh-logtest`. Image architecture used: `linux/arm64` (container `uname -m` was `aarch64`). No `platform: linux/amd64`. Custom rules are mounted at `/var/ossec/etc/rules/sentinelforge` and loaded by an entrypoint snippet. That script deletes `/etc/services.d/filebeat` before s6 starts services, so Filebeat is not running. Alert and archive directories are 32m tmpfs. There are no named volumes. `make logtest-down` and `make logtest-clean` remove this container and its volumes only. Analysisd still reached `is running`.
 - `make logtest` on 2026-10-26 (`tests/results/logtest-20261026T123424Z.json`, gitignored): printed `0 detections found`. CANARY-001 passed. Invalid-user sshd fired built-in rule **5710** level 5, MITRE `T1110.001` and `T1021.004`. Accepted publickey did not fire 5710 (rule 5715 level 3 fired instead). CANARY-002 is `REQUIRES WINDOWS VALIDATION / logtest-limited`: eventchannel JSON decoded as `json` and rule **1002** level 2, not Windows rule 60122. That is not a pass.
 - Wazuh clients live in `backend/app/integrations/`. Tests use synthetic mocks in `backend/tests/wazuh_mocks/`. Severity bands are ADR 0004. Runbooks: `docs/runbooks/wazuh-readonly-users.md`, `docs/runbooks/wazuh-archives.md`.
-- Batch standard: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. Step 10 is complete. Step 11A adds `make validate`. Step 11B adds `logtest.yml`, `secrets.yml`, and Dependabot. Step 11.1 compares each `sentinelforge_*.xml` rule count with `GET /rules?filename=`.
-- Step 12A adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION.
-- Step 12B adds `configs/wazuh/` snippets, `configs/linux/auditd/sentinelforge.rules` (NOT TESTED, no auditctl on the Mac), `scripts/bash/deploy_rules.sh` (shellcheck clean, not run), and `docs/runbooks/03-wazuh-config.md`. `pytest tests/configs` passed (12). Ubuntu 24.04 auth logs stay on `/var/log/auth.log` via rsyslog, not journald. That file is still not observed on UBU01. `logall_json`, the Filebeat archives key, the ISM API, `rule_dir etc/rules`, the `wazuh` owner, and the API CA path stay **VERIFY** on WAZUH01.
-- Step 12C adds `scripts/powershell/01` through `40` and `99`, `scripts/bash/ubu01-setup.sh`, `scripts/bash/wazuh01-checks.sh`, `.github/workflows/scripts.yml`, and `docs/runbooks/01-lab-build.md`. PSScriptAnalyzer and shellcheck are clean on the Mac. The MSI URL `https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi` returned HTTP 200 on 2026-10-26. The file was not downloaded. Both hash files are still placeholders. The apt package revision `4.14.9-1` and the Linux `WAZUH_AGENT_NAME` variable stay **VERIFY**. Nothing is `LAB VALIDATED`. Step 13A and 13B are written on the Mac and have not run on a VM.
+- Detection authoring notes: `docs/detections/_BATCH_STANDARD.md`. Ruleset notes: `docs/detections/_ruleset-notes.md`. `scripts/validation/build_detection_fixtures.py` refreshes `fixtures/detections.json` from metadata. `make validate`, `logtest.yml`, `secrets.yml`, and Dependabot are in place. The rule-count check compares each `sentinelforge_*.xml` rule count with `GET /rules?filename=`.
+- Adds `docs/TELEMETRY_MATRIX.md`, `configs/windows/` (audit policy, PowerShell logging, channel list), and `configs/sysmon/` (sysmon-modular 15.21 schema 4.91 plus the merged file). PSScriptAnalyzer reported 0 findings and the PowerShell parser accepted all three scripts. `SYSMON_ZIP_SHA256.txt` is still the placeholder `<SYSMON_ZIP_SHA256>`. Status is SYNTAX VALID. REQUIRES WINDOWS VALIDATION.
+- Adds `configs/wazuh/` snippets, `configs/linux/auditd/sentinelforge.rules` (NOT TESTED, no auditctl on the Mac), `scripts/bash/deploy_rules.sh` (shellcheck clean, not run), and `docs/runbooks/03-wazuh-config.md`. `pytest tests/configs` passed (12). Ubuntu 24.04 auth logs stay on `/var/log/auth.log` via rsyslog, not journald. That file is still not observed on UBU01. `logall_json`, the Filebeat archives key, the ISM API, `rule_dir etc/rules`, the `wazuh` owner, and the API CA path stay **VERIFY** on WAZUH01.
+- Adds `scripts/powershell/01` through `40` and `99`, `scripts/bash/ubu01-setup.sh`, `scripts/bash/wazuh01-checks.sh`, `.github/workflows/scripts.yml`, and `docs/runbooks/01-lab-build.md`. PSScriptAnalyzer and shellcheck are clean on the Mac. The MSI URL `https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.9-1.msi` returned HTTP 200 on 2026-10-26. The file was not downloaded. Both hash files are still placeholders. The apt package revision `4.14.9-1` and the Linux `WAZUH_AGENT_NAME` variable stay **VERIFY**. Nothing is `LAB VALIDATED`. Hunts and simulations are written on the Mac and have not run on a VM.
 
-## VERIFY in Step 17 (Wazuh 4.14.9)
+## VERIFY on WAZUH01 (Wazuh 4.14.9)
 
 These are coded as the expected 4.14 shape and are not confirmed on a running manager:
 
@@ -167,7 +174,7 @@ These are coded as the expected 4.14 shape and are not confirmed on a running ma
 - Path of `root-ca.pem` on the all-in-one
 - The Wazuh dashboard is not queried; its health status stays null until a later check
 
-## Frontend versions (Step 3)
+## Frontend versions
 Locked in `frontend/package-lock.json`. See `docs/VERSIONS.md`.
 
 | Tool | Version |
@@ -181,7 +188,7 @@ Locked in `frontend/package-lock.json`. See `docs/VERSIONS.md`.
 | react-router | 8.5.0 |
 
 ## Lab host
-Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
+Recorded for the VM plan. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 
 | Item | Value |
 |---|---|
@@ -202,13 +209,13 @@ Recorded in Step 2. Used for the VM plan in `architecture/ARCHITECTURE.md`.
 - [ ] SSH from the Mac to the Windows host is the recommended path and is not set up yet.
 
 ## Needs Windows validation
-Step 8 is mock-tested on the Mac. The clients do not talk to a real manager here. Live behavior **REQUIRES LAB VALIDATION**. Dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows in demo mode are not live checks.
+The Wazuh clients are mock-tested on the Mac. The clients do not talk to a real manager here. Live behavior **REQUIRES LAB VALIDATION**. Dry-run actions do not change a host. Detections and Windows data-source cards that will need Windows validation are tagged. That tag is a plan, not a test result. Health and agent rows in demo mode are not live checks.
 
-Step 9 logtest does not prove Windows field names. CANARY-002 stayed logtest-limited after a second eventchannel replay (decoder `json`, rule 1002, alert false). Windows eventchannel events can't be faithfully replayed in logtest. Step 10 must not mark those detections `LOGTEST VALID` from this harness. They are validated in the lab. Windows Event IDs still need a lab agent.
+Logtest does not prove Windows field names. CANARY-002 stayed logtest-limited after a second eventchannel replay (decoder `json`, rule 1002, alert false). Windows eventchannel events can't be faithfully replayed in logtest. Do not mark those detections `LOGTEST VALID` from this harness. They are validated in the lab. Windows Event IDs still need a lab agent.
 
-Step 13B scripts are written and are `NOT TESTED`. Snapshot first. Run them only inside `10.10.10.0/24`. Record the run JSON, the alert export, and a screenshot in the Step 18 table in `docs/runbooks/04-simulations.md`.
+Simulation scripts are written and are `NOT TESTED`. Snapshot first. Run them only inside `10.10.10.0/24`. Record the run JSON, the alert export, and a screenshot in the results table in `docs/runbooks/04-simulations.md`.
 
-Step 14A correlation is synthetic pytest on the Mac. It does not prove a lab alert joins another lab alert. After a story run, compare the exported alerts with this engine before calling any incident `LAB VALIDATED`.
+Correlation is synthetic pytest on the Mac. It does not prove a lab alert joins another lab alert. After a story run, compare the exported alerts with this engine before calling any incident `LAB VALIDATED`.
 
 Still documented, not built:
 
@@ -217,5 +224,5 @@ Still documented, not built:
 - WS01 virtual TPM and VM encryption on Workstation Pro 26.0.1
 - Static IPs, DC01 DNS, domain join
 - Wazuh 4.14.9 all-in-one on the 8 GB VM, including the heap cap
-- Windows agent events for SF-001–SF-012. Field names were read from the 4.14.9 ruleset. Match behavior was not replayed. The channel, audit subcategory, and Sysmon list for Step 12 is in the section above. A real 4624 type 10, 5140 or 5145, and Sysmon 1 `wsmprovhost.exe` are still required for SF-010–SF-012. `win.system.computer` is in the 4624 sample comment and is not a stock `<field>` check. The WinRM Operational event ID is still VERIFY.
+- Windows agent events for SF-001–SF-012. Field names were read from the 4.14.9 ruleset. Match behavior was not replayed. The channel, audit subcategory, and Sysmon list is in the Windows logging section above. A real 4624 type 10, 5140 or 5145, and Sysmon 1 `wsmprovhost.exe` are still required for SF-010–SF-012. `win.system.computer` is in the 4624 sample comment and is not a stock `<field>` check. The WinRM Operational event ID is still VERIFY.
 - SSH listener on the Windows host, limited to the Mac

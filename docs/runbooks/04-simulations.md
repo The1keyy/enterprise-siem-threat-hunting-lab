@@ -61,9 +61,9 @@ Do this for every detection you actually run. Do not commit the files.
 1. The script writes `C:\SentinelForge\evidence\runs\<timestamp>_SF-XXX.json` with the host, user, start and end UTC, redacted commands, expected rule IDs, and cleanup status.
 2. In the Wazuh dashboard, open the alert and export the alert JSON next to that run record.
 3. Take a screenshot of the same alert.
-4. Fill one row of the Step 18 table at the bottom of this file. Copy the table into your lab notes. Leave the status `NOT TESTED` until you have the run record, the alert JSON, and the screenshot.
+4. Fill one row of the results table at the bottom of this file. Copy the table into your lab notes. Leave the status `NOT TESTED` until you have the run record, the alert JSON, and the screenshot.
 
-SentinelForge `/detections/SF-XXX` shows the rule definition. It does not list this run's alert. A fired alert is in the Wazuh dashboard. Step 14 is the correlation step and is not part of this runbook.
+SentinelForge `/detections/SF-XXX` shows the rule definition. It does not list this run's alert. A fired alert is in the Wazuh dashboard. Correlation is not part of this runbook.
 
 Dashboard queries below use the 4.14 field names already used in this repo. **VERIFY** them on WAZUH01.
 
@@ -98,7 +98,7 @@ The cleanup deletes the IPC$ mapping and removes `.200`. `Unlock-ADAccount` runs
 .\SF-002-PasswordSpray.ps1 -IUnderstandLabOnly
 ```
 
-- What it does: two failures each for those three accounts (six failures). The rule `100110` is six failures from one IP. It does not count distinct users. Only four `sf-test-*` accounts exist, so "six accounts" is not the test. Two per account stays under the six-failure same-account rule `100100`. Distinct-user correlation is Step 14. Technique `T1110.003`. The Atomic test number is **VERIFY**. No Atomic body is downloaded.
+- What it does: two failures each for those three accounts (six failures). The rule `100110` is six failures from one IP. It does not count distinct users. Only four `sf-test-*` accounts exist, so "six accounts" is not the test. Two per account stays under the six-failure same-account rule `100100`. The correlation engine counts distinct users. Technique `T1110.003`. The Atomic test number is **VERIFY**. No Atomic body is downloaded.
 - Expected: rule `100110` level 10. `100100` should not fire, because no account reached six.
 - Wazuh: `rule.id:100110 AND data.win.eventdata.ipAddress:10.10.10.20`
 - Cleanup:
@@ -376,11 +376,11 @@ Stages, with the pause between them:
 
 The script prints a UTC line at each start, pause, and cleanup. It writes one `STORY` run record plus the per-stage records. `finally` runs the SF-007, SF-011, SF-003, SF-001, SF-004, and SF-012 cleanups even when a stage throws.
 
-Expected alerts for the default story: `100100`, `100120`, `100200`, `100300`, and `100510`. WinRM expects `100520` or `100521` instead of `100510`. Step 14 should merge those alerts into one incident. This script does not do that.
+Expected alerts for the default story: `100100`, `100120`, `100200`, `100300`, and `100510`. WinRM expects `100520` or `100521` instead of `100510`. The correlation engine should merge those alerts into one incident. This script does not do that.
 
 A pause over 60 seconds, or a slow password prompt, can miss the 120 second window for `100120`.
 
-## Step 18 results
+## Results
 
 Copy this table. Leave Status as `NOT TESTED` until that row has a run record, an alert JSON export, and a screenshot. Do not fill it from this Mac.
 

@@ -1,12 +1,12 @@
 # Mac vs Windows lab
 
-All implementation through Step 14 happens on the Mac. The Windows PC is the hypervisor for the lab, later.
+The Mac build covers the console, the API, and the detections. The Windows PC is the hypervisor for the lab, later.
 
 "Test on Mac" means a check that can fail the change before any VM exists: lint, unit tests, a production build, or `wazuh-logtest` against a labeled synthetic log. It does not mean the lab already proved the detection.
 
-The Wazuh manager API client and indexer client are built and mock-tested on the Mac (Step 8). Live behavior against WAZUH01 **REQUIRES LAB VALIDATION**. The mocks are labeled synthetic and are not lab alerts.
+The Wazuh manager API client and indexer client are built and mock-tested on the Mac. Live behavior against WAZUH01 **REQUIRES LAB VALIDATION**. The mocks are labeled synthetic and are not lab alerts.
 
-Step 9 runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aarch64`) with no Rosetta platform flag. `make logtest` passed CANARY-001 on built-in sshd rule 5710. CANARY-002, a synthetic Windows 4625 event, did not reach decoder `windows_eventchannel` (observed decoder `json`, rule 1002). That case is `REQUIRES WINDOWS VALIDATION / logtest-limited`. Logtest does not replace the WAZUH01 install.
+Logtest runs `wazuh/wazuh-manager:4.14.9` as `linux/arm64` (container `uname` `aarch64`) with no Rosetta platform flag. `make logtest` passed CANARY-001 on built-in sshd rule 5710. CANARY-002, a synthetic Windows 4625 event, did not reach decoder `windows_eventchannel` (observed decoder `json`, rule 1002). That case is `REQUIRES WINDOWS VALIDATION / logtest-limited`. Logtest does not replace the WAZUH01 install.
 
 The `logtest` GitHub Actions job uses that same image and `scripts/validation/logtest/docker-compose.yml` on `ubuntu-latest` (amd64). It sets no `platform` flag. The API password is generated in the job and is not committed. A hex-only password made the 4.14.9 manager exit 0; the job password includes an uppercase letter and a symbol. Windows cases stay `LIMITED` there too. Run 40382184242 succeeded.
 
@@ -21,7 +21,7 @@ The `logtest` GitHub Actions job uses that same image and `scripts/validation/lo
 | Wazuh manager API client | Yes | Yes | Unit tests with mocked HTTP | Yes. Real JWT login and payloads. **VERIFY** endpoints. |
 | Wazuh indexer client | Yes | Yes | Unit tests with mocked HTTP | Yes. Real `wazuh-alerts-*` / `wazuh-archives-*`. **VERIFY** names. |
 | Correlation and risk scoring | Yes | Yes | `pytest` with synthetic events | Yes, once real alerts exist. The math can be proven earlier. |
-| Wazuh rules and decoders | Yes | Yes | `wazuh-logtest` in Docker (Step 9) on sample lines | **REQUIRES WINDOWS VALIDATION** for Windows events and `win.eventdata.*` |
+| Wazuh rules and decoders | Yes | Yes | `wazuh-logtest` in Docker on sample lines | **REQUIRES WINDOWS VALIDATION** for Windows events and `win.eventdata.*` |
 | Sigma rules | Yes | Yes | `sigma convert` in CI | Field accuracy on real logs: yes for Windows sources |
 | Detection metadata | Yes | Yes | `pytest` for IDs, MITRE format, required fields | `observed_result` stays `NOT YET VALIDATED` until the lab |
 | GitHub Actions CI | Written on Mac | Yes, on push | `detections`, `app`, `logtest` (`wazuh-manager:4.14.9`), `secrets` (gitleaks 8.30.1), and `scripts` (shellcheck, PSScriptAnalyzer, snippet pytest) | CI cannot mark a rule `LAB VALIDATED` |
@@ -43,6 +43,6 @@ The `logtest` GitHub Actions job uses that same image and `scripts/validation/lo
 | Wazuh Linux agent | Install script written on Mac | Lint only | `ubu01-setup.sh`. Package revision `4.14.9-1` is **VERIFY** on apt | UBU01 (and SURI01 if used) |
 | SSH tunnel from the Mac to WAZUH01 | Config on the Mac later | Port check only after the tunnel exists | `curl` to `127.0.0.1` forwards | **REQUIRES WINDOWS VALIDATION** of the host SSH listener and firewall |
 | Screenshots | No | No | Do not capture fixtures and label them as the lab | Yes. Real UI and Wazuh screens only. |
-| Incident report `INC-0001` | Written after the run | No | — | Yes. Step 19, from real alerts. |
+| Incident report `INC-0001` | Written after the run | No | — | Yes, from real alerts, after a lab run. |
 
 Ubuntu guests are lab validation, not Windows validation. The table says which one applies.

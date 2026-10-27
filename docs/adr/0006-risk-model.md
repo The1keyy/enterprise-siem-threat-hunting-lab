@@ -77,7 +77,7 @@ An unrelated SSH pair, SF-013 and SF-014, for a different user from `10.10.10.20
 |---|---|
 | Add points for every alert | A noisy auth rule would outrank a group-membership change. |
 | A learned score | There is no labeled incident history. A weight that cannot be shown on the breakdown is not usable in an interview or a write-up. |
-| Reuse the demo Settings bands (30 / 60 / 100) | Those bands belong to the fixture incidents. This model uses 40 / 80 / 150. Changing Settings would change INC-0001's displayed band. Step 14A does not do that. |
+| Reuse the demo Settings bands (30 / 60 / 100) | Those bands belong to the fixture incidents. This model uses 40 / 80 / 150. Changing Settings would change INC-0001's displayed band. This model does not do that. |
 | Multiply every entity by the asset factor again | The host page would double-count the domain-controller factor that the incident score already applied. |
 
 ## Tradeoffs

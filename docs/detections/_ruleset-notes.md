@@ -115,7 +115,7 @@ The sample JSON comment above rule 60106 uses the same four names. `different_fi
 No stock rule does `same_field` `targetUserName` on 60122.
 
 - SF-001 (100100) is 60122, same account, frequency 6, timeframe 120, level 11, MITRE `T1110.001`. Level 11 is still medium (ADR 0004). It is above 100110 and 60204 so one account is not relabeled as a spray.
-- SF-002 (100110) is 60122, same IP, frequency 6, timeframe 120, level 10, MITRE `T1110.003`. It is not a distinct-user count. Step 14 does that count. A six-account spray does not meet SF-001. A six-failure single account matches both, and 100100 wins on level.
+- SF-002 (100110) is 60122, same IP, frequency 6, timeframe 120, level 10, MITRE `T1110.003`. It is not a distinct-user count. The correlation engine does that count. A six-account spray does not meet SF-001. A six-failure single account matches both, and 100100 wins on level.
 - SF-003 (100120) is `if_sid` 60106, eventID `^4624$`, `if_matched_sid` 100100, frequency 2, timeframe 120, level 12, MITRE `T1078` only. 60106 also matches 4769. The eventID field drops that. Two `same_field` elements (account and IP) are written. This image never does that, so both being required is not proven until Windows.
 
 A `<field>` exclusion on a frequency rule is also unused in this image. The exclusions are still in the XML. Load success does not prove the match.

@@ -18,7 +18,7 @@ The cutoffs live in `backend/app/core/config.py` (`WAZUH_LEVEL_LOW_MAX`, `WAZUH_
 
 ## Context / why
 
-Wazuh alerts carry a numeric level. The console charts and incident queue use the words low, medium, high, and critical. One mapping has to be shared by the overview aggregations and by `alert_to_timeline`, or the same alert would show two severities. The bands are coarse on purpose: this is a display label, not a second risk score. Step 14 still owns the point-based risk score.
+Wazuh alerts carry a numeric level. The console charts and incident queue use the words low, medium, high, and critical. One mapping has to be shared by the overview aggregations and by `alert_to_timeline`, or the same alert would show two severities. The bands are coarse on purpose: this is a display label, not a second risk score. The correlation engine owns the point-based risk score.
 
 ## Alternatives considered
 

@@ -20,4 +20,4 @@ Each ADR has these sections:
 | [0005](0005-correlation-in-backend.md) | Correlation in the backend |
 | [0006](0006-risk-model.md) | Explainable risk model |
 
-**Status:** 0001–0006 accepted. 0004 was added in Step 8. 0005 and 0006 were added in Step 14A.
+**Status:** 0001–0006 accepted. 0004, 0005, and 0006 are accepted.

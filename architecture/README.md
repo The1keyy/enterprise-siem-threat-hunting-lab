@@ -8,4 +8,4 @@ Lab and application architecture:
 
 See [ARCHITECTURE.md](ARCHITECTURE.md).
 
-**Status:** Step 2 written. Lab network and VM sizes are a plan, not a build.
+**Status:** Lab network and VM sizes are a plan, not a build.
