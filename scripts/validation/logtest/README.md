@@ -14,7 +14,7 @@ Status ladder: `SYNTAX VALID` → `LOGTEST VALID` → `LAB VALIDATED`.
 
 `REQUIRES WINDOWS VALIDATION / logtest-limited` means the event was sent and the built-in Windows rule did not fire through logtest. That result is not a pass.
 
-Windows eventchannel events can't be faithfully replayed in logtest; Windows detections are validated in the lab. A second `PUT /logtest` with `log_format: eventchannel` and `location: EventChannel` still returned decoder `json`, rule 1002, `alert: false`. Rule 60122 did not fire. Step 10 must not mark a Windows detection `LOGTEST VALID` from this harness.
+Windows eventchannel events can't be faithfully replayed in logtest; Windows detections are validated in the lab. A second `PUT /logtest` with `log_format: eventchannel` and `location: EventChannel` still returned decoder `json`, rule 1002, `alert: false`. Rule 60122 did not fire. Do not mark a Windows detection `LOGTEST VALID` from this harness.
 
 ## Apple Silicon
 

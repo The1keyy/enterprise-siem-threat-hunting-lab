@@ -8,7 +8,7 @@
 # Expected rules: 100110
 # The rule is six failures from one IP, not six distinct accounts. Only four
 # sf-test accounts exist. Two failures each keeps every account under six, so
-# 100100 (same account, level 11) should not win. Distinct users are Step 14.
+# 100100 (same account, level 11) should not win. The correlation engine counts distinct users.
 # Source: net use cannot bind. Expect ipAddress 10.10.10.20.
 
 #Requires -Version 5.1

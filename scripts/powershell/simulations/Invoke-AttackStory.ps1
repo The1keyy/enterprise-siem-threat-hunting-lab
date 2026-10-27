@@ -6,7 +6,7 @@
 # Requires: Administrator, PowerShell 5.1+
 # Status: NOT TESTED
 # Default remote stage is the C$ map (SF-011). -RemoteStage WinRM runs SF-012
-# and does not enable WinRM. Step 14A scores these stages in the backend.
+# and does not enable WinRM. The correlation engine scores these stages in the backend.
 # This script does not.
 # Expected rules for the default story: 100100, 100120, 100200, 100300, 100510.
 # PauseSeconds must stay inside the 120 second window after the sixth failure
@@ -128,7 +128,7 @@ finally {
     }
     if ($storyError) { $cleanupStatus = 'incomplete' }
     $expected = @('100100', '100120', '100200', '100300') + $remoteRules
-    $notes = 'Step 14 should merge these alerts into one incident. This script does not correlate. Default remote stage is Share (SF-011).'
+    $notes = 'The correlation engine should merge these alerts into one incident. This script does not correlate. Default remote stage is Share (SF-011).'
     if ($storyError) { $notes = "$notes Stage error: $storyError" }
     $recordPath = Write-LabRunRecord -DetectionId 'STORY' -StartedUtc $started -EndedUtc ([datetime]::UtcNow) -Commands @('SF-001', 'SF-003 success', 'SF-004', 'SF-007', $RemoteStage) -ExpectedRuleIds $expected -CleanupStatus $cleanupStatus -Notes $notes -WhatIf:$WhatIfPreference
     if ($recordPath) { Write-Output "RUN RECORD $recordPath" }

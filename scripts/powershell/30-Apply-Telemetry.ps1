@@ -1,5 +1,5 @@
 # REQUIRES WINDOWS VALIDATION
-# Purpose: Run the Step 12A audit, PowerShell logging, and Sysmon scripts, in that order.
+# Purpose: Run the audit, PowerShell logging, and Sysmon scripts, in that order.
 #          Sysmon refuses to install until SYSMON_ZIP_SHA256.txt has a real hash.
 # Run on: both
 # Requires: Administrator, PowerShell 5.1+

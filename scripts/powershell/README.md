@@ -11,8 +11,8 @@
 | `10-Install-ADDS-Forest.ps1` | DC01 | `sentinelforge.lab`. Prompts for the DSRM password. Reboots. |
 | `11-New-LabOUsAndUsers.ps1` | DC01 | Lab OUs and `sf-test-*` users. `sf-test-admin` is not a Domain Admin. |
 | `20-Join-Domain.ps1` | WS01 | Prompts for a join account. Reboots. |
-| `30-Apply-Telemetry.ps1` | both | Calls the Step 12A audit, PowerShell logging, and Sysmon scripts. |
-| `40-Install-WazuhAgent.ps1` | both | Wazuh agent 4.14.9. Refuses a placeholder MSI hash. Merges the 12B snippet. |
+| `30-Apply-Telemetry.ps1` | both | Calls the audit, PowerShell logging, and Sysmon scripts. |
+| `40-Install-WazuhAgent.ps1` | both | Wazuh agent 4.14.9. Refuses a placeholder MSI hash. Merges the Windows agent snippet. |
 | `99-Get-LabStatus.ps1` | both | Read-only report. Writes only its log file. |
 | `simulations/` | WS01 or DC01 | Lab-only telemetry. Status `NOT TESTED`. See `docs/runbooks/04-simulations.md`. |
 

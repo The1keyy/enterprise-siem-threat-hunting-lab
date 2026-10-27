@@ -9,4 +9,4 @@ simulation:
 - Has a matching `*-Cleanup.ps1`.
 - References an Atomic Red Team test ID where one applies.
 
-**Status:** Empty (Step 13).
+**Status:** `NOT TESTED`. No script here has run on a lab VM.
