@@ -20,7 +20,7 @@ export type TuningChange = {
   note: string
 }
 
-/** Shape Step 7 will return for a detection. Mirrors detections/metadata. */
+/** Detection shape returned by the API. Mirrors detections/metadata. */
 export type Detection = {
   id: string
   name: string

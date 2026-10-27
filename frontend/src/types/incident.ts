@@ -6,7 +6,7 @@ export type MitreTechnique = {
   tactic: string
 }
 
-/** Shape Step 7 will return from the incident list. */
+/** Incident list shape returned by the API. */
 export type Incident = {
   id: string
   title: string
@@ -85,7 +85,7 @@ export type Disposition = (typeof DISPOSITIONS)[number]
 export const INCIDENT_OWNERS = ['Unassigned', 'Analyst'] as const
 
 export const DRY_RUN_MESSAGE =
-  'Dry run: no action executed (backend in Step 7)' as const
+  'Dry run: no action executed' as const
 
 export type ResponseActionName =
   'Isolate lab endpoint' | 'Disable test account' | 'Block test IP'
@@ -99,7 +99,7 @@ export type ResponseAuditEntry = {
 }
 
 /**
- * Shape Step 7 will return from GET /incidents/:id.
+ * Incident detail shape returned by GET /incidents/:id.
  * `audit` is the dry-run log. Nothing in it was executed.
  */
 export type IncidentDetail = Incident & {

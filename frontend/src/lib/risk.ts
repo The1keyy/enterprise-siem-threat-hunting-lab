@@ -3,7 +3,7 @@ import type { RiskAssetType, RiskMultiplier } from '../types/incident.ts'
 
 /**
  * Fixture weights and cutoffs so a breakdown can show a band.
- * Step 14 replaces these weights and bands. This is not a measured model.
+ * These weights are for the fixture breakdown. They are not a measured model.
  */
 export const RISK_EVENT_WEIGHTS = [
   { id: 'failed_auth', label: 'Failed-auth burst', points: 15 },

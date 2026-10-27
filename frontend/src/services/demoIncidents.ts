@@ -182,7 +182,7 @@ function assetFor(hosts: readonly string[]): {
   return { assetType: 'workstation', multiplier: 1 }
 }
 
-/** 10 points per promoted event until Step 14 defines promotion weights. */
+/** 10 points per promoted event Promotion weights stay at 10 until a written model replaces them. */
 const PROMOTE_POINTS = 10
 
 export function createDemoIncident(input: {

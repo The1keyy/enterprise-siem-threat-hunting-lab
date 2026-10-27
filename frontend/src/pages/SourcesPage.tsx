@@ -23,7 +23,7 @@ export function SourcesPage() {
         description="Volume bars count fixture timeline events. They are not ingested telemetry."
       />
       <p className="mb-4 rounded-card border border-border bg-surface px-4 py-3 text-sm text-text">
-        Real status appears after the lab is connected (Step 17).
+        Real status appears after the lab is connected.
       </p>
       {state.loading ? (
         <LoadingState label="Loading data sources" lines={4} />

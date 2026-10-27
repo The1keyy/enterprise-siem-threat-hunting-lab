@@ -114,7 +114,7 @@ export default function DevComponentsPage() {
 
       <Card title="Empty, error, and loading">
         <div className="flex flex-col gap-3">
-          <EmptyState title="Coming in Step 4" />
+          <EmptyState title="Nothing here yet" />
           <ErrorState
             message={
               retried

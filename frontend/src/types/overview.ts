@@ -88,7 +88,7 @@ export type HealthSignal = {
   lastEvent: string
 }
 
-/** Shape the Step 7 backend will return from GET /overview. */
+/** Overview shape returned by GET /overview. */
 export type OverviewData = {
   demo: true
   generatedAt: string

@@ -13,7 +13,7 @@ import type { OverviewData } from '../types/overview.ts'
  * events ingested (640) includes those 78 alerts
  * 3 active incidents; 2 of them are critical
  * mean time to investigate is null on purpose
- * risk scores are fixture points, not a Step 14 result
+ * risk scores are fixture points, not a correlation-engine result
  * monitored endpoints are DC01, WS01, and UBU01
  */
 function sum(values: readonly number[]): number {

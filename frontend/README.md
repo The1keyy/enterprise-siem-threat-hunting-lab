@@ -2,15 +2,12 @@
 
 The SentinelForge analyst console: React 19 + Vite + TypeScript + Tailwind + Recharts.
 
-It is a SOC console on top of Wazuh. It never talks to Wazuh directly. Live data will come
-through `backend/` once that exists. Step 3 is the shell and design system only.
+It is a SOC console on top of Wazuh. The browser talks to the FastAPI service, not to Wazuh.
 
 ## Data modes
 
-- `VITE_DATA_MODE=demo`: labeled fixtures in `src/fixtures/` and a **DEMO DATA** banner.
-  No dashboard fixtures yet.
-- `VITE_DATA_MODE=live`: requests go to `VITE_API_URL`. The backend is not built yet, so
-  live mode has nothing to call.
+- `VITE_DATA_MODE=demo`: labeled fixtures and a **DEMO DATA** banner. This is the default.
+- `VITE_DATA_MODE=live`: requests go to `VITE_API_URL`. The API must already be running.
 
 Copy `frontend/.env.example` to `frontend/.env` to change the mode locally. `.env` is gitignored.
 
@@ -35,4 +32,4 @@ npm run build
 npx tsc --noEmit
 ```
 
-**Status:** Step 3 shell and design system. Pages are placeholders.
+**Status:** Demo pages run from fixtures. Nothing on those pages is `LAB VALIDATED`.

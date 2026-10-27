@@ -1,16 +1,11 @@
 import { EmptyState } from '../components/EmptyState.tsx'
 import { PageHeader } from '../components/PageHeader.tsx'
 
-type PlaceholderPageProps = {
-  title: string
-  step: number
-}
-
-export function PlaceholderPage({ title, step }: PlaceholderPageProps) {
+export function PlaceholderPage({ title }: { title: string }) {
   return (
     <>
       <PageHeader title={title} description="This page is not built yet." />
-      <EmptyState title={`Coming in Step ${step}`} />
+      <EmptyState title="Not built yet" />
     </>
   )
 }

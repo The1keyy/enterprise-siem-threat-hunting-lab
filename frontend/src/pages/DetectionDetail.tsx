@@ -64,7 +64,7 @@ function DetailBody({ data }: { data: Detection }) {
                 : ''
             }.`}
             {data.wazuhRuleXml.startsWith('Not written yet')
-              ? ' The rule text is not written yet (Step 10).'
+              ? ' The rule text is not written yet.'
               : null}
           </p>
         </Section>

@@ -166,7 +166,7 @@ export function buildWorkflows(): Workflow[] {
         'Attach to incident',
       ],
       destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented (Step 14+)',
+      status: 'Not implemented',
     },
     {
       id: 'escalation',
@@ -179,7 +179,7 @@ export function buildWorkflows(): Workflow[] {
         'Generate analyst checklist',
       ],
       destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented (Step 14+)',
+      status: 'Not implemented',
     },
     {
       id: 'context',
@@ -193,7 +193,7 @@ export function buildWorkflows(): Workflow[] {
         'Display context',
       ],
       destructive: 'Destructive actions: none (approval required)',
-      status: 'Not implemented (Step 14+)',
+      status: 'Not implemented',
     },
   ]
 }

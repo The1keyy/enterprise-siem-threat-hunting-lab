@@ -13,7 +13,7 @@ export function RiskExplainer({ lines }: { lines: readonly RiskLine[] }) {
       </summary>
       <p className="mt-2 text-sm text-text-muted">
         Each related incident is round(subtotal × asset multiplier). The entity
-        score is the sum of those finals. Step 14 replaces the weights.
+        score is the sum of those finals. The weights are the fixture model.
       </p>
       {lines.length === 0 ? (
         <p className="mt-2 text-sm text-text-muted">No data yet.</p>
