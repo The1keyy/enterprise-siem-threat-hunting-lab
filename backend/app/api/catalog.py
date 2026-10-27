@@ -235,7 +235,7 @@ def automation(request: Request) -> list[dict[str, Any]]:
                 "Attach to incident",
             ],
             "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented (Step 14+)",
+            "status": "Not implemented",
         },
         {
             "id": "escalation",
@@ -248,7 +248,7 @@ def automation(request: Request) -> list[dict[str, Any]]:
                 "Generate analyst checklist",
             ],
             "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented (Step 14+)",
+            "status": "Not implemented",
         },
         {
             "id": "context",
@@ -262,7 +262,7 @@ def automation(request: Request) -> list[dict[str, Any]]:
                 "Display context",
             ],
             "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented (Step 14+)",
+            "status": "Not implemented",
         },
     ]
     return _with_demo(workflows, demo=settings.data_mode == "demo")

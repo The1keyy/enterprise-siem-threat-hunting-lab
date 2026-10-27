@@ -75,7 +75,8 @@ class Settings(BaseSettings):
     wazuh_token_ttl_seconds: int = 900
     wazuh_token_refresh_skew_seconds: int = 60
 
-    # Same defaults as frontend/src/lib/risk.ts. Step 14 can replace them via env.
+    # Fixture defaults, same numbers as frontend/src/lib/risk.ts.
+    # The correlation engine reads risk_config.yml instead.
     risk_weight_failed_auth: int = 15
     risk_weight_success_after_failures: int = 25
     risk_weight_encoded_powershell: int = 30

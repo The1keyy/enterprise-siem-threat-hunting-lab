@@ -138,7 +138,7 @@ async def live_overview(app: Any, session: Session) -> dict[str, Any]:
         ],
         "topSourceIps": [_ranked(row) for row in aggs["top_srcip"]],
         "topTargetedUsers": [_ranked(row) for row in aggs["top_users"]],
-        # Risk scores are Step 14. These lists stay empty rather than showing a made-up score.
+        # These lists stay empty. A score is not invented from the indexer.
         "topRiskyHosts": [],
         "topRiskyUsers": [],
         "incidents": [_overview_incident(row) for row in active],

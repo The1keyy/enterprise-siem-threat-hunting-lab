@@ -1,6 +1,6 @@
 # SentinelForge API
 
-FastAPI service between the analyst console and Wazuh. Step 7A serves the shared demo fixtures in `/fixtures` and stores analyst state in SQLite. It does not talk to Wazuh yet.
+FastAPI service between the analyst console and Wazuh. Demo mode serves the shared fixtures in `/fixtures` and stores analyst state in SQLite. Live mode calls Wazuh and does not fall back to those fixtures.
 
 Python **3.12**. Versions are pinned in `requirements.txt` and `docs/VERSIONS.md`.
 
@@ -22,7 +22,7 @@ backend/.venv/bin/python scripts/validation/hash_password.py
 
 Copy the printed hash into `CONSOLE_ADMIN_PASSWORD_HASH`.
 
-`DATA_MODE=demo` serves fixtures and marks responses with `"demo": true`. `DATA_MODE=live` refuses to start when the Wazuh URL, user, or password is empty or still a placeholder. Live overview, sources, health, entities, detections, and hunt runs call Wazuh and return `"demo": false`. If Wazuh is unreachable they return **503** with the reason. They never fall back to demo data. Incidents stay in SQLite. Creating incidents from live alerts is Step 14.
+`DATA_MODE=demo` serves fixtures and marks responses with `"demo": true`. `DATA_MODE=live` refuses to start when the Wazuh URL, user, or password is empty or still a placeholder. Live overview, sources, health, entities, detections, and hunt runs call Wazuh and return `"demo": false`. If Wazuh is unreachable they return **503** with the reason. They never fall back to demo data. Incidents stay in SQLite. Creating incidents from live alerts is not wired.
 
 ## Migrate
 
