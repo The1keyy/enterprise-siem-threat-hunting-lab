@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 from app.api.deps import require_demo_user
 from app.core.config import Settings
 from app.db import get_db
-from app.schemas.api import ActionIn, AnalystPatch, IncidentPatch, NoteIn, PromoteIn
+from app.schemas.api import ActionIn, AnalystPatch, ChecklistPatch, IncidentPatch, NoteIn, PromoteIn
 from app.services.incidents import (
     add_note,
     create_incident,
     incident_detail,
     list_incidents,
     record_dry_run,
+    set_checklist_item,
     update_analyst,
     update_incident,
 )
@@ -100,6 +101,17 @@ def post_note(
     user: str = Depends(require_demo_user),
 ) -> dict:
     return add_note(session, incident_id, user, body.text.strip())
+
+
+@router.patch("/incidents/{incident_id}/checklist/{item_id}")
+def patch_checklist(
+    incident_id: str,
+    item_id: str,
+    body: ChecklistPatch,
+    session: Session = Depends(get_db),
+    _user: str = Depends(require_demo_user),
+) -> dict:
+    return set_checklist_item(session, incident_id, item_id, body.checked)
 
 
 @router.post("/incidents/{incident_id}/actions")

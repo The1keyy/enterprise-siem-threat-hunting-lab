@@ -1,5 +1,7 @@
 """SentinelForge API. Demo mode serves /fixtures. Live mode does not."""
 
+import asyncio
+import contextlib
 import logging
 from contextlib import asynccontextmanager
 
@@ -17,6 +19,7 @@ from app.core.logging import configure_logging
 from app.db import init_database
 from app.integrations.wazuh_api import WazuhApiClient
 from app.integrations.wazuh_indexer import WazuhIndexerClient
+from app.services.correlation_cycle import poll_forever
 
 logger = logging.getLogger("sentinelforge")
 
@@ -49,9 +52,23 @@ async def _lifespan(app: FastAPI):
             app.state.wazuh_api = WazuhApiClient(settings)
         if getattr(app.state, "wazuh_indexer", None) is None:
             app.state.wazuh_indexer = WazuhIndexerClient(settings)
+    stop = asyncio.Event()
+    app.state.correlation_stop = stop
+    task: asyncio.Task[None] | None = None
+    if (
+        settings.data_mode == "live"
+        and settings.correlation_poll_enabled
+        and settings.correlation_poll_seconds > 0
+    ):
+        task = asyncio.create_task(poll_forever(app, stop))
     try:
         yield
     finally:
+        stop.set()
+        if task is not None:
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
         api = getattr(app.state, "wazuh_api", None)
         indexer = getattr(app.state, "wazuh_indexer", None)
         if api is not None:
@@ -65,6 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ensure_live_settings(active)
     app = FastAPI(title="SentinelForge", version=APP_VERSION, lifespan=_lifespan)
     app.state.settings = active
+    app.state.correlation_lock = asyncio.Lock()
     app.add_middleware(RequestLogMiddleware)
     app.add_middleware(
         CORSMiddleware,

@@ -14,6 +14,11 @@ hub_user_limit: 8
 open_level: 12
 critical_level: 15
 half_life_hours: 24
+# SF-002 counts one source IP. Distinct target accounts come from archives.
+# Points do not change. Below this count the label stays a same-source burst.
+spray_min_distinct_users: 3
+# VERIFY: SF-002's rule timeframe is 120 seconds. The archive query uses this window.
+spray_timeframe_seconds: 120
 
 # An unmapped host uses this class. It does not become a domain controller.
 default_asset_class: workstation

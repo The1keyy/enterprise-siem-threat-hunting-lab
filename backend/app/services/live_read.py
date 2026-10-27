@@ -4,8 +4,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db import SessionLocal
 from app.integrations.errors import HuntQueryRejected, WazuhError
 from app.integrations.wazuh_api import WazuhApiClient
 from app.integrations.wazuh_indexer import (
@@ -14,8 +16,12 @@ from app.integrations.wazuh_indexer import (
     resolve_hunt_index,
     validate_hunt_query,
 )
+from app.models.tables import IncidentRow
+from app.services.correlation import decay_points
+from app.services.correlation_cycle import status_view
 from app.services.hunt_catalog import get_hunt
 from app.services.hunt_match import events_in_buckets, low_count_buckets
+from app.services.incident_record import parse_time
 from app.services.incidents import list_incidents
 from app.services.mapping import (
     agent_to_host,
@@ -310,7 +316,31 @@ async def live_health(app: Any) -> dict[str, Any]:
         "diskPercent": max(percents) if percents else None,
         "failedIngestion": None,
         "activeRules": sum(1 for rule in rules if rule.get("status") == "enabled"),
+        "correlation": _correlation_status(app),
     }
+
+
+def _correlation_status(app: Any) -> dict[str, Any]:
+    settings = getattr(app.state, "settings", None)
+    if settings is None:
+        return {
+            "enabled": False,
+            "lastRun": None,
+            "checkpoint": None,
+            "alertsProcessed": 0,
+            "error": None,
+            "note": "Correlation status is unavailable.",
+        }
+    with SessionLocal() as session:
+        status = status_view(session, settings)
+    if status.get("error"):
+        note = str(status["error"])
+    elif status.get("enabled"):
+        note = "The poller reads alerts whose rule group is sentinelforge."
+    else:
+        note = "The background poller is off."
+    status["note"] = note
+    return status
 
 
 def _agent_row(host: dict[str, Any]) -> dict[str, Any]:
@@ -334,7 +364,14 @@ async def live_entity_users(app: Any, session: Session) -> list[dict[str, Any]]:
         raise_wazuh(exc)
     incidents = list_incidents(session, {})
     return [
-        _entity_row(user["name"], user["last"], incidents, "users") for user in activity["users"]
+        _entity_row(
+            user["name"],
+            user["last"],
+            incidents,
+            "users",
+            _decayed_score(session, user["name"], "users"),
+        )
+        for user in activity["users"]
     ]
 
 
@@ -357,11 +394,49 @@ async def live_entity_hosts(app: Any, session: Session) -> list[dict[str, Any]]:
             continue
         seen.add(name)
         stat = by_name.get(name, {})
-        rows.append(_entity_row(name, stat.get("last"), incidents, "hosts"))
+        rows.append(
+            _entity_row(
+                name,
+                stat.get("last"),
+                incidents,
+                "hosts",
+                _decayed_score(session, name, "hosts"),
+            )
+        )
     for name, stat in by_name.items():
         if name not in seen:
-            rows.append(_entity_row(name, stat.get("last"), incidents, "hosts"))
+            rows.append(
+                _entity_row(
+                    name,
+                    stat.get("last"),
+                    incidents,
+                    "hosts",
+                    _decayed_score(session, name, "hosts"),
+                )
+            )
     return rows
+
+
+def _decayed_score(session: Session, name: str, field: str) -> float:
+    """Sum of incident subtotals for this entity, decayed from each last alert."""
+
+    now = datetime.now(UTC)
+    total = 0.0
+    column = "users" if field == "users" else "hosts"
+    for row in session.scalars(select(IncidentRow)).all():
+        names = row.users if column == "users" else row.hosts
+        if name not in list(names or []):
+            continue
+        risk = row.risk if isinstance(row.risk, dict) else {}
+        subtotal = risk.get("subtotal")
+        if not isinstance(subtotal, int):
+            continue
+        try:
+            last_seen = parse_time(row.last_seen)
+        except ValueError:
+            continue
+        total += decay_points(subtotal, last_seen, now)
+    return round(total, 2)
 
 
 def _entity_row(
@@ -369,10 +444,11 @@ def _entity_row(
     last: str | None,
     incidents: list[dict[str, Any]],
     field: str,
+    score: float,
 ) -> dict[str, Any]:
     return {
         "name": name,
-        "riskScore": None,
+        "riskScore": score,
         "incidentIds": [row["id"] for row in incidents if name in (row.get(field) or [])],
         "lastActivity": last,
         "demo": False,
@@ -395,7 +471,7 @@ async def live_user_profile(app: Any, session: Session, name: str) -> dict[str, 
     return {
         "demo": False,
         "name": name,
-        "riskScore": None,
+        "riskScore": _decayed_score(session, name, "users"),
         "incidentIds": [row["id"] for row in incidents],
         "lastActivity": events[0]["time"],
         "sourceIps": _unique(event["srcIp"] for event in events),
@@ -434,7 +510,7 @@ async def live_host_profile(app: Any, session: Session, name: str) -> dict[str, 
     return {
         "demo": False,
         "name": name,
-        "riskScore": None,
+        "riskScore": _decayed_score(session, name, "hosts"),
         "incidentIds": [row["id"] for row in incidents],
         "lastActivity": events[0]["time"] if events else None,
         "ip": host.get("ip"),

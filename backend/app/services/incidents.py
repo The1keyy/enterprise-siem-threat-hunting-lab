@@ -129,8 +129,17 @@ def incident_detail(session: Session, incident_id: str) -> dict[str, Any]:
     ).all()
     risk = dict(row.risk)
     risk["items"] = [
-        {"event": item.event, "ruleId": item.rule_id, "points": item.points} for item in risk_items
+        {
+            "event": item.event,
+            "ruleId": item.rule_id,
+            "points": item.points,
+            "counted": item.counted,
+            "reason": item.reason,
+        }
+        for item in risk_items
     ]
+    risk.setdefault("multiplierHosts", list(row.multiplier_hosts or []))
+    risk.setdefault("forcedCritical", False)
     detail = _summary(row)
     detail.update(
         {
@@ -144,6 +153,9 @@ def incident_detail(session: Session, incident_id: str) -> dict[str, Any]:
             "disposition": row.disposition,
             "summary": row.summary,
             "recommendedContainment": row.recommended_containment,
+            "linkReasons": list(row.link_reasons or []),
+            "sprayFindings": list(row.spray_findings or []),
+            "checklist": list(row.checklist or []),
             "audit": [
                 {
                     "id": f"AUDIT-{entry.id:04d}",
@@ -303,6 +315,32 @@ def create_incident(
     from app.services.seed import _insert_incident
 
     _insert_incident(session, payload, demo=demo_case)
+    session.commit()
+    return incident_detail(session, incident_id)
+
+
+def set_checklist_item(
+    session: Session,
+    incident_id: str,
+    item_id: str,
+    checked: bool,
+) -> dict[str, Any]:
+    """Save one analyst checkbox. This does not run a response action."""
+
+    row = _require(session, incident_id)
+    found = False
+    updated: list[dict[str, Any]] = []
+    for item in list(row.checklist or []):
+        if not isinstance(item, dict):
+            continue
+        copy = dict(item)
+        if str(copy.get("id")) == item_id:
+            copy["checked"] = checked
+            found = True
+        updated.append(copy)
+    if not found:
+        raise HTTPException(status_code=404, detail=f"Checklist item {item_id} was not found.")
+    row.checklist = updated
     session.commit()
     return incident_detail(session, incident_id)
 

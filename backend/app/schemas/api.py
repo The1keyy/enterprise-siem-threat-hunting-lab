@@ -38,6 +38,10 @@ class NoteIn(BaseModel):
     text: str = Field(min_length=1)
 
 
+class ChecklistPatch(BaseModel):
+    checked: bool
+
+
 class PromoteIn(BaseModel):
     title: str
     severity: SeverityName

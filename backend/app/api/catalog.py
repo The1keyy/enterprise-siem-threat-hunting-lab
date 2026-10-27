@@ -21,6 +21,7 @@ from app.services.live_read import (
     live_sources,
     live_user_profile,
 )
+from app.services.risk_view import correlation_settings
 
 router = APIRouter()
 _detection_enabled: dict[str, bool] = {}
@@ -235,20 +236,20 @@ def automation(request: Request) -> list[dict[str, Any]]:
                 "Attach to incident",
             ],
             "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented",
+            "status": "Stretch",
         },
         {
             "id": "escalation",
             "name": "High-risk escalation",
-            "trigger": f"Risk ≥ {settings.severity_high} (high band)",
+            "trigger": "Incident created or risk band rises",
             "steps": [
-                "Risk ≥ threshold",
-                "Create incident",
-                "Set severity",
-                "Generate analyst checklist",
+                "Incident opened or band rises",
+                "Read the detection investigation steps",
+                "Write the checklist on the incident",
+                "Record an audit log entry",
             ],
-            "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented",
+            "destructive": "Destructive actions: none. No response action is executed.",
+            "status": "Implemented",
         },
         {
             "id": "context",
@@ -262,7 +263,7 @@ def automation(request: Request) -> list[dict[str, Any]]:
                 "Display context",
             ],
             "destructive": "Destructive actions: none (approval required)",
-            "status": "Not implemented",
+            "status": "Stretch",
         },
     ]
     return _with_demo(workflows, demo=settings.data_mode == "demo")
@@ -271,40 +272,14 @@ def automation(request: Request) -> list[dict[str, Any]]:
 @router.get("/settings")
 def settings_view(request: Request) -> dict[str, Any]:
     settings: Settings = request.app.state.settings
-    critical = settings.severity_critical
-    high = settings.severity_high
-    medium = settings.severity_medium
+    model = correlation_settings()
     return {
         "demo": settings.data_mode == "demo",
         "dataMode": settings.data_mode,
         "apiUrl": f"http://{settings.api_host}:{settings.api_port}",
         "wazuhVersion": WAZUH_VERSION,
-        "weights": [
-            {"label": "Failed-auth burst", "points": settings.risk_weight_failed_auth},
-            {
-                "label": "Successful login after failures",
-                "points": settings.risk_weight_success_after_failures,
-            },
-            {"label": "Encoded PowerShell", "points": settings.risk_weight_encoded_powershell},
-            {"label": "Privileged group change", "points": settings.risk_weight_privileged_group},
-            {"label": "Remote connection", "points": settings.risk_weight_remote_connection},
-            {"label": "New account", "points": settings.risk_weight_new_account},
-            {"label": "Suspicious command", "points": settings.risk_weight_suspicious_command},
-            {"label": "Scheduled task", "points": settings.risk_weight_scheduled_task},
-        ],
-        "multipliers": [
-            {"assetType": "workstation", "multiplier": settings.asset_multiplier_workstation},
-            {"assetType": "server", "multiplier": settings.asset_multiplier_server},
-            {
-                "assetType": "domain_controller",
-                "multiplier": settings.asset_multiplier_domain_controller,
-            },
-        ],
-        "bands": [
-            {"severity": "critical", "rule": f"{critical} or higher"},
-            {"severity": "high", "rule": f"{high} to {critical - 1}"},
-            {"severity": "medium", "rule": f"{medium} to {high - 1}"},
-            {"severity": "low", "rule": f"1 to {medium - 1}"},
-            {"severity": "info", "rule": "0"},
-        ],
+        "weights": model["weights"],
+        "multipliers": model["multipliers"],
+        "bands": model["bands"],
+        "correlation": model["correlation"],
     }

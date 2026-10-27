@@ -42,6 +42,7 @@ def _live_settings(database: Path):
         wazuh_indexer_user="readonly",
         wazuh_indexer_password="indexer-secret",
         wazuh_ca_bundle="",
+        correlation_poll_enabled=False,
     )
 
 

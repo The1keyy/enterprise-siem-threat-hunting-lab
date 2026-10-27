@@ -166,6 +166,53 @@ def build_alert_search(
     return body
 
 
+def build_sentinelforge_search(
+    *,
+    size: int,
+    search_after: list[Any] | None,
+) -> dict[str, Any]:
+    """Alerts whose rule.groups contains sentinelforge, oldest first, no `from`."""
+
+    body: dict[str, Any] = {
+        "size": size,
+        "sort": [{"timestamp": "asc"}, {"_id": "asc"}],
+        "query": {"bool": {"filter": [{"term": {"rule.groups": "sentinelforge"}}]}},
+    }
+    if search_after:
+        body["search_after"] = search_after
+    return body
+
+
+def build_spray_archive_search(*, ip: str, start: str, end: str, size: int = 500) -> dict[str, Any]:
+    """4625 events from one source IP.
+
+    VERIFY (4.14.9): archive copies may store eventID as a string or a number,
+    and the account field as data.win.eventdata.targetUserName.
+    """
+
+    return {
+        "size": size,
+        "sort": [{"timestamp": "asc"}, {"_id": "asc"}],
+        "query": {
+            "bool": {
+                "filter": [
+                    {"range": {"timestamp": {"gte": start, "lte": end}}},
+                    {"term": {"data.win.eventdata.ipAddress": ip}},
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"data.win.system.eventID": "4625"}},
+                                {"term": {"data.win.system.eventID": 4625}},
+                            ],
+                            "minimum_should_match": 1,
+                        }
+                    },
+                ]
+            }
+        },
+    }
+
+
 def _severity_ranges() -> dict[str, Any]:
     # Bounds match config.wazuh_level_severity: 0–6, 7–11, 12–14, 15+.
     return {
@@ -330,6 +377,30 @@ class WazuhIndexerClient:
         self._raise_for_status(status, payload)
         return _parse_hits(payload, page)
 
+    async def search_sentinelforge(
+        self,
+        *,
+        search_after: list[Any] | None = None,
+        size: int = 200,
+    ) -> dict[str, Any]:
+        """Page of SentinelForge alerts. Each hit keeps indexer `_id` and `sort`."""
+
+        page = min(max(size, 1), _MAX_PAGE)
+        body = build_sentinelforge_search(size=page, search_after=search_after)
+        status, payload = await self._post(self._alerts_search(), body)
+        self._raise_for_status(status, payload)
+        return {"hits": _hits_with_id(payload)}
+
+    async def search_spray_events(self, *, ip: str, start: str, end: str) -> list[dict[str, Any]]:
+        """Archive 4625 documents for one source IP. VERIFY field names on WAZUH01."""
+
+        body = build_spray_archive_search(ip=ip, start=start, end=end)
+        status, payload = await self._post(f"/{self._settings.wazuh_archives_index}/_search", body)
+        if _index_missing(status, payload):
+            raise ArchivesNotEnabled()
+        self._raise_for_status(status, payload)
+        return _hits_with_id(payload)
+
     async def aggregations(self, start: str, end: str) -> dict[str, Any]:
         status, payload = await self._post(
             self._alerts_search(),
@@ -468,6 +539,24 @@ def _index_missing(status: int, payload: dict[str, Any]) -> bool:
     error = payload.get("error")
     error_type = error.get("type") if isinstance(error, dict) else None
     return status == 404 or error_type == "index_not_found_exception"
+
+
+def _hits_with_id(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    hits_block = payload.get("hits")
+    if not isinstance(hits_block, dict) or not isinstance(hits_block.get("hits"), list):
+        raise WazuhResponseError("Indexer response missing hits")
+    docs: list[dict[str, Any]] = []
+    for row in hits_block["hits"]:
+        if not isinstance(row, dict) or not isinstance(row.get("_source"), dict):
+            continue
+        source = dict(row["_source"])
+        if isinstance(row.get("_id"), str):
+            source["_id"] = row["_id"]
+        sort = row.get("sort")
+        if isinstance(sort, list):
+            source["_sort"] = sort
+        docs.append(source)
+    return docs
 
 
 def _parse_hits(payload: dict[str, Any], size: int) -> dict[str, Any]:

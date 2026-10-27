@@ -63,6 +63,10 @@ def _insert_incident(session: Session, item: dict[str, Any], demo: bool) -> None
             disposition=item["disposition"],
             summary=item["summary"],
             recommended_containment=item["recommendedContainment"],
+            link_reasons=list(item.get("linkReasons") or []),
+            multiplier_hosts=list((item.get("risk") or {}).get("multiplierHosts") or []),
+            spray_findings=list(item.get("sprayFindings") or []),
+            checklist=list(item.get("checklist") or []),
         )
     )
     session.flush()
@@ -91,5 +95,7 @@ def _insert_incident(session: Session, item: dict[str, Any], demo: bool) -> None
                 event=risk_item["event"],
                 rule_id=risk_item["ruleId"],
                 points=risk_item["points"],
+                counted=bool(risk_item.get("counted", True)),
+                reason=str(risk_item.get("reason") or "counted"),
             )
         )

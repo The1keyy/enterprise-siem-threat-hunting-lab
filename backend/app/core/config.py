@@ -92,6 +92,9 @@ class Settings(BaseSettings):
     severity_high: int = 60
     severity_medium: int = 30
     promote_event_points: int = Field(default=10)
+    # Live correlation poll. 0 disables the background task. Demo mode never polls.
+    correlation_poll_seconds: int = 60
+    correlation_poll_enabled: bool = True
 
     def resolved_database_url(self) -> str:
         prefix = "sqlite:///"

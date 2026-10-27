@@ -2,8 +2,10 @@
 
 from app.models.tables import (
     AuditLogRow,
+    CorrelationStateRow,
     IncidentEventRow,
     IncidentRow,
+    IngestedAlertRow,
     NoteRow,
     RiskEventRow,
     SavedHuntRow,
@@ -12,8 +14,10 @@ from app.models.tables import (
 
 __all__ = [
     "AuditLogRow",
+    "CorrelationStateRow",
     "IncidentEventRow",
     "IncidentRow",
+    "IngestedAlertRow",
     "NoteRow",
     "RiskEventRow",
     "SavedHuntRow",

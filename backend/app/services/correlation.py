@@ -46,6 +46,8 @@ class RiskConfig:
     open_statuses: tuple[str, ...]
     closed_statuses: tuple[str, ...]
     default_asset_class: str
+    spray_min_distinct_users: int
+    spray_timeframe_seconds: int
 
     @property
     def window(self) -> timedelta:
@@ -224,6 +226,8 @@ def load_risk_config(path: Path | None = None) -> RiskConfig:
         open_statuses=tuple(str(item) for item in raw.get("open_statuses") or []),
         closed_statuses=tuple(str(item) for item in raw.get("closed_statuses") or []),
         default_asset_class=str(raw.get("default_asset_class") or "workstation"),
+        spray_min_distinct_users=int(raw.get("spray_min_distinct_users") or 3),
+        spray_timeframe_seconds=int(raw.get("spray_timeframe_seconds") or 120),
     )
     _validate(config)
     return config
@@ -333,9 +337,21 @@ def entity_risk(
         entities = getattr(incident.entities, kind, ())
         if value not in entities:
             continue
-        age_hours = (now - incident.last_seen).total_seconds() / 3600
-        total += _decay(incident.subtotal, max(age_hours, 0.0), cfg.half_life_hours)
+        total += decay_points(incident.subtotal, incident.last_seen, now, cfg)
     return total
+
+
+def decay_points(
+    points: int,
+    last_seen: datetime,
+    now: datetime,
+    config: RiskConfig | None = None,
+) -> float:
+    """Half-life of a counted subtotal. The asset multiplier is not applied."""
+
+    cfg = config or load_risk_config()
+    age_hours = (now - last_seen).total_seconds() / 3600
+    return _decay(points, max(age_hours, 0.0), cfg.half_life_hours)
 
 
 def _validate(config: RiskConfig) -> None:
@@ -356,6 +372,8 @@ def _validate(config: RiskConfig) -> None:
             raise ValueError(f"asset class {asset} has no multiplier")
     if not config.open_statuses:
         raise ValueError("open_statuses is empty")
+    if config.spray_min_distinct_users < 2 or config.spray_timeframe_seconds <= 0:
+        raise ValueError("spray confirmation settings must be positive")
 
 
 def _decay(points: int, age_hours: float, half_life_hours: float) -> float:
