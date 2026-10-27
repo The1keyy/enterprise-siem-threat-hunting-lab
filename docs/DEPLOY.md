@@ -4,7 +4,7 @@ The public site is demo-only. It serves the fixtures bundled into the frontend. 
 
 The API is intentionally not public. Live mode runs only inside the lab.
 
-Do not set `VITE_API_URL` or any other `VITE_` variable on Vercel. The build refuses to run there unless `VITE_DATA_MODE` is exactly `demo`, and it refuses if any other `VITE_` variable is present. That keeps a lab URL out of the public bundle.
+Do not set `VITE_API_URL` or any other SentinelForge `VITE_` variable on Vercel. Unset `VITE_DATA_MODE` builds the demo, and `demo` is accepted. `live` and `VITE_API_URL` are refused. Vercel injects `VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG` itself; that one name is allowlisted. A `VITE_VERCEL_*` prefix is not, because a project can set another name with that prefix.
 
 ## Why fixtures stay outside `frontend/`
 
@@ -17,7 +17,7 @@ The repository root `vercel.json` installs and builds `frontend/` and publishes 
 1. Push `main` to GitHub.
 2. In Vercel, Add New → Project, and import `The1keyy/enterprise-siem-threat-hunting-lab`.
 3. Leave Root Directory as the repository root. The root `vercel.json` sets the install command, the build command, the output directory, the SPA rewrite, and the headers. Framework is overridden there, so the preset can stay blank.
-4. Do not add environment variables. An unset `VITE_DATA_MODE` builds the demo. `VITE_DATA_MODE=live`, or any other `VITE_` variable, fails the build on purpose.
+4. Do not add environment variables. An unset `VITE_DATA_MODE` builds the demo. `VITE_DATA_MODE=live` and `VITE_API_URL` fail the build on purpose. Vercel's own `VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG` is allowed.
 5. Deploy.
 
 Every push to `main` deploys Production. Other branches deploy a Preview. GitHub Actions also builds the frontend with `VERCEL=1` and `VITE_DATA_MODE=demo`, and checks that `VITE_DATA_MODE=live` is rejected.
