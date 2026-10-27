@@ -1,4 +1,4 @@
-"""The merged Sysmon config keeps the Step 12A process and network includes."""
+"""The merged Sysmon config keeps the process and network includes."""
 
 from __future__ import annotations
 

@@ -6,7 +6,7 @@
 
 ## What it does
 
-Turns on the advanced audit subcategories and PowerShell logging in `docs/TELEMETRY_MATRIX.md`, and lists the event channels Step 12B must collect.
+Turns on the advanced audit subcategories and PowerShell logging in `docs/TELEMETRY_MATRIX.md`, and lists the event channels the Wazuh agent snippet collects.
 
 ## Where it goes
 

@@ -14,7 +14,7 @@ On DC01 and WS01, inside the existing `<ossec_config>`. The stock 4.14.9 agent f
 
 ## How to apply
 
-Replace `<WAZUH_MANAGER_IP>` with `10.10.10.40`. Restart the Wazuh service. Step 12C's install script does this merge. This folder does not.
+Replace `<WAZUH_MANAGER_IP>` with `10.10.10.40`. Restart the Wazuh service. `scripts/powershell/40-Install-WazuhAgent.ps1` does this merge. This folder does not.
 
 ## How to verify
 
@@ -22,7 +22,7 @@ On the Mac, `pytest tests/configs/test_agent_snippets.py`. On the host, after a 
 
 ## Matrix check
 
-Security is an allow-list: 4624, 4625, 4688, 4720, 4728, 4732, 4756, 5140, 5145. 4688 is the command-line event from Step 12A, not an SF alert. 5156 and the other stock exclusions stay out.
+Security is an allow-list: 4624, 4625, 4688, 4720, 4728, 4732, 4756, 5140, 5145. 4688 is collected for the command line. No current rule alerts on it. 5156 and the other stock exclusions stay out.
 
 PowerShell Operational keeps 4104 only. Module Logging 4103 is not in the matrix.
 

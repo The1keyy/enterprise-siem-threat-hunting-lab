@@ -18,8 +18,8 @@ An include group adds events. It does not delete an upstream include. The pytest
 | `Image` `pwsh.exe` | Every `pwsh.exe` process create | SF-005. Upstream only includes `pwsh.exe` inside a `Clear-EventLog` rule, so a normal `pwsh` start would be dropped by the include filter. |
 | `OriginalFileName` `pwsh.exe` | A renamed binary whose original name is still `pwsh.exe` | Same SF-005 gap. |
 | `Image` `wsmprovhost.exe` | Every WinRM host process create | SF-012 rule 100520. Upstream matches `OriginalFileName` only. |
-| `Image` `schtasks.exe` | Every `schtasks.exe` start, with its command line | Required by Step 12A. Upstream includes `schtasks.exe` only when the command line contains `/create` or `/change`. No current rule alerts on it. |
-| `Image` `sc.exe` | Every `sc.exe` start, with its command line | Required by Step 12A. Upstream includes `sc.exe` only for some service-create command lines. No current rule alerts on it. |
+| `Image` `schtasks.exe` | Every `schtasks.exe` start, with its command line | Included so the command line is recorded. Upstream includes `schtasks.exe` only when the command line contains `/create` or `/change`. No current rule alerts on it. |
+| `Image` `sc.exe` | Every `sc.exe` start, with its command line | Included so the command line is recorded. Upstream includes `sc.exe` only for some service-create command lines. No current rule alerts on it. |
 
 ## `sentinelforge-network` / `NetworkConnect` include
 
