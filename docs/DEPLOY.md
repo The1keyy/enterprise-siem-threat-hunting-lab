@@ -2,6 +2,8 @@
 
 The public site is demo-only. It serves the fixtures bundled into the frontend. It does not run the API, it does not talk to Wazuh, and demo mode does not show a login form. The DEMO DATA banner stays.
 
+The API is intentionally not public. Live mode runs only inside the lab.
+
 Do not set `VITE_API_URL` or any other `VITE_` variable on Vercel. The build refuses to run there unless `VITE_DATA_MODE` is exactly `demo`, and it refuses if any other `VITE_` variable is present. That keeps a lab URL out of the public bundle.
 
 ## Why fixtures stay outside `frontend/`
