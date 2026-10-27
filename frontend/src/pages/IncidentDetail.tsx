@@ -11,6 +11,7 @@ import { SeverityBadge } from '../components/SeverityBadge.tsx'
 import { StatusPill } from '../components/StatusPill.tsx'
 import { useIncident } from '../hooks/useIncident.ts'
 import { formatLabTime } from '../lib/formatLabTime.ts'
+import { groupingChips } from '../lib/grouping.ts'
 import {
   DISPOSITIONS,
   INCIDENT_OWNERS,
@@ -59,7 +60,9 @@ function EntityGroup({
             >
               {kind === 'user' ? <UserLink name={value} /> : null}
               {kind === 'host' ? <HostLink name={value} /> : null}
-              {kind === 'plain' ? value : null}
+              {kind === 'plain' ? (
+                <span className="font-mono">{value}</span>
+              ) : null}
             </li>
           ))}
         </ul>
@@ -159,6 +162,7 @@ function IncidentBody({
   const event = data.timeline[selected] ?? data.timeline[0] ?? null
   const ruleIds = [...new Set(data.timeline.map((item) => item.ruleId))]
   const multiplier = data.risk.multiplier.toFixed(1)
+  const chips = groupingChips(data.timeline)
 
   return (
     <div className="min-w-0 overflow-x-hidden">
@@ -166,7 +170,7 @@ function IncidentBody({
         Back to incidents
       </Link>
       <header className="mt-3 mb-4">
-        <p className="text-sm text-text-muted">{data.id}</p>
+        <p className="font-mono text-sm text-text-muted">{data.id}</p>
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold text-text">{data.title}</h1>
           <SeverityBadge severity={data.severity} />
@@ -219,41 +223,70 @@ function IncidentBody({
       </header>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
         <div className="flex min-w-0 flex-col gap-4 xl:col-span-7">
-          <Card title="Timeline">
+          <Card
+            title="Timeline"
+            subtitle="Why grouped is read from the user, source IP, or host already on these events."
+          >
             {data.timeline.length === 0 ? (
-              <EmptyState title="No data yet" />
+              <EmptyState
+                title="No events in this incident"
+                detail="A timeline appears when the incident has events."
+              />
             ) : (
-              <ol className="space-y-3 border-l border-border pl-4">
-                {data.timeline.map((item, index) => (
-                  <li key={`${item.time}-${item.ruleId}`}>
-                    <button
-                      type="button"
-                      className={
-                        index === selected
-                          ? 'w-full rounded-md bg-surface-2 px-2 py-2 text-left'
-                          : 'w-full rounded-md px-2 py-2 text-left hover:bg-surface-2'
-                      }
-                      aria-pressed={index === selected}
-                      onClick={() => onSelect(index)}
-                    >
-                      <span className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
-                        {formatLabTime(item.time)}
+              <ol id="timeline" className="relative space-y-0">
+                {data.timeline.map((item, index) => {
+                  const chip = chips[index]
+                  return (
+                    <li key={`${item.time}-${item.ruleId}`} className="relative pl-6">
+                      {index < data.timeline.length - 1 ? (
                         <span
-                          className={`inline-block h-2 w-2 rounded-full ${DOT[item.severity]}`}
                           aria-hidden="true"
+                          className="absolute top-3 bottom-0 left-[7px] w-px bg-border"
                         />
-                        <span className="text-text">{item.severity}</span>
-                      </span>
-                      <span className="mt-1 block text-sm text-text">
-                        {item.title}
-                      </span>
-                      <span className="mt-1 block text-xs text-text-muted">
-                        <HostLink name={item.host} /> ·{' '}
-                        <UserLink name={item.user} /> · {item.ruleId}
-                      </span>
-                    </button>
-                  </li>
-                ))}
+                      ) : null}
+                      <span
+                        aria-hidden="true"
+                        className={`absolute top-2 left-0 h-4 w-4 rounded-full border-2 border-surface ${DOT[item.severity]}`}
+                      />
+                      <button
+                        type="button"
+                        className={
+                          index === selected
+                            ? 'mb-3 w-full rounded-md bg-surface-2 px-3 py-2 text-left transition-colors duration-150'
+                            : 'mb-3 w-full rounded-md px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-2'
+                        }
+                        aria-pressed={index === selected}
+                        onClick={() => onSelect(index)}
+                      >
+                        <span className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
+                          {formatLabTime(item.time)}
+                          <span className="capitalize text-text">
+                            {item.severity}
+                          </span>
+                        </span>
+                        <span className="mt-1 block text-sm text-text">
+                          {item.title}
+                        </span>
+                        <span className="mt-1 block font-mono text-xs text-text-muted">
+                          <HostLink name={item.host} /> ·{' '}
+                          <UserLink name={item.user} /> · {item.ruleId}
+                        </span>
+                        {chip ? (
+                          <span
+                            className={
+                              chip.strength === 'strong'
+                                ? 'mt-2 inline-flex rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-text'
+                                : 'mt-2 inline-flex rounded-full border border-border bg-surface px-2 py-0.5 text-xs text-text-muted'
+                            }
+                          >
+                            {chip.strength === 'strong' ? 'Strong' : 'Weak'} ·{' '}
+                            {chip.label}
+                          </span>
+                        ) : null}
+                      </button>
+                    </li>
+                  )
+                })}
               </ol>
             )}
           </Card>
@@ -296,8 +329,11 @@ function IncidentBody({
               ))}
             </ul>
           </Card>
-          <Card title="Risk score breakdown">
-            <table className="w-full text-left text-sm">
+          <Card
+            title="Risk score breakdown"
+            subtitle="A row with zero points is not counted."
+          >
+            <table id="risk" className="w-full text-left text-sm">
               <thead className="text-xs text-text-muted">
                 <tr>
                   <th className="py-1 font-medium">Event</th>
@@ -306,18 +342,32 @@ function IncidentBody({
                 </tr>
               </thead>
               <tbody>
-                {data.risk.items.map((item) => (
-                  <tr
-                    key={`${item.ruleId}-${item.event}`}
-                    className="border-t border-border"
-                  >
-                    <td className="py-1 pr-2 text-text">{item.event}</td>
-                    <td className="py-1 text-text-muted">{item.ruleId}</td>
-                    <td className="py-1 text-right tabular-nums text-text">
-                      {item.points}
-                    </td>
-                  </tr>
-                ))}
+                {data.risk.items.map((item) => {
+                  const counted = item.points > 0
+                  return (
+                    <tr
+                      key={`${item.ruleId}-${item.event}`}
+                      className={
+                        counted
+                          ? 'border-t border-border'
+                          : 'border-t border-border text-text-muted'
+                      }
+                    >
+                      <td className="py-1.5 pr-2">
+                        {item.event}
+                        {counted ? null : (
+                          <span className="mt-0.5 block text-xs">
+                            Not counted
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-1.5 font-mono text-xs">{item.ruleId}</td>
+                      <td className="py-1.5 text-right tabular-nums">
+                        {item.points}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
             <p className="mt-3 text-sm text-text">

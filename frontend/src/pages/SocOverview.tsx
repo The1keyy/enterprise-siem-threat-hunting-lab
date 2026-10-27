@@ -14,6 +14,8 @@ import { PageHeader } from '../components/PageHeader.tsx'
 import { SeverityBadge } from '../components/SeverityBadge.tsx'
 import { StatusPill } from '../components/StatusPill.tsx'
 import { useOverview } from '../hooks/useOverview.ts'
+import { formatDelta, periodDelta } from '../lib/periodDelta.ts'
+import type { Severity } from '../types/domain.ts'
 import type { OverviewData } from '../types/overview.ts'
 
 const alertSeries = (['critical', 'high', 'medium', 'low'] as const).map(
@@ -32,6 +34,7 @@ function formatLabTime(iso: string): string {
 
 function Panel({
   title,
+  subtitle,
   className,
   loading,
   error,
@@ -40,6 +43,7 @@ function Panel({
   children,
 }: {
   title: string
+  subtitle?: string
   className?: string
   loading: boolean
   error: string | null
@@ -48,7 +52,7 @@ function Panel({
   children: ReactNode
 }) {
   return (
-    <Card title={title} className={className}>
+    <Card title={title} subtitle={subtitle} className={className}>
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -79,12 +83,14 @@ export function SocOverview() {
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
+        <Posture data={data} loading={loading} />
         <KpiRow data={data} loading={loading} error={error} onRetry={reload} />
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-12">
           <Panel
             title="Alerts over time"
+            subtitle="Stacked by severity"
             className="min-w-0 xl:col-span-8"
             loading={loading}
             error={error}
@@ -107,6 +113,7 @@ export function SocOverview() {
           </Panel>
           <Panel
             title="Alerts by severity"
+            subtitle="Same window as the chart"
             className="min-w-0 xl:col-span-4"
             loading={loading}
             error={error}
@@ -117,7 +124,7 @@ export function SocOverview() {
           </Panel>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-12">
           <Panel
             title="Alerts by MITRE tactic"
             className="min-w-0 xl:col-span-6"
@@ -163,7 +170,7 @@ export function SocOverview() {
           </Panel>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-12">
           <Panel
             title="Top source IPs"
             className="min-w-0 xl:col-span-3"
@@ -236,7 +243,7 @@ export function SocOverview() {
           </Panel>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-12">
           <Panel
             title="Latest critical incidents"
             className="min-w-0 xl:col-span-4"
@@ -368,14 +375,9 @@ function KpiRow({
 }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 7 }, (_, index) => (
-          <Card
-            key={index}
-            className={
-              index < 4 ? 'min-w-0 xl:col-span-3' : 'min-w-0 xl:col-span-4'
-            }
-          >
+          <Card key={index} className="min-w-0">
             <LoadingState lines={2} />
           </Card>
         ))}
@@ -392,16 +394,53 @@ function KpiRow({
     )
   }
 
-  const cards: { label: string; value: number | null; hint?: string }[] = [
-    { label: 'Active Incidents', value: data.kpis.activeIncidents },
-    { label: 'Critical Alerts (24h)', value: data.kpis.criticalAlerts24h },
-    { label: 'High Alerts (24h)', value: data.kpis.highAlerts24h },
-    { label: 'Monitored Endpoints', value: data.kpis.monitoredEndpoints },
+  const criticalSeries = data.alertsOverTime.map((bucket) => bucket.critical)
+  const highSeries = data.alertsOverTime.map((bucket) => bucket.high)
+  const criticalDelta = periodDelta(criticalSeries)
+  const highDelta = periodDelta(highSeries)
+
+  const cards: {
+    label: string
+    value: number | null
+    hint?: string
+    series?: readonly number[]
+    seriesColor?: string
+    delta?: string | null
+  }[] = [
+    {
+      label: 'Active Incidents',
+      value: data.kpis.activeIncidents,
+      hint: 'No earlier count in this fixture',
+    },
+    {
+      label: 'Critical Alerts (24h)',
+      value: data.kpis.criticalAlerts24h,
+      series: criticalSeries,
+      seriesColor: 'var(--color-critical)',
+      delta: criticalDelta ? formatDelta(criticalDelta.delta) : null,
+    },
+    {
+      label: 'High Alerts (24h)',
+      value: data.kpis.highAlerts24h,
+      series: highSeries,
+      seriesColor: 'var(--color-high)',
+      delta: highDelta ? formatDelta(highDelta.delta) : null,
+    },
+    {
+      label: 'Monitored Endpoints',
+      value: data.kpis.monitoredEndpoints,
+      hint: 'No earlier count in this fixture',
+    },
     {
       label: 'Detection Rules Enabled',
       value: data.kpis.detectionRulesEnabled,
+      hint: 'No earlier count in this fixture',
     },
-    { label: 'Events Ingested (24h)', value: data.kpis.eventsIngested24h },
+    {
+      label: 'Events Ingested (24h)',
+      value: data.kpis.eventsIngested24h,
+      hint: 'No bucket series in this fixture',
+    },
     {
       label: 'Mean Time to Investigate',
       value: data.kpis.meanTimeToInvestigateMinutes,
@@ -413,17 +452,114 @@ function KpiRow({
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-12">
-      {cards.map((card, index) => (
-        <div
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      {cards.map((card) => (
+        <KpiCard
           key={card.label}
-          className={
-            index < 4 ? 'min-w-0 xl:col-span-3' : 'min-w-0 xl:col-span-4'
-          }
-        >
-          <KpiCard label={card.label} value={card.value} hint={card.hint} />
-        </div>
+          label={card.label}
+          value={card.value}
+          hint={card.hint}
+          delta={card.delta}
+          series={card.series}
+          seriesColor={card.seriesColor}
+        />
       ))}
     </div>
+  )
+}
+
+const SEVERITY_ORDER: readonly Severity[] = [
+  'critical',
+  'high',
+  'medium',
+  'low',
+  'info',
+]
+
+function Posture({
+  data,
+  loading,
+}: {
+  data: OverviewData | null
+  loading: boolean
+}) {
+  if (loading || !data) {
+    return <LoadingState label="Loading threat posture" layout="kpis" />
+  }
+
+  const counts = Object.fromEntries(
+    SEVERITY_ORDER.map((severity) => [severity, 0]),
+  ) as Record<Severity, number>
+  for (const incident of data.incidents) {
+    counts[incident.severity] += 1
+  }
+  const band =
+    SEVERITY_ORDER.find((severity) => counts[severity] > 0) ?? 'info'
+  const entities = [
+    ...data.topRiskyHosts.map((item) => ({
+      name: item.name,
+      score: item.riskScore,
+    })),
+    ...data.topRiskyUsers.map((item) => ({
+      name: item.name,
+      score: item.riskScore,
+    })),
+  ]
+  const highest = entities.reduce<(typeof entities)[number] | null>(
+    (best, item) => (best === null || item.score > best.score ? item : best),
+    null,
+  )
+
+  return (
+    <Card
+      title="Threat posture"
+      subtitle="Computed from the demo fixtures on this page."
+    >
+      <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <dt className="text-xs text-text-muted">Overall risk</dt>
+          <dd className="mt-2">
+            <SeverityBadge severity={band} />
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-text-muted">Open incidents</dt>
+          <dd className="mt-2 flex flex-wrap gap-2">
+            {SEVERITY_ORDER.filter((severity) => counts[severity] > 0).map(
+              (severity) => (
+                <span key={severity} className="inline-flex items-center gap-1">
+                  <SeverityBadge severity={severity} />
+                  <span className="text-sm tabular-nums text-text">
+                    {counts[severity]}
+                  </span>
+                </span>
+              ),
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-text-muted">Highest-risk entity</dt>
+          <dd className="mt-2 text-sm text-text">
+            {highest ? (
+              <>
+                <span className="font-mono">{highest.name}</span>
+                <span className="ml-2 tabular-nums text-text-muted">
+                  {highest.score}
+                </span>
+              </>
+            ) : (
+              'No data yet'
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-text-muted">Last correlation run</dt>
+          <dd className="mt-2 text-sm text-text">Not recorded in this demo</dd>
+          <p className="mt-1 text-xs text-text-muted">
+            Fixture clock {formatLabTime(data.generatedAt)}
+          </p>
+        </div>
+      </dl>
+    </Card>
   )
 }

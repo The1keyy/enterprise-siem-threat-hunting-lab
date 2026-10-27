@@ -26,7 +26,7 @@ function MitreChips({ items }: { items: readonly MitreTechnique[] }) {
       {shown.map((item) => (
         <span
           key={item.id}
-          className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 text-xs text-accent"
+          className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-accent"
         >
           {item.id}
         </span>
@@ -38,17 +38,31 @@ function MitreChips({ items }: { items: readonly MitreTechnique[] }) {
   )
 }
 
-function RiskCell({ score }: { score: number }) {
+const RISK_BAR: Record<Incident['severity'], string> = {
+  critical: 'bg-critical',
+  high: 'bg-high',
+  medium: 'bg-medium',
+  low: 'bg-low',
+  info: 'bg-accent',
+}
+
+function RiskCell({
+  score,
+  severity,
+}: {
+  score: number
+  severity: Incident['severity']
+}) {
   const width = Math.min(100, Math.round((score / 150) * 100))
   return (
     <span className="inline-flex items-center gap-2">
-      <span className="tabular-nums">{score}</span>
+      <span className="w-8 tabular-nums">{score}</span>
       <span
         className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-2"
         aria-hidden="true"
       >
         <span
-          className="block h-full bg-accent"
+          className={`block h-full ${RISK_BAR[severity]}`}
           style={{ width: `${width}%` }}
         />
       </span>
@@ -57,7 +71,12 @@ function RiskCell({ score }: { score: number }) {
 }
 
 const COLUMNS: readonly DataTableColumn<Incident>[] = [
-  { id: 'id', header: 'ID', accessor: (row) => row.id },
+  {
+    id: 'id',
+    header: 'ID',
+    accessor: (row) => row.id,
+    cellClassName: 'whitespace-nowrap font-mono text-xs',
+  },
   { id: 'title', header: 'Title', accessor: (row) => row.title },
   {
     id: 'severity',
@@ -69,7 +88,9 @@ const COLUMNS: readonly DataTableColumn<Incident>[] = [
     id: 'riskScore',
     header: 'Risk',
     accessor: (row) => row.riskScore,
-    cell: (row) => <RiskCell score={row.riskScore} />,
+    cell: (row) => (
+      <RiskCell score={row.riskScore} severity={row.severity} />
+    ),
   },
   {
     id: 'status',
@@ -81,8 +102,9 @@ const COLUMNS: readonly DataTableColumn<Incident>[] = [
     id: 'user',
     header: 'User',
     accessor: (row) => row.users[0] ?? '',
+    cellClassName: 'whitespace-nowrap font-mono text-xs',
     cell: (row) => (
-      <span className="flex flex-wrap gap-1">
+      <span className="flex flex-col gap-1">
         {row.users.map((name) => (
           <UserLink key={name} name={name} />
         ))}
@@ -93,8 +115,9 @@ const COLUMNS: readonly DataTableColumn<Incident>[] = [
     id: 'host',
     header: 'Host',
     accessor: (row) => row.hosts[0] ?? '',
+    cellClassName: 'whitespace-nowrap font-mono text-xs',
     cell: (row) => (
-      <span className="flex flex-wrap gap-1">
+      <span className="flex flex-col gap-1">
         {row.hosts.map((name) => (
           <HostLink key={name} name={name} />
         ))}
@@ -143,11 +166,13 @@ export function Incidents() {
           onClear={() => setParams(searchFromFilters(EMPTY_FILTERS))}
         />
       </div>
-      {loading ? <LoadingState label="Loading incidents" lines={6} /> : null}
+      {loading ? (
+        <LoadingState label="Loading incidents" layout="table" lines={6} />
+      ) : null}
       {error ? <ErrorState message={error} onRetry={reload} /> : null}
       {!loading && !error && data ? (
         <>
-          <p className="mb-3 text-sm text-text-muted">
+          <p className="mb-3 text-sm tabular-nums text-text-muted">
             {data.length} {data.length === 1 ? 'incident' : 'incidents'} ·{' '}
             {critical} critical
           </p>

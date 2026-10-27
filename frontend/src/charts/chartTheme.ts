@@ -23,11 +23,13 @@ export const axisTick = {
 export const axisLine = { stroke: 'var(--color-border)' }
 
 export const tooltipStyle: CSSProperties = {
-  background: 'var(--color-surface)',
+  background: 'var(--color-surface-2)',
   border: '1px solid var(--color-border)',
   borderRadius: 8,
   color: 'var(--color-text)',
   fontSize: 12,
+  lineHeight: 1.4,
+  padding: '8px 10px',
 }
 
 export const tooltipLabelStyle: CSSProperties = {

@@ -8,6 +8,7 @@ export type DataTableColumn<T> = {
   header: string
   accessor: (row: T) => string | number
   cell?: (row: T) => ReactNode
+  cellClassName?: string
 }
 
 type DataTableProps<T> = {
@@ -73,9 +74,9 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-card border border-border bg-surface">
-      <table className="w-full border-collapse text-left text-sm">
-        <thead className="bg-surface-2 text-text-muted">
+    <div className="max-h-[70vh] overflow-auto rounded-card border border-border bg-surface">
+      <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+        <thead className="sticky top-0 z-10 bg-surface-2 text-xs text-text-muted">
           <tr>
             {columns.map((column) => {
               const active = sort?.id === column.id
@@ -119,7 +120,7 @@ export function DataTable<T>({
                 key={getRowId(row)}
                 tabIndex={0}
                 className={clsx(
-                  'border-t border-border text-text',
+                  'border-t border-border text-text transition-colors duration-150',
                   onRowActivate && 'cursor-pointer hover:bg-surface-2',
                 )}
                 onClick={() => onRowActivate?.(row)}
@@ -134,7 +135,10 @@ export function DataTable<T>({
                 }}
               >
                 {columns.map((column) => (
-                  <td key={column.id} className="px-3 py-2">
+                  <td
+                    key={column.id}
+                    className={clsx('px-3 py-2', column.cellClassName)}
+                  >
                     {column.cell ? column.cell(row) : column.accessor(row)}
                   </td>
                 ))}

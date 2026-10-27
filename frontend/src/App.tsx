@@ -4,6 +4,7 @@ import { AuthProvider, RequireAuth } from './auth/AuthContext.tsx'
 import { LoadingState } from './components/LoadingState.tsx'
 import { AppShell } from './layouts/AppShell.tsx'
 import { LoginPage } from './pages/LoginPage.tsx'
+import { AboutPage } from './pages/AboutPage.tsx'
 import { AutomationPage } from './pages/AutomationPage.tsx'
 import { DetectionsPage } from './pages/DetectionsPage.tsx'
 import { EntitiesPage } from './pages/EntitiesPage.tsx'
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="sources" element={<SourcesPage />} />
           <Route path="health" element={<HealthPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="about" element={<AboutPage />} />
           {DevComponentsPage ? (
             <Route
               path="dev/components"

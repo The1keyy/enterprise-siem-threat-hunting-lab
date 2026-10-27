@@ -135,7 +135,7 @@ export function DetectionsPage() {
     <div className="min-w-0 overflow-x-hidden">
       <PageHeader
         title="Detections"
-        description="Metadata only. No rule has been tested. Figures are demo fixtures."
+        description="Rules from this repository. Windows rules are not lab validated. Library figures are demo fixtures."
       />
       <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <label className="flex flex-col gap-1 text-xs text-text-muted">

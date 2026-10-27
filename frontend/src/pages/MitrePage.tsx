@@ -17,12 +17,12 @@ import { VALIDATION_STATUSES, type ValidationStatus } from '../types/domain.ts'
 import type { Detection } from '../types/detection.ts'
 import type { MitreTechnique } from '../types/incident.ts'
 
-const TILE_BORDER: Record<ValidationStatus, string> = {
-  'NOT TESTED': 'border-border',
-  'SYNTAX VALID': 'border-low/40',
-  'LOGTEST VALID': 'border-accent/40',
-  'LAB VALIDATED': 'border-ok/40',
-  'NEEDS TUNING': 'border-medium/40',
+const TILE_FILL: Record<ValidationStatus, string> = {
+  'NOT TESTED': 'border-border bg-surface-2 text-text-muted',
+  'SYNTAX VALID': 'border-low/40 bg-low/20 text-text',
+  'LOGTEST VALID': 'border-accent/40 bg-accent/15 text-text',
+  'LAB VALIDATED': 'border-ok/40 bg-ok/20 text-text',
+  'NEEDS TUNING': 'border-medium/40 bg-medium/20 text-text',
 }
 
 function alertsGenerated(detections: readonly Detection[]): string {
@@ -108,17 +108,17 @@ export function MitrePage() {
         <EmptyState title="No detections yet" />
       ) : null}
       {!loading && !error && data && data.length > 0 ? (
-        <div className="overflow-x-auto">
-          <div className="grid min-w-[64rem] grid-cols-10 gap-2">
+        <div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-10">
             {TACTIC_COLUMNS.map((tactic) => {
               const techniques = techniquesForTactic(tactic)
               return (
-                <section key={tactic} aria-label={tactic}>
-                  <h2 className="mb-2 text-xs font-medium text-text">
+                <section key={tactic} aria-label={tactic} className="min-w-0">
+                  <h2 className="mb-2 text-xs font-medium leading-snug text-text">
                     {tactic}
                   </h2>
                   {techniques.length === 0 ? (
-                    <p className="rounded-md border border-dashed border-border px-2 py-3 text-xs text-text-muted">
+                    <p className="rounded-md border border-dashed border-border bg-bg px-2 py-3 text-xs text-text-muted">
                       Not covered
                     </p>
                   ) : (
@@ -228,16 +228,14 @@ function TechniqueTile({
     <button
       type="button"
       className={clsx(
-        'w-full rounded-md border bg-surface-2 p-2 text-left',
-        TILE_BORDER[status],
+        'w-full rounded-md border p-2 text-left transition-colors duration-150',
+        TILE_FILL[status],
       )}
       onClick={onOpen}
     >
-      <p className="text-xs text-accent">{technique.id}</p>
-      <p className="text-xs text-text">{technique.name}</p>
-      <span className="mt-1 inline-block">
-        <StatusPill kind="validation" status={status} />
-      </span>
+      <p className="font-mono text-xs">{technique.id}</p>
+      <p className="mt-1 text-xs leading-snug text-text">{technique.name}</p>
+      <p className="mt-2 text-xs font-medium">{status}</p>
     </button>
   )
 }

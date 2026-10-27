@@ -13,6 +13,7 @@
   --color-ok: #22c55e;
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   --text-xs: 0.75rem;
   --text-xs--line-height: 1rem;

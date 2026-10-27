@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { clsx } from 'clsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../hooks/useAuth.ts'
 import { DemoBanner } from '../components/DemoBanner.tsx'
 import { ToastViewport } from '../components/ToastViewport.tsx'
@@ -34,7 +34,9 @@ export function AppShell() {
   const title =
     pathname === '/dev/components'
       ? 'Components'
-      : (current?.label ?? 'SentinelForge')
+      : pathname === '/about'
+        ? 'About'
+        : (current?.label ?? 'SentinelForge')
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
@@ -76,7 +78,7 @@ export function AppShell() {
                   title={item.label}
                   className={({ isActive }) =>
                     clsx(
-                      'flex items-center gap-3 rounded-md px-2 py-2 text-sm',
+                      'flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors duration-150',
                       collapsed ? 'justify-center' : 'max-md:justify-center',
                       isActive
                         ? 'bg-surface-2 text-accent shadow-[inset_2px_0_0_0_var(--color-accent)]'
@@ -128,9 +130,17 @@ export function AppShell() {
           </div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-12 items-center justify-between gap-3 border-b border-border bg-surface px-4">
-            <p className="truncate text-sm font-medium text-text">{title}</p>
-            <div className="flex items-center gap-3">
+          <header className="flex h-12 items-center justify-between gap-3 border-b border-border bg-surface px-4 sm:px-6">
+            <p className="min-w-0 flex-1 truncate text-xs font-medium tracking-wide text-text-muted uppercase">
+              {title}
+            </p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                to="/about"
+                className="rounded-md border border-border px-2 py-1 text-xs text-text transition-colors duration-150 hover:bg-surface-2"
+              >
+                About
+              </Link>
               <span
                 className={clsx(
                   'rounded-full border px-2 py-0.5 text-xs font-medium',
@@ -143,7 +153,7 @@ export function AppShell() {
               >
                 {pill}
               </span>
-              <span className="text-sm text-text-muted">
+              <span className="hidden text-sm text-text-muted sm:inline">
                 {auth.username ?? 'Analyst'}
               </span>
               {mode === 'live' ? (
@@ -157,7 +167,7 @@ export function AppShell() {
               ) : null}
             </div>
           </header>
-          <main className="flex-1 p-4">
+          <main className="min-w-0 flex-1 p-4 sm:p-6">
             <Outlet />
           </main>
           <ToastViewport />

@@ -67,7 +67,12 @@ export function TimeSeriesChart({
               data={chartData}
               margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
             >
-              <CartesianGrid stroke="var(--color-border)" vertical={false} />
+              <CartesianGrid
+                stroke="var(--color-border)"
+                strokeOpacity={0.55}
+                strokeDasharray="3 6"
+                vertical={false}
+              />
               <XAxis
                 dataKey="label"
                 tick={axisTick}
@@ -104,7 +109,12 @@ export function TimeSeriesChart({
               data={chartData}
               margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
             >
-              <CartesianGrid stroke="var(--color-border)" vertical={false} />
+              <CartesianGrid
+                stroke="var(--color-border)"
+                strokeOpacity={0.55}
+                strokeDasharray="3 6"
+                vertical={false}
+              />
               <XAxis
                 dataKey="label"
                 tick={axisTick}
@@ -131,7 +141,7 @@ export function TimeSeriesChart({
                   name={item.label}
                   stroke={item.color}
                   fill={item.color}
-                  fillOpacity={0.25}
+                  fillOpacity={0.14}
                   stackId={stacked ? 'alerts' : undefined}
                   isAnimationActive={false}
                 />
