@@ -4,7 +4,7 @@
 PyYAML==6.0.3
 luqum==1.0.0
 ply==3.11
-pytest==9.1.1
+pytest==9.2.0
 yamllint==1.38.0
 sigma-cli==3.1.0
 pySigma==1.5.1
