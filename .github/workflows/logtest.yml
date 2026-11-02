@@ -100,7 +100,7 @@ jobs:
 
       - name: Upload logtest results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: logtest-results
           path: tests/results/*.json
